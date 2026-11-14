@@ -114,3 +114,15 @@ await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.match(element('apiStatus').textContent,/조회 실패/,'API failure should show a helpful error');
 assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+1,'Failed API must not alter products');
 console.log('PASS: API search, duplicate filtering, invalid item rejection and server error');
+
+element('apiEndpoint').value='https://example.test/api/foods';
+sandbox.fetch=async url=>({ok:true,json:async()=>({ok:true,providerConfigured:false})});
+await vm.runInContext('checkEndpoint()',sandbox,{timeout:3000});
+assert.match(element('apiStatus').textContent,/공급 API 미설정/,'Health check must distinguish missing provider');
+sandbox.fetch=async url=>({ok:true,json:async()=>({ok:true,providerConfigured:true})});
+await vm.runInContext('checkEndpoint()',sandbox,{timeout:3000});
+assert.match(element('apiStatus').textContent,/상품 공급 API 설정됨/,'Health check should show configured provider');
+element('apiEndpoint').value='http://example.test/api/foods';
+await vm.runInContext('checkEndpoint()',sandbox,{timeout:3000});
+assert.match(element('apiStatus').textContent,/HTTPS/,'Health check must reject non-HTTPS URLs');
+console.log('PASS: API health check status and HTTPS validation');
