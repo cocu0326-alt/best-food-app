@@ -3,8 +3,11 @@ export function normalizeSupplierFeed(input) {
   if (!input || !Array.isArray(input.products)) throw new Error('products array required');
   return {products: input.products.slice(0,1000).flatMap((p) => {
     if (!p || typeof p !== 'object') return [];
-    const price = Number(p.price);
-    const amount = Number(p.size ?? p.amount);
+    const rawPrice = p.price;
+    const rawAmount = p.size ?? p.amount;
+    if ((typeof rawPrice !== 'number' && typeof rawPrice !== 'string') || (typeof rawAmount !== 'number' && typeof rawAmount !== 'string') || String(rawPrice).trim() === '' || String(rawAmount).trim() === '') return [];
+    const price = Number(rawPrice);
+    const amount = Number(rawAmount);
     const unit = String(p.measure ?? p.unit ?? '').toLowerCase();
     const measure = unit === 'kg' || unit === 'g' ? 'g' : unit === 'l' || unit === 'ml' ? 'mL' : null;
     const size = unit === 'kg' || unit === 'l' ? amount * 1000 : amount;
