@@ -84,3 +84,13 @@ test('search normalizes Korean Unicode and repeated whitespace and deduplicates 
   assert.equal(result.length,1);
   assert.equal(result[0].price,9000);
 });
+
+test('equivalent seller names with repeated whitespace are deduplicated',()=>{
+  const products=searchSupplierProducts({products:[
+    {name:'국산 보리',price:4000,size:500,unit:'g',seller:'우리  농장'},
+    {name:'국산 보리',price:4000,size:500,unit:'g',seller:'우리 농장'},
+    {name:'국산 보리',price:4000,size:500,unit:'g',seller:'다른 농장'}
+  ]},'보리');
+  assert.equal(products.length,2);
+  assert.deepEqual(products.map(p=>p.seller),['우리  농장','다른 농장']);
+});
