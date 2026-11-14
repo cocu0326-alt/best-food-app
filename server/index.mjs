@@ -41,6 +41,12 @@ export async function fetchSupplierJson(target, authToken = '', timeoutMs = 8000
     clearTimeout(timeout);
   }
 }
+export function searchSupplierProducts(data, q) {
+  if (!data || !Array.isArray(data.products)) throw new Error('invalid_upstream_schema');
+  const normalized = normalizeSupplierFeed(data);
+  const query = q.toLocaleLowerCase('ko-KR');
+  return normalized.products.filter(p => p.name.toLocaleLowerCase('ko-KR').includes(query)).slice(0, 100);
+}
 const requests = new Map();
 const configuredLimit = Number(process.env.RATE_LIMIT_PER_MINUTE || 60);
 if (!Number.isSafeInteger(configuredLimit) || configuredLimit < 1 || configuredLimit > 100000) throw Error('RATE_LIMIT_PER_MINUTE must be an integer from 1 to 100000');
@@ -82,10 +88,7 @@ export const server = http.createServer(async (req, res) => {
     if (!result.ok) return send(res, 502, {error: 'upstream_error'}, origin);
     const data = result.data;
     if (!data || !Array.isArray(data.products)) return send(res, 502, {error: 'invalid_upstream_schema'}, origin);
-    const normalized = normalizeSupplierFeed(data);
-    const query = q.toLocaleLowerCase('ko-KR');
-    const products = normalized.products.filter(p => p.name.toLocaleLowerCase('ko-KR').includes(query)).slice(0, 100);
-    return send(res, 200, {products}, origin);
+    return send(res, 200, {products: searchSupplierProducts(data, q)}, origin);
   } catch {
     return send(res, 502, {error: 'provider_unavailable'}, origin);
   }
