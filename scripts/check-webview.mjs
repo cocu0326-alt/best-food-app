@@ -175,3 +175,6 @@ assert.match(html,/품질 미평가 상품이 있어 균형 추천을 보류합�
 
 assert.match(html,/동일 단위라도 식품 종류·원재료·가공방식이 다르면/,'Comparison must warn against cross-category unit-price conclusions');
 assert.match(html,/외부 상품 전체의 최우수 제품 선정이 아닙니다/,'Comparison must limit recommendation scope');
+
+vm.runInContext("state.products.push({id:903,name:'비교 쌀 공동최저',price:9000,size:1000,measure:'g',rating:4.1,reviews:10,seller:'농가',quality:4,transparency:1});toggleCompare(903,true)",sandbox,{timeout:3000});
+assert.match(element('compareResults').innerHTML,/비교 쌀 B, 비교 쌀 공동최저/,'Equal unit-price qualifying foods must both appear in balance recommendation');
