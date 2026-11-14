@@ -5,6 +5,15 @@ const port = Number(process.env.PORT || 8787);
 const upstream = process.env.FOOD_UPSTREAM_URL || '';
 const allowedOrigin = process.env.ALLOWED_ORIGIN || '';
 const token = process.env.FOOD_API_TOKEN || '';
+const requests = new Map();
+const rateLimit = Math.max(1, Number(process.env.RATE_LIMIT_PER_MINUTE || 60));
+function limited(ip) {
+  const now = Date.now(), entry = requests.get(ip);
+  if (!entry || now - entry.start >= 60000) { requests.set(ip, {start: now, count: 1}); return false; }
+  entry.count++;
+  return entry.count > rateLimit;
+}
+setInterval(() => {const now=Date.now();for(const [ip,entry] of requests) if(now-entry.start>60000) requests.delete(ip);},60000).unref();
 
 function send(res, status, body, origin = '') {
   const headers = {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'};
@@ -16,6 +25,8 @@ function send(res, status, body, origin = '') {
 http.createServer(async (req, res) => {
   const origin = req.headers.origin || '';
   const url = new URL(req.url || '/', 'http://localhost');
+  if (req.method !== 'GET') return send(res, 405, {error:'method_not_allowed'}, origin);
+  if (url.pathname === '/api/foods' && limited(req.socket.remoteAddress || 'unknown')) return send(res, 429, {error:'rate_limited',message:'잠시 후 다시 요청하세요.'}, origin);
   if (url.pathname === '/health') return send(res, 200, {ok: true, providerConfigured: Boolean(upstream)}, origin);
   if (url.pathname !== '/api/foods') return send(res, 404, {error: 'not_found'}, origin);
   const q = (url.searchParams.get('q') || '').trim();
@@ -29,7 +40,7 @@ http.createServer(async (req, res) => {
     const timeout = setTimeout(() => controller.abort(), 8000);
     let response;
     try {
-      response = await fetch(target, {headers: {...(token ? {authorization: 'Bearer ' + token} : {}), accept: 'application/json'}, signal: controller.signal});
+      response = await fetch(target, {headers: {...(token ? {authorization: 'Bearer ' + token} : {}), accept: 'application/json'}, signal: controller.signal, redirect: 'error'});
     } finally { clearTimeout(timeout); }
     if (!response.ok) return send(res, 502, {error: 'upstream_error'}, origin);
     const data = await response.json();
