@@ -168,3 +168,13 @@ test('supplier product links reject URL fragments and credentials',()=>{
   ]}).products;
   assert.deepEqual(products.map(p=>p.url),['','','','https://example.com/item']);
 });
+
+test('blank seller uses supplied manufacturer rather than unknown seller',()=>{
+  const base={name:'현미',price:3200,size:500,unit:'g'};
+  const products=normalizeSupplierFeed({products:[
+    {...base,seller:'  ',manufacturer:'  생산자 A  '},
+    {...base,seller:'판매자 B',manufacturer:'생산자 A'},
+    {...base,seller:'  ',manufacturer:'  '}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.seller),['생산자 A','판매자 B','판매처 미확인']);
+});
