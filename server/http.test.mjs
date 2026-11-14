@@ -114,3 +114,28 @@ test('returns no-store and browser-safe headers for API responses',async t=>{
     assert.match(response.headers.get('content-type'),/application\/json/);
   }
 });
+
+test('supplier timeout stays active while response body is pending',async()=>{
+  const {fetchSupplierJson}=await import('./index.mjs');
+  let observedAbort=false;
+  const fakeFetch=async (_target,{signal})=>{
+    const stream=new ReadableStream({
+      start(controller){
+        controller.enqueue(new TextEncoder().encode('{"products":['));
+        signal.addEventListener('abort',()=>{
+          observedAbort=true;
+          controller.error(new Error('aborted_supplier_stream'));
+        },{once:true});
+      }
+    });
+    return new Response(stream,{status:200});
+  };
+  await assert.rejects(()=>fetchSupplierJson('https://example.com','',25,fakeFetch),/aborted_supplier_stream/);
+  assert.equal(observedAbort,true);
+});
+
+test('supplier timeout is cleared after successful body read',async()=>{
+  const {fetchSupplierJson}=await import('./index.mjs');
+  const result=await fetchSupplierJson('https://example.com','',1000,async()=>new Response('{"products":[]}'));
+  assert.deepEqual(result,{ok:true,data:{products:[]}});
+});
