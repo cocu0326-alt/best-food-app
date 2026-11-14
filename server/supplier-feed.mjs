@@ -4,7 +4,7 @@ export function normalizeSupplierFeed(input) {
   return {products: input.products.slice(0,1000).flatMap((p) => {
     if (!p || typeof p !== 'object') return [];
     const rawPrice = p.price;
-    const rawAmount = p.size ?? p.amount;
+    const rawAmount = (p.size === null || p.size === undefined || typeof p.size === 'string' && !p.size.trim()) ? p.amount : p.size;
     if ((typeof rawPrice !== 'number' && typeof rawPrice !== 'string') || (typeof rawAmount !== 'number' && typeof rawAmount !== 'string') || String(rawPrice).trim() === '' || String(rawAmount).trim() === '') return [];
     const price = Number(rawPrice);
     const amount = Number(rawAmount);
