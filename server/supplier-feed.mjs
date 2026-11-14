@@ -8,7 +8,7 @@ export function normalizeSupplierFeed(input) {
     if ((typeof rawPrice !== 'number' && typeof rawPrice !== 'string') || (typeof rawAmount !== 'number' && typeof rawAmount !== 'string') || String(rawPrice).trim() === '' || String(rawAmount).trim() === '') return [];
     const price = Number(rawPrice);
     const amount = Number(rawAmount);
-    const unit = String(p.measure ?? p.unit ?? '').toLowerCase();
+    const unit = typeof (p.measure ?? p.unit) === 'string' ? (p.measure ?? p.unit).trim().toLowerCase() : '';
     const measure = unit === 'kg' || unit === 'g' ? 'g' : unit === 'l' || unit === 'ml' ? 'mL' : null;
     const size = unit === 'kg' || unit === 'l' ? amount * 1000 : amount;
     if (typeof p.name !== 'string' || !p.name.trim() || !Number.isFinite(price) || price <= 0 || !Number.isFinite(size) || size <= 0 || !measure) return [];
