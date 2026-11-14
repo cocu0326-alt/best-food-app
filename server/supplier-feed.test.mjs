@@ -199,3 +199,9 @@ test('blank size falls back to supplied amount but invalid nonblank size is reje
   ]}).products;
   assert.deepEqual(products.map(p=>[p.size,p.measure]),[[2000,'g'],[2000,'g']]);
 });
+
+test('array-shaped supplier entries are not valid product objects',()=>{
+  const disguised=Object.assign([],{name:'위장 상품',price:1000,size:100,unit:'g'});
+  const products=normalizeSupplierFeed({products:[disguised,{name:'정상 상품',price:1000,size:100,unit:'g'}]}).products;
+  assert.deepEqual(products.map(p=>p.name),['정상 상품']);
+});
