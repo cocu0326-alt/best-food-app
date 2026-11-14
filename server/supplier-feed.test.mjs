@@ -36,7 +36,7 @@ test('drops credential-bearing links and invalid seller metadata',()=>{
   }]});
   const product=result.products[0];
   assert.equal(product.url,'');
-  assert.equal(product.seller,'제조사 직접 판매');
+  assert.equal(product.seller,'판매처 미확인');
   assert.equal(product.rating,0);
   assert.equal(product.reviews,0);
 });
@@ -64,7 +64,7 @@ test('defaults missing provenance and rejects malformed optional provenance',()=
   const product=result.products[0];
   assert.equal(product.origin,'');
   assert.equal(product.ingredients,'');
-  assert.equal(product.source,'제조사 제공');
+  assert.equal(product.source,'공급업체 제공 (원출처 미확인)');
   assert.equal(product.sourceUpdatedAt,null);
 });
 
@@ -124,7 +124,7 @@ test('blank supplier provenance labels fall back without inventing update dates'
     {...base,source:'  ',updatedAt:'  '},
     {...base,source:'  공식 제공  ',updatedAt:' 2026-11-15 '}
   ]}).products;
-  assert.equal(blank.source,'제조사 제공');
+  assert.equal(blank.source,'공급업체 제공 (원출처 미확인)');
   assert.equal(blank.sourceUpdatedAt,null);
   assert.equal(trimmed.source,'공식 제공');
   assert.equal(trimmed.sourceUpdatedAt,'2026-11-15');
