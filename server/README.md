@@ -23,3 +23,13 @@ node server/index.mjs
 이 서버는 상품 데이터를 스크래핑하지 않고, 제공 권한이 있는 API만 연결하도록 설계했습니다. 운영 전 HTTPS 배포, 인증·속도 제한, 데이터 사용조건, CORS 정책 검토가 필요합니다.
 
 공급업체 연동 시 요청·응답 예시와 필드별 검증 규칙은 [`SUPPLIER_API.md`](./SUPPLIER_API.md)를 참고하세요.
+
+## 운영 전 확인 사항
+
+- `FOOD_UPSTREAM_URL`은 자격증명과 URL 조각(`#...`)이 없는 HTTPS 주소만 허용합니다. 공급업체가 요구하는 인증 토큰은 `FOOD_API_TOKEN`에만 보관하세요.
+- `ALLOWED_ORIGIN`을 사용하는 경우 경로나 쿼리가 없는 정확한 HTTPS Origin(예: `https://example.com`)만 지정하세요. `*`, HTTP 주소, 경로가 붙은 주소는 서버 시작 시 거부됩니다.
+- `ALLOWED_ORIGIN`을 비워 두면 서버는 `Access-Control-Allow-Origin` 헤더를 내보내지 않습니다. Android WebView가 로컬 `file://` 페이지에서 HTTPS 서버에 접근할 때는 실제 앱 환경의 CORS 동작을 별도로 검증해야 합니다. 임의로 `*`를 허용하는 방식으로 우회하지 마세요.
+- `/health`의 `providerConfigured:true`는 공급 API 주소가 설정됐다는 뜻이며, 상품 조회 성공을 의미하지 않습니다. `/api/foods?q=...`를 호출해 HTTP 200과 `products` 배열을 확인해야 합니다.
+- 공급업체가 허용한 API만 사용하며, 공급업체 데이터의 가격·평점·원산지·원재료는 별도 검증되지 않은 정보로 취급합니다.
+
+배포 및 실제 점검 절차는 [`DEPLOY.md`](./DEPLOY.md)를 참고하세요.
