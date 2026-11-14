@@ -157,3 +157,14 @@ test('rejects fractional or unsafe prices and extreme sizes',()=>{
   assert.equal(results.length,2);
   assert.deepEqual(results.map(p=>p.price),[2000,2500]);
 });
+
+test('supplier product links reject URL fragments and credentials',()=>{
+  const base={name:'사과',price:3000,size:500,unit:'g'};
+  const products=normalizeSupplierFeed({products:[
+    {...base,url:'https://example.com/item#secret'},
+    {...base,url:'https://user:pass@example.com/item'},
+    {...base,url:' http://example.com/item '},
+    {...base,url:' https://example.com/item '}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.url),['','','','https://example.com/item']);
+});
