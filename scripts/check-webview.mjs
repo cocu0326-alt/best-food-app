@@ -39,3 +39,12 @@ assert.match(element('compareResults').innerHTML,/국내산/,'Origin should be v
 vm.runInContext('toggleCompare(102,false)',sandbox,{timeout:3000});
 assert.match(element('compareResults').innerHTML,/현재 1개 선택됨/,'Unselecting should update comparison');
 console.log('PASS: WebView simulated rendering, comparison selection and removal');
+
+vm.runInContext("state.products.push({id:103,name:'사과즙 C',price:9000,size:1000,measure:'mL',rating:4,reviews:5,seller:'농가',quality:null,transparency:null,origin:'국내산',ingredients:'사과'});toggleCompare(102,true);toggleCompare(103,true)",sandbox,{timeout:3000});
+assert.match(element('compareResults').innerHTML,/단위가격 우열은 표시하지 않습니다/,'Mixed units must not be ranked by unit price');
+assert.match(element('compareResults').innerHTML,/미확인/,'Missing quality should be shown as unverified');
+vm.runInContext('toggleCompare(101,true)',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('compareIds.size',sandbox),3,'Three products can be selected');
+vm.runInContext('toggleCompare(104,true)',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('compareIds.size',sandbox),3,'Comparison must remain capped at three products');
+console.log('PASS: mixed-unit safeguards, missing quality and selection limit');
