@@ -129,3 +129,16 @@ test('blank supplier provenance labels fall back without inventing update dates'
   assert.equal(trimmed.source,'공식 제공');
   assert.equal(trimmed.sourceUpdatedAt,'2026-11-15');
 });
+
+test('supplier units tolerate surrounding whitespace but reject non-string units',()=>{
+  const base={name:'식품',price:1500,size:2};
+  const results=normalizeSupplierFeed({products:[
+    {...base,unit:' KG '},
+    {...base,unit:' l '},
+    {...base,unit:100},
+    {...base,unit:true},
+    {...base,unit:'pieces'}
+  ]}).products;
+  assert.equal(results.length,2);
+  assert.deepEqual(results.map(p=>[p.size,p.measure]),[[2000,'g'],[2000,'mL']]);
+});
