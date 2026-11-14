@@ -67,3 +67,27 @@ test('defaults missing provenance and rejects malformed optional provenance',()=
   assert.equal(product.source,'제조사 제공');
   assert.equal(product.sourceUpdatedAt,null);
 });
+
+test('treats whitespace-only origin and ingredients as missing',()=>{
+  const result=normalizeSupplierFeed({products:[{
+    name:'테스트 식품',price:2000,size:200,unit:'g',
+    origin:'  \t ',ingredients:'   ',
+    source:'  제조사 제공  '
+  }]});
+  const product=result.products[0];
+  assert.equal(product.origin,'');
+  assert.equal(product.ingredients,'');
+  assert.equal(product.name,'테스트 식품');
+});
+
+test('keeps supplied provenance without inventing missing origin or ingredients',()=>{
+  const result=normalizeSupplierFeed({products:[{
+    name:'테스트 식품',price:2000,size:200,unit:'g',
+    origin:' 국내산 ',ingredients:' 콩 100% '
+  }]});
+  assert.equal(result.products[0].origin,'국내산');
+  assert.equal(result.products[0].ingredients,'콩 100%');
+  const missing=normalizeSupplierFeed({products:[{name:'테스트 식품',price:2000,size:200,unit:'g'}]});
+  assert.equal(missing.products[0].origin,'');
+  assert.equal(missing.products[0].ingredients,'');
+});
