@@ -205,3 +205,13 @@ test('array-shaped supplier entries are not valid product objects',()=>{
   const products=normalizeSupplierFeed({products:[disguised,{name:'정상 상품',price:1000,size:100,unit:'g'}]}).products;
   assert.deepEqual(products.map(p=>p.name),['정상 상품']);
 });
+
+test('unsafe integer review counts cannot influence supplier ranking',()=>{
+  const base={name:'검증 식품',price:3000,size:300,unit:'g'};
+  const products=normalizeSupplierFeed({products:[
+    {...base,reviews:Number.MAX_SAFE_INTEGER+1},
+    {...base,reviews:'9007199254740992'},
+    {...base,reviews:Number.MAX_SAFE_INTEGER}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.reviews),[0,0,Number.MAX_SAFE_INTEGER]);
+});
