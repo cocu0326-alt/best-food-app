@@ -48,3 +48,28 @@ assert.equal(vm.runInContext('compareIds.size',sandbox),3,'Three products can be
 vm.runInContext('toggleCompare(104,true)',sandbox,{timeout:3000});
 assert.equal(vm.runInContext('compareIds.size',sandbox),3,'Comparison must remain capped at three products');
 console.log('PASS: mixed-unit safeguards, missing quality and selection limit');
+
+const beforeCount = vm.runInContext('state.products.length',sandbox);
+Object.assign(element('name'),{value:'테스트 김치'});
+Object.assign(element('price'),{value:'8000'});
+Object.assign(element('size'),{value:'500'});
+Object.assign(element('rating'),{value:'4.3'});
+Object.assign(element('reviews'),{value:'10'});
+Object.assign(element('seller'),{value:'생산자'});
+Object.assign(element('url'),{value:''});
+Object.assign(element('unit'),{value:'g'});
+Object.assign(element('quality'),{value:'4'});
+Object.assign(element('transparency'),{value:'1'});
+Object.assign(element('evidence'),{value:'원재료 확인'});
+vm.runInContext('addProduct()',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('state.products.length',sandbox),beforeCount+1,'Adding a valid product should work');
+assert.match(storage.get('bestfood_v1'),/테스트 김치/,'New product should be persisted');
+const createdId = vm.runInContext('state.products[state.products.length-1].id',sandbox);
+sandbox.prompt = (message,defaultValue) => message.includes('품질 근거') ? '원산지 증빙' : '5';
+vm.runInContext('editProduct('+JSON.stringify(createdId)+')',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('state.products[state.products.length-1].quality',sandbox),5,'Editing quality should persist');
+assert.match(storage.get('bestfood_v1'),/원산지 증빙/,'Edited evidence should be saved');
+vm.runInContext('del('+JSON.stringify(createdId)+')',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('state.products.length',sandbox),beforeCount,'Deleting a product should work');
+assert.doesNotMatch(storage.get('bestfood_v1'),/테스트 김치/,'Deleted product should not remain in backup data');
+console.log('PASS: product add/edit/delete and localStorage persistence');
