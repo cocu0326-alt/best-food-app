@@ -117,3 +117,15 @@ test('invalid optional ratings and reviews are safely normalized',()=>{
   assert.deepEqual(results.map(p=>p.rating),[0,0,0,4.5]);
   assert.deepEqual(results.map(p=>p.reviews),[0,0,0,12]);
 });
+
+test('blank supplier provenance labels fall back without inventing update dates',()=>{
+  const base={name:'상품',price:1200,size:100,unit:'g'};
+  const [blank,trimmed]=normalizeSupplierFeed({products:[
+    {...base,source:'  ',updatedAt:'  '},
+    {...base,source:'  공식 제공  ',updatedAt:' 2026-11-15 '}
+  ]}).products;
+  assert.equal(blank.source,'제조사 제공');
+  assert.equal(blank.sourceUpdatedAt,null);
+  assert.equal(trimmed.source,'공식 제공');
+  assert.equal(trimmed.sourceUpdatedAt,'2026-11-15');
+});
