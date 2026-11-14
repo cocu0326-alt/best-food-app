@@ -61,7 +61,7 @@ export function searchSupplierProducts(data, q) {
     if (!normalizeSearchText(product.name).includes(query)) continue;
     const key = JSON.stringify([
       normalizeSearchText(product.name),
-      product.seller.trim().toLocaleLowerCase('ko-KR'),
+      normalizeSearchText(product.seller),
       product.price, product.size, product.measure
     ]);
     if (seen.has(key)) continue;
