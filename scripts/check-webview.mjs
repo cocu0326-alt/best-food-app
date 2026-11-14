@@ -109,6 +109,9 @@ sandbox.fetch=async()=>({ok:true,json:async()=>({products:[
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+1,'API must add only one valid unique product');
 assert.match(element('apiStatus').textContent,/1개 신규 등록/,'API result should report accepted count');
+assert.equal(vm.runInContext('state.products[state.products.length-1].quality',sandbox),null,'Imported supplier data must not imply verified quality');
+assert.equal(vm.runInContext('state.products[state.products.length-1].transparency',sandbox),null,'Imported supplier data must not imply verified manufacturing transparency');
+assert.equal(vm.runInContext('state.products[state.products.length-1].origin',sandbox),'국내산','Imported origin should be retained');
 // Missing seller metadata must not create a duplicate on repeated API searches.
 sandbox.fetch=async()=>({ok:true,json:async()=>({products:[{name:'판매처 없는 상품',price:3900,size:300,measure:'g',rating:0,reviews:0}]})});
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
@@ -116,9 +119,7 @@ const afterMissingSeller=vm.runInContext('state.products.length',sandbox);
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.equal(vm.runInContext('state.products.length',sandbox),afterMissingSeller,'Repeated supplier search must not duplicate products without seller metadata');
 assert.match(element('apiStatus').textContent,/0개 신규 등록/,'Repeated search should report zero new products');
-assert.equal(vm.runInContext('state.products[state.products.length-1].quality',sandbox),null,'Imported supplier data must not imply verified quality');
-assert.equal(vm.runInContext('state.products[state.products.length-1].transparency',sandbox),null,'Imported supplier data must not imply verified manufacturing transparency');
-assert.equal(vm.runInContext('state.products[state.products.length-1].origin',sandbox),'국내산','Imported origin should be retained');
+
 sandbox.fetch=async()=>({ok:true,json:async()=>({products:[
   {name:'API 원산지 미확인',price:2500,size:300,measure:'g',rating:4,reviews:2,seller:'농장',origin:'   ',ingredients:'  '}
 ]})});
