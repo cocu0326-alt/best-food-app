@@ -94,3 +94,13 @@ test('equivalent seller names with repeated whitespace are deduplicated',()=>{
   assert.equal(products.length,2);
   assert.deepEqual(products.map(p=>p.seller),['우리 농장','다른 농장']);
 });
+
+test('supplier search matches seller name without duplicating products',()=>{
+  const products=searchSupplierProducts({products:[
+    {name:'국산 현미',price:8000,size:1000,unit:'g',seller:'청정  농장'},
+    {name:'국산 현미',price:8000,size:1000,unit:'g',seller:'청정 농장'},
+    {name:'국산 현미',price:8000,size:1000,unit:'g',seller:'다른 농장'}
+  ]},'청정 농장');
+  assert.equal(products.length,1);
+  assert.equal(products[0].seller,'청정 농장');
+});
