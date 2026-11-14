@@ -21,3 +21,5 @@ node server/index.mjs
 공급 API는 `{ "products": [...] }` JSON을 반환해야 합니다. 상품은 `name, price, size, measure(g/mL), rating(0~5), reviews, seller, url` 형식을 따릅니다. 공급자의 실제 응답 필드가 다르면 별도의 매핑 구현이 필요합니다.
 
 이 서버는 상품 데이터를 스크래핑하지 않고, 제공 권한이 있는 API만 연결하도록 설계했습니다. 운영 전 HTTPS 배포, 인증·속도 제한, 데이터 사용조건, CORS 정책 검토가 필요합니다.
+
+공급업체 연동 시 요청·응답 예시와 필드별 검증 규칙은 [`SUPPLIER_API.md`](./SUPPLIER_API.md)를 참고하세요.
