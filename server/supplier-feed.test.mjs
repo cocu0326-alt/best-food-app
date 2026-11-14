@@ -142,3 +142,18 @@ test('supplier units tolerate surrounding whitespace but reject non-string units
   assert.equal(results.length,2);
   assert.deepEqual(results.map(p=>[p.size,p.measure]),[[2000,'g'],[2000,'mL']]);
 });
+
+test('rejects fractional or unsafe prices and extreme sizes',()=>{
+  const base={name:'상품',price:2000,size:500,unit:'g'};
+  const results=normalizeSupplierFeed({products:[
+    {...base,price:1.5},
+    {...base,price:Number.MAX_SAFE_INTEGER+1},
+    {...base,price:'9007199254740993'},
+    {...base,size:1000000001},
+    {...base,size:1000001,unit:'kg'},
+    {...base,price:2000,size:1000000000},
+    {...base,price:'2500',size:500}
+  ]}).products;
+  assert.equal(results.length,2);
+  assert.deepEqual(results.map(p=>p.price),[2000,2500]);
+});
