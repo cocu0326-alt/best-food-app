@@ -40,3 +40,30 @@ test('drops credential-bearing links and invalid seller metadata',()=>{
   assert.equal(product.rating,0);
   assert.equal(product.reviews,0);
 });
+
+test('preserves origin and ingredients while bounding supplied metadata',()=>{
+  const result=normalizeSupplierFeed({products:[{
+    name:'테스트 과자',price:1200,size:80,unit:'g',
+    origin:'국내산'.repeat(100),
+    ingredients:'밀가루, 설탕'.repeat(200),
+    source:'가상 공급자'.repeat(100),
+    updatedAt:'2026-11-15T12:00:00Z'
+  }]});
+  const product=result.products[0];
+  assert.equal(product.origin.length,200);
+  assert.equal(product.ingredients.length,1000);
+  assert.equal(product.source.length,120);
+  assert.equal(product.sourceUpdatedAt,'2026-11-15T12:00:00Z');
+});
+
+test('defaults missing provenance and rejects malformed optional provenance',()=>{
+  const result=normalizeSupplierFeed({products:[{
+    name:'테스트 두부',price:2000,size:300,unit:'g',
+    origin:{country:'KR'},ingredients:['콩'],source:123,updatedAt:42
+  }]});
+  const product=result.products[0];
+  assert.equal(product.origin,'');
+  assert.equal(product.ingredients,'');
+  assert.equal(product.source,'제조사 제공');
+  assert.equal(product.sourceUpdatedAt,null);
+});
