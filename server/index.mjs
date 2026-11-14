@@ -6,7 +6,7 @@ const upstream = process.env.FOOD_UPSTREAM_URL || '';
 const allowedOrigin = process.env.ALLOWED_ORIGIN || '';
 const token = process.env.FOOD_API_TOKEN || '';
 const maxFeedBytes = 1024 * 1024;
-async function readBoundedJson(response) {
+export async function readBoundedJson(response) {
   const length = Number(response.headers.get('content-length'));
   if (Number.isFinite(length) && length > maxFeedBytes) throw Error('feed_too_large');
   const reader = response.body.getReader();
@@ -43,7 +43,7 @@ function send(res, status, body, origin = '') {
   res.end(JSON.stringify(body));
 }
 
-http.createServer(async (req, res) => {
+export const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin || '';
   const url = new URL(req.url || '/', 'http://localhost');
   if (req.method !== 'GET') return send(res, 405, {error:'method_not_allowed'}, origin);
@@ -73,4 +73,5 @@ http.createServer(async (req, res) => {
   } catch {
     return send(res, 502, {error: 'provider_unavailable'}, origin);
   }
-}).listen(port, '0.0.0.0', () => console.log('Food API server listening on ' + port));
+});
+if (process.argv[1] && import.meta.url === new URL('file://' + process.argv[1]).href) server.listen(port, '0.0.0.0', () => console.log('Food API server listening on ' + port));
