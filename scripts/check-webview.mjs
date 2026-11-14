@@ -129,15 +129,21 @@ sandbox.fetch=async()=>({ok:true,json:async()=>({products:[
 ]})});
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.equal(vm.runInContext('state.products.length',sandbox),beforeMalformed,'Malformed numeric supplier fields must not be imported');
+sandbox.fetch=async()=>({ok:true,json:async()=>({products:[
+  {name:'보안 URL 검사',price:3300,size:300,measure:'g',rating:4,reviews:3,seller:'판매자',url:'https://user:pass@example.test/item#token'}
+]})});
+await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('state.products[state.products.length-1].url',sandbox),'','Credential-bearing supplier product URL must be discarded');
+assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+3,'Product with invalid optional URL remains importable');
 sandbox.fetch=async()=>({ok:false,status:503});
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.match(element('apiStatus').textContent,/조회 실패/,'API failure should show a helpful error');
-assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+2,'Failed API must not alter products');
+assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+3,'Failed API must not alter products');
 for(const [code,expected] of [[400,'검색어가 올바르지 않습니다'],[429,'요청이 너무 많습니다'],[502,'상품 공급업체 응답에 문제가 있습니다'],[503,'상품 공급 API가 아직 연결되지 않았습니다']]){
   sandbox.fetch=async()=>({ok:false,status:code});
   await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
   assert.match(element('apiStatus').textContent,new RegExp(expected),'HTTP '+code+' should display a specific error');
-  assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+2,'HTTP error must not alter products');
+  assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+3,'HTTP error must not alter products');
 }
 console.log('PASS: API search, duplicate filtering, invalid item rejection and server error');
 
