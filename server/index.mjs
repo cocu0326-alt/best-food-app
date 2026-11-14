@@ -67,7 +67,7 @@ if (!Number.isSafeInteger(configuredLimit) || configuredLimit < 1 || configuredL
 const rateLimit = configuredLimit;
 if (upstream) {
   const parsed = new URL(upstream);
-  if (parsed.protocol !== 'https:' || parsed.username || parsed.password || !parsed.hostname) throw Error('FOOD_UPSTREAM_URL must be a valid HTTPS URL without credentials');
+  if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.hash || !parsed.hostname) throw Error('FOOD_UPSTREAM_URL must be a valid HTTPS URL without credentials');
 }
 function limited(ip) {
   const now = Date.now(), entry = requests.get(ip);
@@ -96,7 +96,7 @@ export const server = http.createServer(async (req, res) => {
   if (!upstream) return send(res, 503, {error: 'provider_not_configured', message: '상품 공급 API 연결이 필요합니다.'}, origin);
   try {
     const target = new URL(upstream);
-    if (target.protocol !== 'https:' || target.username || target.password || !target.hostname) throw new Error('Valid HTTPS upstream required');
+    if (target.protocol !== 'https:' || target.username || target.password || target.hash || !target.hostname) throw new Error('Valid HTTPS upstream required');
     target.searchParams.set('q', q);
     const result = await fetchSupplierJson(target, token);
     if (!result.ok) return send(res, 502, {error: 'upstream_error'}, origin);
