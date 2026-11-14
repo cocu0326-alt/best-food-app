@@ -4,6 +4,13 @@ import {normalizeSupplierFeed} from './supplier-feed.mjs';
 const port = Number(process.env.PORT || 8787);
 const upstream = process.env.FOOD_UPSTREAM_URL || '';
 const allowedOrigin = process.env.ALLOWED_ORIGIN || '';
+if (allowedOrigin) {
+  let parsedOrigin;
+  try { parsedOrigin = new URL(allowedOrigin); } catch { throw Error('ALLOWED_ORIGIN must be an HTTPS origin'); }
+  if (parsedOrigin.protocol !== 'https:' || !parsedOrigin.hostname || parsedOrigin.username || parsedOrigin.password || parsedOrigin.pathname !== '/' || parsedOrigin.search || parsedOrigin.hash || parsedOrigin.origin !== allowedOrigin) {
+    throw Error('ALLOWED_ORIGIN must be an HTTPS origin without path, query, or credentials');
+  }
+}
 const token = process.env.FOOD_API_TOKEN || '';
 const maxFeedBytes = 1024 * 1024;
 export async function readBoundedJson(response) {
