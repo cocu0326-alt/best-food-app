@@ -43,6 +43,8 @@ export async function fetchSupplierJson(target, authToken = '', timeoutMs = 8000
       redirect: 'error'
     });
     if (!response.ok) return {ok: false};
+    const contentType = response.headers.get('content-type') || '';
+    if (!/^application\/json(?:\s*;|\s*$)/i.test(contentType)) return {ok: false};
     return {ok: true, data: await readBoundedJson(response)};
   } finally {
     clearTimeout(timeout);
