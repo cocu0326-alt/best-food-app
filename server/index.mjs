@@ -5,6 +5,27 @@ const port = Number(process.env.PORT || 8787);
 const upstream = process.env.FOOD_UPSTREAM_URL || '';
 const allowedOrigin = process.env.ALLOWED_ORIGIN || '';
 const token = process.env.FOOD_API_TOKEN || '';
+const maxFeedBytes = 1024 * 1024;
+async function readBoundedJson(response) {
+  const length = Number(response.headers.get('content-length'));
+  if (Number.isFinite(length) && length > maxFeedBytes) throw Error('feed_too_large');
+  const reader = response.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxFeedBytes) throw Error('feed_too_large');
+      chunks.push(value);
+    }
+  } catch (error) { await reader.cancel().catch(() => {}); throw error; }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {bytes.set(chunk,offset);offset+=chunk.byteLength;}
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
 const requests = new Map();
 const rateLimit = Math.max(1, Number(process.env.RATE_LIMIT_PER_MINUTE || 60));
 function limited(ip) {
@@ -34,7 +55,7 @@ http.createServer(async (req, res) => {
   if (!upstream) return send(res, 503, {error: 'provider_not_configured', message: '상품 공급 API 연결이 필요합니다.'}, origin);
   try {
     const target = new URL(upstream);
-    if (target.protocol !== 'https:') throw new Error('HTTPS upstream required');
+    if (target.protocol !== 'https:' || target.username || target.password || !target.hostname) throw new Error('Valid HTTPS upstream required');
     target.searchParams.set('q', q);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
@@ -43,7 +64,7 @@ http.createServer(async (req, res) => {
       response = await fetch(target, {headers: {...(token ? {authorization: 'Bearer ' + token} : {}), accept: 'application/json'}, signal: controller.signal, redirect: 'error'});
     } finally { clearTimeout(timeout); }
     if (!response.ok) return send(res, 502, {error: 'upstream_error'}, origin);
-    const data = await response.json();
+    const data = await readBoundedJson(response);
     if (!data || !Array.isArray(data.products)) return send(res, 502, {error: 'invalid_upstream_schema'}, origin);
     const normalized = normalizeSupplierFeed(data);
     const query = q.toLocaleLowerCase('ko-KR');
