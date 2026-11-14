@@ -185,6 +185,8 @@ vm.runInContext("state.products.push({id:903,name:'비교 쌀 공동최저',pric
 assert.match(element('compareResults').innerHTML,/비교 쌀 B \(입력 품질 5\/5\), 비교 쌀 공동최저 \(입력 품질 4\/5\)/,'Equal unit-price foods should show both winners and their user quality scores');
 
 // Missing seller metadata must not create a duplicate on repeated API searches.
+element('apiEndpoint').value='https://example.test/api/foods';
+element('term').value='판매처 없는 상품';
 sandbox.fetch=async()=>({ok:true,json:async()=>({products:[{name:'판매처 없는 상품',price:3900,size:300,measure:'g',rating:0,reviews:0}]})});
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 const afterMissingSeller=vm.runInContext('state.products.length',sandbox);
