@@ -43,7 +43,7 @@ function limited(ip) {
 setInterval(() => {const now=Date.now();for(const [ip,entry] of requests) if(now-entry.start>60000) requests.delete(ip);},60000).unref();
 
 function send(res, status, body, origin = '') {
-  const headers = {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'};
+  const headers = {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer'};
   if (allowedOrigin && origin === allowedOrigin) headers['access-control-allow-origin'] = allowedOrigin;
   res.writeHead(status, headers);
   res.end(JSON.stringify(body));
