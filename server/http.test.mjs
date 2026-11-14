@@ -80,3 +80,17 @@ test('rejects oversized content-length before reading body',async()=>{
   const response=new Response('small body',{headers:{'content-length':'1048577'}});
   await assert.rejects(()=>readBoundedJson(response),/feed_too_large/);
 });
+
+test('handles invalid supplier JSON and invalid response schema',async()=>{
+  const {readBoundedJson}=await import('./index.mjs');
+  await assert.rejects(()=>readBoundedJson(new Response('{invalid',{headers:{'content-type':'application/json'}})),SyntaxError);
+  const parsed=await readBoundedJson(new Response(JSON.stringify({items:[]}),{headers:{'content-type':'application/json'}}));
+  assert.equal(Array.isArray(parsed.products),false);
+});
+
+test('parses valid supplier JSON below size limit',async()=>{
+  const {readBoundedJson}=await import('./index.mjs');
+  const input={products:[{name:'국산 사과',price:3000,size:500,measure:'g'}]};
+  const parsed=await readBoundedJson(new Response(JSON.stringify(input)));
+  assert.deepEqual(parsed,input);
+});
