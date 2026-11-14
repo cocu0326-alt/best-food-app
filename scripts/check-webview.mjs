@@ -112,14 +112,6 @@ assert.match(element('apiStatus').textContent,/1개 신규 등록/,'API result s
 assert.equal(vm.runInContext('state.products[state.products.length-1].quality',sandbox),null,'Imported supplier data must not imply verified quality');
 assert.equal(vm.runInContext('state.products[state.products.length-1].transparency',sandbox),null,'Imported supplier data must not imply verified manufacturing transparency');
 assert.equal(vm.runInContext('state.products[state.products.length-1].origin',sandbox),'국내산','Imported origin should be retained');
-// Missing seller metadata must not create a duplicate on repeated API searches.
-sandbox.fetch=async()=>({ok:true,json:async()=>({products:[{name:'판매처 없는 상품',price:3900,size:300,measure:'g',rating:0,reviews:0}]})});
-await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
-const afterMissingSeller=vm.runInContext('state.products.length',sandbox);
-await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
-assert.equal(vm.runInContext('state.products.length',sandbox),afterMissingSeller,'Repeated supplier search must not duplicate products without seller metadata');
-assert.match(element('apiStatus').textContent,/0개 신규 등록/,'Repeated search should report zero new products');
-
 sandbox.fetch=async()=>({ok:true,json:async()=>({products:[
   {name:'API 원산지 미확인',price:2500,size:300,measure:'g',rating:4,reviews:2,seller:'농장',origin:'   ',ingredients:'  '}
 ]})});
@@ -191,6 +183,14 @@ vm.runInContext("state.products.find(p=>p.id===901).quality=4;renderCompare()",s
 
 vm.runInContext("state.products.push({id:903,name:'비교 쌀 공동최저',price:9000,size:1000,measure:'g',rating:4.1,reviews:10,seller:'농가',quality:4,transparency:1});toggleCompare(903,true)",sandbox,{timeout:3000});
 assert.match(element('compareResults').innerHTML,/비교 쌀 B \(입력 품질 5\/5\), 비교 쌀 공동최저 \(입력 품질 4\/5\)/,'Equal unit-price foods should show both winners and their user quality scores');
+
+// Missing seller metadata must not create a duplicate on repeated API searches.
+sandbox.fetch=async()=>({ok:true,json:async()=>({products:[{name:'판매처 없는 상품',price:3900,size:300,measure:'g',rating:0,reviews:0}]})});
+await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
+const afterMissingSeller=vm.runInContext('state.products.length',sandbox);
+await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('state.products.length',sandbox),afterMissingSeller,'Repeated supplier search must not duplicate products without seller metadata');
+assert.match(element('apiStatus').textContent,/0개 신규 등록/,'Repeated search should report zero new products');
 
 assert.match(html,/공급업체 제공 \(원출처 미확인\)/,'WebView must use neutral supplier source fallback');
 assert.match(html,/판매처 미확인/,'WebView must not invent a direct manufacturer seller');
