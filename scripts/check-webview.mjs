@@ -186,3 +186,6 @@ assert.match(element('compareResults').innerHTML,/비교 쌀 B \(입력 품질 5
 
 assert.match(html,/공급업체 제공 \(원출처 미확인\)/,'WebView must use neutral supplier source fallback');
 assert.match(html,/판매처 미확인/,'WebView must not invent a direct manufacturer seller');
+
+assert.match(html,/원산지',p=>p.origin\|\|'공급업체 정보 없음'/,'Missing origin must be labeled as absent from supplier data');
+assert.match(html,/원재료',p=>p.ingredients\|\|'공급업체 정보 없음'/,'Missing ingredients must be labeled as absent from supplier data');
