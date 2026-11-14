@@ -58,7 +58,7 @@ export function searchSupplierProducts(data, q) {
   const seen = new Set();
   const results = [];
   for (const product of normalized.products) {
-    if (!normalizeSearchText(product.name).includes(query)) continue;
+    if (!normalizeSearchText(product.name).includes(query) && !normalizeSearchText(product.seller).includes(query)) continue;
     const key = JSON.stringify([
       normalizeSearchText(product.name),
       normalizeSearchText(product.seller),
