@@ -45,7 +45,21 @@ export function searchSupplierProducts(data, q) {
   if (!data || !Array.isArray(data.products)) throw new Error('invalid_upstream_schema');
   const normalized = normalizeSupplierFeed(data);
   const query = q.toLocaleLowerCase('ko-KR');
-  return normalized.products.filter(p => p.name.toLocaleLowerCase('ko-KR').includes(query)).slice(0, 100);
+  const seen = new Set();
+  const results = [];
+  for (const product of normalized.products) {
+    if (!product.name.toLocaleLowerCase('ko-KR').includes(query)) continue;
+    const key = JSON.stringify([
+      product.name.trim().toLocaleLowerCase('ko-KR'),
+      product.seller.trim().toLocaleLowerCase('ko-KR'),
+      product.price, product.size, product.measure
+    ]);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    results.push(product);
+    if (results.length === 100) break;
+  }
+  return results;
 }
 const requests = new Map();
 const configuredLimit = Number(process.env.RATE_LIMIT_PER_MINUTE || 60);
