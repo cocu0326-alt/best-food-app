@@ -92,5 +92,5 @@ test('equivalent seller names with repeated whitespace are deduplicated',()=>{
     {name:'국산 보리',price:4000,size:500,unit:'g',seller:'다른 농장'}
   ]},'보리');
   assert.equal(products.length,2);
-  assert.deepEqual(products.map(p=>p.seller),['우리  농장','다른 농장']);
+  assert.deepEqual(products.map(p=>p.seller),['우리 농장','다른 농장']);
 });
