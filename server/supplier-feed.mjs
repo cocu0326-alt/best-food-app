@@ -11,7 +11,7 @@ export function normalizeSupplierFeed(input) {
     const unit = typeof (p.measure ?? p.unit) === 'string' ? (p.measure ?? p.unit).trim().toLowerCase() : '';
     const measure = unit === 'kg' || unit === 'g' ? 'g' : unit === 'l' || unit === 'ml' ? 'mL' : null;
     const size = unit === 'kg' || unit === 'l' ? amount * 1000 : amount;
-    if (typeof p.name !== 'string' || !p.name.trim() || !Number.isFinite(price) || price <= 0 || !Number.isFinite(size) || size <= 0 || !measure) return [];
+    if (typeof p.name !== 'string' || !p.name.trim() || !Number.isSafeInteger(price) || price <= 0 || !Number.isFinite(size) || size <= 0 || size > 1e9 || !measure) return [];
     const rawUrl = typeof p.url === 'string' ? p.url.trim() : '';
     let url = '';
     try { const parsed = new URL(rawUrl); if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) url = rawUrl; } catch {}
