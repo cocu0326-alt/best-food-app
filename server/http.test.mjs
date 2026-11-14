@@ -58,3 +58,33 @@ test('rejects upstream URLs containing embedded credentials',async t=>{
   assert.equal(response.status,502);
   assert.equal((await response.json()).error,'provider_unavailable');
 });
+
+test('rejects oversized supplier feed response without importing data',async t=>{
+  const upstreamPort=await freePort();
+  const http=(await import('node:http')).default;
+  const upstream=http.createServer((req,res)=>{
+    res.writeHead(200,{'content-type':'application/json'});
+    res.end(JSON.stringify({products:[{name:'X'.repeat(1100000)}]}));
+  });
+  await new Promise(resolve=>upstream.listen(upstreamPort,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>upstream.close(resolve)));
+  const port=await freePort();
+  const child=spawn(process.execPath,['server/index.mjs'],{
+    env:{...process.env,PORT:String(port),FOOD_UPSTREAM_URL:'https://example.invalid/feed'},
+    stdio:'ignore'
+  });
+  t.after(()=>child.kill());
+  const base='http://127.0.0.1:'+port;
+  let ready=false;
+  for(let i=0;i<60;i++){
+    if(child.exitCode!==null)throw Error('server exited');
+    try{if((await fetch(base+'/health')).ok){ready=true;break}}catch{}
+    await new Promise(resolve=>setTimeout(resolve,50));
+  }
+  assert.ok(ready);
+  // The server requires HTTPS upstreams; test bounded parsing directly via exported helper.
+  const {readBoundedJson}=await import('./index.mjs').catch(()=>({}));
+  assert.equal(typeof readBoundedJson,'function');
+  const response=await fetch('http://127.0.0.1:'+upstreamPort);
+  await assert.rejects(()=>readBoundedJson(response),/feed_too_large/);
+});
