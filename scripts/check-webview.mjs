@@ -109,10 +109,20 @@ sandbox.fetch=async()=>({ok:true,json:async()=>({products:[
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+1,'API must add only one valid unique product');
 assert.match(element('apiStatus').textContent,/1개 신규 등록/,'API result should report accepted count');
+assert.equal(vm.runInContext('state.products[state.products.length-1].quality',sandbox),null,'Imported supplier data must not imply verified quality');
+assert.equal(vm.runInContext('state.products[state.products.length-1].transparency',sandbox),null,'Imported supplier data must not imply verified manufacturing transparency');
+assert.equal(vm.runInContext('state.products[state.products.length-1].origin',sandbox),'국내산','Imported origin should be retained');
+sandbox.fetch=async()=>({ok:true,json:async()=>({products:[
+  {name:'API 원산지 미확인',price:2500,size:300,measure:'g',rating:4,reviews:2,seller:'농장',origin:'   ',ingredients:'  '}
+]})});
+await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('state.products[state.products.length-1].origin',sandbox),'','Whitespace-only origin must be treated as missing');
+assert.equal(vm.runInContext('state.products[state.products.length-1].ingredients',sandbox),'','Whitespace-only ingredients must be treated as missing');
+assert.equal(vm.runInContext('state.products[state.products.length-1].quality',sandbox),null,'Missing provenance must not create quality score');
 sandbox.fetch=async()=>({ok:false,status:503});
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.match(element('apiStatus').textContent,/조회 실패/,'API failure should show a helpful error');
-assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+1,'Failed API must not alter products');
+assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+2,'Failed API must not alter products');
 console.log('PASS: API search, duplicate filtering, invalid item rejection and server error');
 
 element('apiEndpoint').value='https://example.test/api/foods';
