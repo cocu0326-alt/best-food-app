@@ -99,7 +99,7 @@ export const server = http.createServer(async (req, res) => {
   if (url.pathname === '/health') return send(res, 200, {ok: true, providerConfigured: Boolean(upstream)}, origin);
   if (url.pathname !== '/api/foods') return send(res, 404, {error: 'not_found'}, origin);
   const queryValues = url.searchParams.getAll('q');
-  if (queryValues.length !== 1) return send(res, 400, {error: 'invalid_query'}, origin);
+  if (queryValues.length !== 1 || [...url.searchParams.keys()].some(key => key !== 'q')) return send(res, 400, {error: 'invalid_query'}, origin);
   const q = queryValues[0].trim();
   if (!q || q.length > 120) return send(res, 400, {error: 'invalid_query'}, origin);
   if (!upstream) return send(res, 503, {error: 'provider_not_configured', message: '상품 공급 API 연결이 필요합니다.'}, origin);
