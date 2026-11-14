@@ -27,7 +27,13 @@ export async function readBoundedJson(response) {
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 const requests = new Map();
-const rateLimit = Math.max(1, Number(process.env.RATE_LIMIT_PER_MINUTE || 60));
+const configuredLimit = Number(process.env.RATE_LIMIT_PER_MINUTE || 60);
+if (!Number.isSafeInteger(configuredLimit) || configuredLimit < 1 || configuredLimit > 100000) throw Error('RATE_LIMIT_PER_MINUTE must be an integer from 1 to 100000');
+const rateLimit = configuredLimit;
+if (upstream) {
+  const parsed = new URL(upstream);
+  if (parsed.protocol !== 'https:' || parsed.username || parsed.password || !parsed.hostname) throw Error('FOOD_UPSTREAM_URL must be a valid HTTPS URL without credentials');
+}
 function limited(ip) {
   const now = Date.now(), entry = requests.get(ip);
   if (!entry || now - entry.start >= 60000) { requests.set(ip, {start: now, count: 1}); return false; }
