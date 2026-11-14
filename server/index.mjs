@@ -26,6 +26,21 @@ export async function readBoundedJson(response) {
   for (const chunk of chunks) {bytes.set(chunk,offset);offset+=chunk.byteLength;}
   return JSON.parse(new TextDecoder().decode(bytes));
 }
+export async function fetchSupplierJson(target, authToken = '', timeoutMs = 8000, fetchImpl = fetch) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetchImpl(target, {
+      headers: {...(authToken ? {authorization: 'Bearer ' + authToken} : {}), accept: 'application/json'},
+      signal: controller.signal,
+      redirect: 'error'
+    });
+    if (!response.ok) return {ok: false};
+    return {ok: true, data: await readBoundedJson(response)};
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 const requests = new Map();
 const configuredLimit = Number(process.env.RATE_LIMIT_PER_MINUTE || 60);
 if (!Number.isSafeInteger(configuredLimit) || configuredLimit < 1 || configuredLimit > 100000) throw Error('RATE_LIMIT_PER_MINUTE must be an integer from 1 to 100000');
@@ -63,14 +78,9 @@ export const server = http.createServer(async (req, res) => {
     const target = new URL(upstream);
     if (target.protocol !== 'https:' || target.username || target.password || !target.hostname) throw new Error('Valid HTTPS upstream required');
     target.searchParams.set('q', q);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    let data;
-    try {
-      const response = await fetch(target, {headers: {...(token ? {authorization: 'Bearer ' + token} : {}), accept: 'application/json'}, signal: controller.signal, redirect: 'error'});
-      if (!response.ok) return send(res, 502, {error: 'upstream_error'}, origin);
-      data = await readBoundedJson(response);
-    } finally { clearTimeout(timeout); }
+    const result = await fetchSupplierJson(target, token);
+    if (!result.ok) return send(res, 502, {error: 'upstream_error'}, origin);
+    const data = result.data;
     if (!data || !Array.isArray(data.products)) return send(res, 502, {error: 'invalid_upstream_schema'}, origin);
     const normalized = normalizeSupplierFeed(data);
     const query = q.toLocaleLowerCase('ko-KR');
