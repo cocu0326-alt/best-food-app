@@ -215,3 +215,13 @@ test('unsafe integer review counts cannot influence supplier ranking',()=>{
   ]}).products;
   assert.deepEqual(products.map(p=>p.reviews),[0,0,Number.MAX_SAFE_INTEGER]);
 });
+
+test('seller display names collapse repeated whitespace and normalize Unicode',()=>{
+  const base={name:'국산 콩',price:2400,size:300,unit:'g'};
+  const products=normalizeSupplierFeed({products:[
+    {...base,seller:'  우리  \t농장  '},
+    {...base,seller:'',manufacturer:'  생산  농장  '},
+    {...base,seller:'  카페'.normalize('NFD')}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.seller),['우리 농장','생산 농장','카페']);
+});
