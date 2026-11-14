@@ -16,7 +16,7 @@ async function freePort() {
 test('health, method rejection, rate limiting and missing supplier',async t=>{
   const port=await freePort();
   const child=spawn(process.execPath,['server/index.mjs'],{
-    env:{...process.env,PORT:String(port),RATE_LIMIT_PER_MINUTE:'2',FOOD_UPSTREAM_URL:''},
+    env:{...process.env,PORT:String(port),RATE_LIMIT_PER_MINUTE:'3',FOOD_UPSTREAM_URL:''},
     stdio:'ignore'
   });
   t.after(()=>child.kill());
