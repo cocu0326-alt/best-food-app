@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: best-food-api
+    runtime: node
+    plan: free
+    buildCommand: npm --version
+    startCommand: node server/index.mjs
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FOOD_UPSTREAM_URL
+        sync: false
+      - key: FOOD_API_TOKEN
+        sync: false
+      - key: ALLOWED_ORIGIN
+        sync: false
