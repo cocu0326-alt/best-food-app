@@ -104,3 +104,12 @@ test('supplier search matches seller name without duplicating products',()=>{
   assert.equal(products.length,1);
   assert.equal(products[0].seller,'청정 농장');
 });
+
+test('product-name matches rank before seller-only matches regardless of feed order',()=>{
+  const products=searchSupplierProducts({products:[
+    {name:'보리',price:3000,size:500,unit:'g',seller:'사과 농장'},
+    {name:'사과',price:4000,size:500,unit:'g',seller:'과수원'},
+    {name:'사과',price:4000,size:500,unit:'g',seller:'과수원'}
+  ]},'사과');
+  assert.deepEqual(products.map(p=>p.name),['사과','보리']);
+});
