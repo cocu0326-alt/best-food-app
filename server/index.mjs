@@ -65,12 +65,12 @@ export const server = http.createServer(async (req, res) => {
     target.searchParams.set('q', q);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
-    let response;
+    let data;
     try {
-      response = await fetch(target, {headers: {...(token ? {authorization: 'Bearer ' + token} : {}), accept: 'application/json'}, signal: controller.signal, redirect: 'error'});
+      const response = await fetch(target, {headers: {...(token ? {authorization: 'Bearer ' + token} : {}), accept: 'application/json'}, signal: controller.signal, redirect: 'error'});
+      if (!response.ok) return send(res, 502, {error: 'upstream_error'}, origin);
+      data = await readBoundedJson(response);
     } finally { clearTimeout(timeout); }
-    if (!response.ok) return send(res, 502, {error: 'upstream_error'}, origin);
-    const data = await readBoundedJson(response);
     if (!data || !Array.isArray(data.products)) return send(res, 502, {error: 'invalid_upstream_schema'}, origin);
     const normalized = normalizeSupplierFeed(data);
     const query = q.toLocaleLowerCase('ko-KR');
