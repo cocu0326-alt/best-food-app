@@ -192,3 +192,5 @@ assert.match(html,/원재료',p=>p.ingredients\|\|'공급업체 정보 없음'/,
 
 assert.match(html,/출처',p=>p.source\|\|'출처 정보 없음'/,'Missing source must be identified explicitly');
 assert.match(html,/갱신일',p=>p.sourceUpdatedAt\|\|'갱신일 정보 없음'/,'Missing update date must not imply freshness');
+
+assert.match(html,/판매처',p=>p.seller\|\|'판매처 정보 없음'/,'Missing seller must be identified explicitly in comparison');
