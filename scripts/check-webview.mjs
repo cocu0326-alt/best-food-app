@@ -136,3 +136,10 @@ element('apiEndpoint').value='http://example.test/api/foods';
 await vm.runInContext('checkEndpoint()',sandbox,{timeout:3000});
 assert.match(element('apiStatus').textContent,/HTTPS/,'Health check must reject non-HTTPS URLs');
 console.log('PASS: API health check status and HTTPS validation');
+
+assert.equal(vm.runInContext("validApiUrl('https://example.test/api/foods')",sandbox),true,'Valid HTTPS API endpoint accepted');
+assert.equal(vm.runInContext("validApiUrl('https://user:secret@example.test/api/foods')",sandbox),false,'Credential-bearing endpoint rejected');
+assert.equal(vm.runInContext("validApiUrl('https://example.test/api/foods#fragment')",sandbox),false,'Fragment endpoint rejected');
+assert.equal(vm.runInContext("validApiUrl('https://example.test/other')",sandbox),false,'Wrong API path rejected');
+assert.equal(vm.runInContext("validApiUrl('http://example.test/api/foods')",sandbox),false,'Plain HTTP rejected');
+console.log('PASS: API endpoint validation');
