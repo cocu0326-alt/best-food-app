@@ -119,6 +119,16 @@ await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.equal(vm.runInContext('state.products[state.products.length-1].origin',sandbox),'','Whitespace-only origin must be treated as missing');
 assert.equal(vm.runInContext('state.products[state.products.length-1].ingredients',sandbox),'','Whitespace-only ingredients must be treated as missing');
 assert.equal(vm.runInContext('state.products[state.products.length-1].quality',sandbox),null,'Missing provenance must not create quality score');
+const beforeMalformed=vm.runInContext('state.products.length',sandbox);
+sandbox.fetch=async()=>({ok:true,json:async()=>({products:[
+  {name:'잘못된 가격',price:true,size:100,measure:'g',rating:4,reviews:2},
+  {name:'소수점 가격',price:1.5,size:100,measure:'g',rating:4,reviews:2},
+  {name:'초과 용량',price:2000,size:1000000001,measure:'g',rating:4,reviews:2},
+  {name:'잘못된 리뷰',price:2000,size:100,measure:'g',rating:4,reviews:true},
+  {name:'잘못된 평점',price:2000,size:100,measure:'g',rating:' ',reviews:2}
+]})});
+await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('state.products.length',sandbox),beforeMalformed,'Malformed numeric supplier fields must not be imported');
 sandbox.fetch=async()=>({ok:false,status:503});
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.match(element('apiStatus').textContent,/조회 실패/,'API failure should show a helpful error');
