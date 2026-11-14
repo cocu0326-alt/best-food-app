@@ -2,7 +2,7 @@
 export function normalizeSupplierFeed(input) {
   if (!input || !Array.isArray(input.products)) throw new Error('products array required');
   return {products: input.products.slice(0,1000).flatMap((p) => {
-    if (!p || typeof p !== 'object') return [];
+    if (!p || typeof p !== 'object' || Array.isArray(p)) return [];
     const rawPrice = p.price;
     const rawAmount = (p.size === null || p.size === undefined || typeof p.size === 'string' && !p.size.trim()) ? p.amount : p.size;
     if ((typeof rawPrice !== 'number' && typeof rawPrice !== 'string') || (typeof rawAmount !== 'number' && typeof rawAmount !== 'string') || String(rawPrice).trim() === '' || String(rawAmount).trim() === '') return [];
