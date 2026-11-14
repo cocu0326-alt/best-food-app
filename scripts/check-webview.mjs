@@ -168,3 +168,6 @@ console.log('PASS: API endpoint validation');
 
 assert.match(html,/공급업체 제공 정보로, 앱이 독립 검증한 결과가 아닙니다/,'Supplier provenance disclaimer must be visible');
 assert.match(html,/공급업체 정보 미검증 · 품질 근거 확인 필요/,'API import status must not imply verified data');
+
+assert.match(element('compareResults').innerHTML,/품질·가격 균형/,'Comparison must explain quality-price balance');
+assert.match(html,/품질 미평가 상품이 있어 균형 추천을 보류합니다/,'Missing quality must prevent balance recommendations');
