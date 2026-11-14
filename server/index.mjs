@@ -98,7 +98,9 @@ export const server = http.createServer(async (req, res) => {
   if (url.pathname === '/api/foods' && limited(req.socket.remoteAddress || 'unknown')) return send(res, 429, {error:'rate_limited',message:'잠시 후 다시 요청하세요.'}, origin);
   if (url.pathname === '/health') return send(res, 200, {ok: true, providerConfigured: Boolean(upstream)}, origin);
   if (url.pathname !== '/api/foods') return send(res, 404, {error: 'not_found'}, origin);
-  const q = (url.searchParams.get('q') || '').trim();
+  const queryValues = url.searchParams.getAll('q');
+  if (queryValues.length !== 1) return send(res, 400, {error: 'invalid_query'}, origin);
+  const q = queryValues[0].trim();
   if (!q || q.length > 120) return send(res, 400, {error: 'invalid_query'}, origin);
   if (!upstream) return send(res, 503, {error: 'provider_not_configured', message: '상품 공급 API 연결이 필요합니다.'}, origin);
   try {
