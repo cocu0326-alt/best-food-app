@@ -29,3 +29,22 @@ test('returns empty results for unmatched queries and rejects malformed feed',()
   assert.deepEqual(searchSupplierProducts(fixture,'바나나'),[]);
   assert.throws(()=>searchSupplierProducts({items:[]},'사과'),/invalid_upstream_schema/);
 });
+
+test('caps returned search results at 100 and normalizes at most 1000 input products',()=>{
+  const products=Array.from({length:1200},(_,i)=>({
+    name:'테스트 사과 '+i,price:1000+i,size:100,unit:'g'
+  }));
+  const results=searchSupplierProducts({products},'테스트 사과');
+  assert.equal(results.length,100);
+  assert.equal(results[0].name,'테스트 사과 0');
+  assert.equal(results[99].name,'테스트 사과 99');
+  const beyond=searchSupplierProducts({products},'테스트 사과 1199');
+  assert.equal(beyond.length,0,'products after the first 1000 are not processed');
+});
+
+test('does not mutate supplier response objects during search',()=>{
+  const data={products:[{name:'테스트 쌀',price:5000,size:1,unit:'kg'}]};
+  const snapshot=JSON.stringify(data);
+  searchSupplierProducts(data,'쌀');
+  assert.equal(JSON.stringify(data),snapshot);
+});
