@@ -199,3 +199,15 @@ test('supplier fetch cancels rejected non-JSON response streams',async()=>{
   assert.deepEqual(result,{ok:false});
   assert.equal(canceled,true);
 });
+
+test('supplier fetch cancels unsuccessful HTTP response streams',async()=>{
+  const {fetchSupplierJson}=await import('./index.mjs');
+  let canceled=false;
+  const stream=new ReadableStream({
+    start(controller){controller.enqueue(new TextEncoder().encode('service unavailable'));},
+    cancel(){canceled=true;}
+  });
+  const result=await fetchSupplierJson('https://example.com','',1000,async()=>new Response(stream,{status:503,headers:{'content-type':'text/plain'}}));
+  assert.deepEqual(result,{ok:false});
+  assert.equal(canceled,true);
+});
