@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {normalizeSupplierFeed} from './supplier-feed.mjs';
 
 const port = Number(process.env.PORT || 8787);
 const upstream = process.env.FOOD_UPSTREAM_URL || '';
@@ -33,7 +34,9 @@ http.createServer(async (req, res) => {
     if (!response.ok) return send(res, 502, {error: 'upstream_error'}, origin);
     const data = await response.json();
     if (!data || !Array.isArray(data.products)) return send(res, 502, {error: 'invalid_upstream_schema'}, origin);
-    const products = data.products.slice(0, 100).filter(p => p && typeof p.name === 'string' && Number.isFinite(p.price) && p.price > 0 && Number.isFinite(p.size) && p.size > 0 && ['g','mL'].includes(p.measure) && Number.isFinite(p.rating) && p.rating >= 0 && p.rating <= 5 && Number.isInteger(p.reviews) && p.reviews >= 0).map(p => ({name: p.name, price: p.price, size: p.size, measure: p.measure, rating: p.rating, reviews: p.reviews, seller: String(p.seller || ''), url: typeof p.url === 'string' && /^https:\/\//.test(p.url) ? p.url : ''}));
+    const normalized = normalizeSupplierFeed(data);
+    const query = q.toLocaleLowerCase('ko-KR');
+    const products = normalized.products.filter(p => p.name.toLocaleLowerCase('ko-KR').includes(query)).slice(0, 100);
     return send(res, 200, {products}, origin);
   } catch {
     return send(res, 502, {error: 'provider_unavailable'}, origin);
