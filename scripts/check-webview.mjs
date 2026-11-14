@@ -172,3 +172,6 @@ assert.match(html,/공급업체 정보 미검증 · 품질 근거 확인 필요/
 vm.runInContext("state.products.push({id:901,name:'비교 쌀 A',price:10000,size:1000,measure:'g',rating:4.5,reviews:20,seller:'농가',quality:4,transparency:1},{id:902,name:'비교 쌀 B',price:9000,size:1000,measure:'g',rating:4.3,reviews:15,seller:'농가',quality:5,transparency:1});toggleCompare(901,true);toggleCompare(902,true)",sandbox,{timeout:3000});
 assert.match(element('compareResults').innerHTML,/품질·가격 균형/,'Comparison must explain quality-price balance when two products are selected');
 assert.match(html,/품질 미평가 상품이 있어 균형 추천을 보류합니다/,'Missing quality must prevent balance recommendations');
+
+assert.match(html,/동일 단위라도 식품 종류·원재료·가공방식이 다르면/,'Comparison must warn against cross-category unit-price conclusions');
+assert.match(html,/외부 상품 전체의 최우수 제품 선정이 아닙니다/,'Comparison must limit recommendation scope');
