@@ -104,3 +104,16 @@ test('rejects boolean, empty and nonnumeric price or quantity values',()=>{
   const valid=normalizeSupplierFeed({products:[{...base,price:'2000',size:'200'}]}).products;
   assert.equal(valid.length,1,'numeric strings remain compatible with supplier feeds');
 });
+
+test('invalid optional ratings and reviews are safely normalized',()=>{
+  const base={name:'테스트 식품',price:2000,size:200,unit:'g'};
+  const products=[
+    {...base,rating:true,reviews:true},
+    {...base,rating:' ',reviews:''},
+    {...base,rating:6,reviews:-1},
+    {...base,rating:'4.5',reviews:'12'}
+  ];
+  const results=normalizeSupplierFeed({products}).products;
+  assert.deepEqual(results.map(p=>p.rating),[0,0,0,4.5]);
+  assert.deepEqual(results.map(p=>p.reviews),[0,0,0,12]);
+});
