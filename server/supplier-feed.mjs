@@ -23,7 +23,7 @@ export function normalizeSupplierFeed(input) {
     return [{
       name:p.name.trim().slice(0,200), price, size, measure,
       rating:Number.isFinite(rating) && rating >= 0 && rating <= 5 ? rating : 0,
-      reviews:Number.isInteger(reviews) && reviews >= 0 ? reviews : 0,
+      reviews:Number.isSafeInteger(reviews) && reviews >= 0 ? reviews : 0,
       seller:(typeof p.seller === 'string' && p.seller.trim() ? p.seller : typeof p.manufacturer === 'string' && p.manufacturer.trim() ? p.manufacturer : '판매처 미확인').trim().slice(0,120),
       url, source, sourceUpdatedAt:typeof p.updatedAt === 'string' && p.updatedAt.trim() ? p.updatedAt.trim().slice(0,40) : null,
       origin:typeof p.origin === 'string' ? p.origin.trim().slice(0,200) : '',
