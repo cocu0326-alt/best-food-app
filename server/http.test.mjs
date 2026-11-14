@@ -187,3 +187,15 @@ test('supplier fetch rejects non-JSON content type',async()=>{
   const valid=await fetchSupplierJson('https://example.com','',1000,async()=>new Response('{"products":[]}',{headers:{'content-type':'application/json; charset=utf-8'}}));
   assert.deepEqual(valid,{ok:true,data:{products:[]}});
 });
+
+test('supplier fetch cancels rejected non-JSON response streams',async()=>{
+  const {fetchSupplierJson}=await import('./index.mjs');
+  let canceled=false;
+  const stream=new ReadableStream({
+    start(controller){controller.enqueue(new TextEncoder().encode('<html>'));},
+    cancel(){canceled=true;}
+  });
+  const result=await fetchSupplierJson('https://example.com','',1000,async()=>new Response(stream,{headers:{'content-type':'text/html'}}));
+  assert.deepEqual(result,{ok:false});
+  assert.equal(canceled,true);
+});
