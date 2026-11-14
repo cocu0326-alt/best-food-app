@@ -18,12 +18,12 @@ export function normalizeSupplierFeed(input) {
     const validNumeric = value => (typeof value === 'number' || typeof value === 'string') && String(value).trim() !== '';
     const rating = validNumeric(p.rating) ? Number(p.rating) : NaN;
     const reviews = validNumeric(p.reviews) ? Number(p.reviews) : NaN;
-    const source = typeof p.source === 'string' && p.source.trim() ? p.source.trim().slice(0,120) : '제조사 제공';
+    const source = typeof p.source === 'string' && p.source.trim() ? p.source.trim().slice(0,120) : '공급업체 제공 (원출처 미확인)';
     return [{
       name:p.name.trim().slice(0,200), price, size, measure,
       rating:Number.isFinite(rating) && rating >= 0 && rating <= 5 ? rating : 0,
       reviews:Number.isInteger(reviews) && reviews >= 0 ? reviews : 0,
-      seller:(typeof p.seller === 'string' ? p.seller : typeof p.manufacturer === 'string' ? p.manufacturer : '제조사 직접 판매').trim().slice(0,120) || '제조사 직접 판매',
+      seller:(typeof p.seller === 'string' ? p.seller : typeof p.manufacturer === 'string' ? p.manufacturer : '판매처 미확인').trim().slice(0,120) || '판매처 미확인',
       url, source, sourceUpdatedAt:typeof p.updatedAt === 'string' && p.updatedAt.trim() ? p.updatedAt.trim().slice(0,40) : null,
       origin:typeof p.origin === 'string' ? p.origin.trim().slice(0,200) : '',
       ingredients:typeof p.ingredients === 'string' ? p.ingredients.trim().slice(0,1000) : ''
