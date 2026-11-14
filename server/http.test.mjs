@@ -43,6 +43,7 @@ test('rejects invalid startup environment settings',async()=>{
   for(const env of [
     {FOOD_UPSTREAM_URL:'https://user:pass@example.com/foods'},
     {FOOD_UPSTREAM_URL:'http://example.com/foods'},
+    {FOOD_UPSTREAM_URL:'https://example.com/foods#secret'},
     {RATE_LIMIT_PER_MINUTE:'not-a-number'},
     {RATE_LIMIT_PER_MINUTE:'0'}
   ]){
