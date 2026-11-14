@@ -91,3 +91,16 @@ test('keeps supplied provenance without inventing missing origin or ingredients'
   assert.equal(missing.products[0].origin,'');
   assert.equal(missing.products[0].ingredients,'');
 });
+
+test('rejects boolean, empty and nonnumeric price or quantity values',()=>{
+  const base={name:'테스트 식품',price:2000,size:200,unit:'g'};
+  const invalid=[
+    {...base,price:true},{...base,size:true},
+    {...base,price:' '},{...base,size:''},
+    {...base,price:'abc'},{...base,size:{}},
+    {...base,price:null},{...base,size:null}
+  ];
+  assert.equal(normalizeSupplierFeed({products:invalid}).products.length,0);
+  const valid=normalizeSupplierFeed({products:[{...base,price:'2000',size:'200'}]}).products;
+  assert.equal(valid.length,1,'numeric strings remain compatible with supplier feeds');
+});
