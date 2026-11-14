@@ -48,3 +48,26 @@ test('does not mutate supplier response objects during search',()=>{
   searchSupplierProducts(data,'쌀');
   assert.equal(JSON.stringify(data),snapshot);
 });
+
+test('deduplicates identical listings but keeps distinct sellers and prices',()=>{
+  const products=[
+    {name:'테스트 사과',price:3000,size:500,unit:'g',seller:'농장 A'},
+    {name:' 테스트 사과 ',price:3000,size:0.5,unit:'kg',seller:'농장 A'},
+    {name:'테스트 사과',price:3000,size:500,unit:'g',seller:'농장 B'},
+    {name:'테스트 사과',price:3500,size:500,unit:'g',seller:'농장 A'}
+  ];
+  const results=searchSupplierProducts({products},'사과');
+  assert.equal(results.length,3);
+  assert.deepEqual(results.map(p=>[p.seller,p.price]),[['농장 A',3000],['농장 B',3000],['농장 A',3500]]);
+});
+
+test('deduplicates before applying the 100-result cap',()=>{
+  const products=[
+    ...Array.from({length:110},()=>({name:'테스트 쌀',price:1000,size:1,unit:'kg',seller:'동일 판매자'})),
+    ...Array.from({length:110},(_,i)=>({name:'테스트 쌀',price:2000+i,size:1,unit:'kg',seller:'다른 판매자'}))
+  ];
+  const results=searchSupplierProducts({products},'쌀');
+  assert.equal(results.length,100);
+  assert.equal(results[0].price,1000);
+  assert.equal(results[1].price,2000);
+});
