@@ -15,7 +15,9 @@ export function normalizeSupplierFeed(input) {
     const rawUrl = typeof p.url === 'string' ? p.url.trim() : '';
     let url = '';
     try { const parsed = new URL(rawUrl); if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) url = rawUrl; } catch {}
-    const rating = Number(p.rating), reviews = Number(p.reviews);
+    const validNumeric = value => (typeof value === 'number' || typeof value === 'string') && String(value).trim() !== '';
+    const rating = validNumeric(p.rating) ? Number(p.rating) : NaN;
+    const reviews = validNumeric(p.reviews) ? Number(p.reviews) : NaN;
     const source = typeof p.source === 'string' ? p.source.slice(0,120) : '제조사 제공';
     return [{
       name:p.name.trim().slice(0,200), price, size, measure,
