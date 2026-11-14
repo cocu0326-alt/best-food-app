@@ -174,6 +174,7 @@ assert.match(element('compareResults').innerHTML,/품질·가격 균형/,'Compar
 assert.match(html,/품질 미평가 상품 /,'Missing quality must prevent balance recommendations');
 vm.runInContext("state.products.find(p=>p.id===901).quality=null;renderCompare()",sandbox,{timeout:3000});
 assert.match(element('compareResults').innerHTML,/품질 미평가 상품 비교 쌀 A/,'Missing quality must identify the unevaluated food');
+assert.match(element('compareResults').innerHTML,/원재료·원산지·제조정보 등 근거를 확인한 후 품질을 평가해 주세요/,'Missing quality must prompt evidence review');
 
 assert.match(html,/동일 단위라도 식품 종류·원재료·가공방식이 다르면/,'Comparison must warn against cross-category unit-price conclusions');
 assert.match(html,/외부 상품 전체의 최우수 제품 선정이 아닙니다/,'Comparison must limit recommendation scope');
