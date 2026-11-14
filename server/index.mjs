@@ -42,7 +42,7 @@ export async function fetchSupplierJson(target, authToken = '', timeoutMs = 8000
       signal: controller.signal,
       redirect: 'error'
     });
-    if (!response.ok) return {ok: false};
+    if (!response.ok) { await response.body?.cancel().catch(() => {}); return {ok: false}; }
     const contentType = response.headers.get('content-type') || '';
     if (!/^application\/json(?:\s*;|\s*$)/i.test(contentType)) { await response.body?.cancel().catch(() => {}); return {ok: false}; }
     return {ok: true, data: await readBoundedJson(response)};
