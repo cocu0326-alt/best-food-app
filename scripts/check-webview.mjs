@@ -169,6 +169,6 @@ console.log('PASS: API endpoint validation');
 assert.match(html,/공급업체 제공 정보로, 앱이 독립 검증한 결과가 아닙니다/,'Supplier provenance disclaimer must be visible');
 assert.match(html,/공급업체 정보 미검증 · 품질 근거 확인 필요/,'API import status must not imply verified data');
 
-vm.runInContext('toggleCompare(101,true);toggleCompare(102,true)',sandbox,{timeout:3000});
+vm.runInContext("state.products.push({id:901,name:'비교 쌀 A',price:10000,size:1000,measure:'g',rating:4.5,reviews:20,seller:'농가',quality:4,transparency:1},{id:902,name:'비교 쌀 B',price:9000,size:1000,measure:'g',rating:4.3,reviews:15,seller:'농가',quality:5,transparency:1});toggleCompare(901,true);toggleCompare(902,true)",sandbox,{timeout:3000});
 assert.match(element('compareResults').innerHTML,/품질·가격 균형/,'Comparison must explain quality-price balance when two products are selected');
 assert.match(html,/품질 미평가 상품이 있어 균형 추천을 보류합니다/,'Missing quality must prevent balance recommendations');
