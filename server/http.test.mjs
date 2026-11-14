@@ -16,7 +16,7 @@ async function freePort() {
 test('health, method rejection, rate limiting and missing supplier',async t=>{
   const port=await freePort();
   const child=spawn(process.execPath,['server/index.mjs'],{
-    env:{...process.env,PORT:String(port),RATE_LIMIT_PER_MINUTE:'3',FOOD_UPSTREAM_URL:''},
+    env:{...process.env,PORT:String(port),RATE_LIMIT_PER_MINUTE:'4',FOOD_UPSTREAM_URL:''},
     stdio:'ignore'
   });
   t.after(()=>child.kill());
@@ -32,6 +32,7 @@ test('health, method rejection, rate limiting and missing supplier',async t=>{
   assert.deepEqual(health,{ok:true,providerConfigured:false});
   assert.equal((await fetch(base+'/api/foods?q=rice',{method:'POST'})).status,405);
   assert.equal((await fetch(base+'/api/foods?q=rice&q=apple')).status,400,'duplicate search parameters must be rejected');
+  assert.equal((await fetch(base+'/api/foods?q=rice&token=secret')).status,400,'unsupported query parameters must be rejected');
   assert.equal((await fetch(base+'/api/foods?q=rice')).status,503);
   assert.equal((await fetch(base+'/api/foods?q=rice')).status,503);
   const limited=await fetch(base+'/api/foods?q=rice');
