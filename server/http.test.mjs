@@ -45,7 +45,12 @@ test('rejects invalid startup environment settings',async()=>{
     {FOOD_UPSTREAM_URL:'http://example.com/foods'},
     {FOOD_UPSTREAM_URL:'https://example.com/foods#secret'},
     {RATE_LIMIT_PER_MINUTE:'not-a-number'},
-    {RATE_LIMIT_PER_MINUTE:'0'}
+    {RATE_LIMIT_PER_MINUTE:'0'},
+    {ALLOWED_ORIGIN:'http://example.com'},
+    {ALLOWED_ORIGIN:'https://example.com/path'},
+    {ALLOWED_ORIGIN:'https://example.com?token=x'},
+    {ALLOWED_ORIGIN:'https://user:pass@example.com'},
+    {ALLOWED_ORIGIN:'*'}
   ]){
     const child=spawn(process.execPath,['server/index.mjs'],{
       env:{...process.env,PORT:'0',FOOD_UPSTREAM_URL:'',RATE_LIMIT_PER_MINUTE:'60',...env},
