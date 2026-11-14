@@ -97,3 +97,20 @@ input={files:[{text:JSON.stringify({...backup,products:[{name:'bad',price:-1}]})
 vm.runInContext('importData(input)',vm.createContext({...sandbox,input}),{timeout:3000});
 assert.equal(storage.get('bestfood_v1'),goodData,'Invalid product must not overwrite existing data');
 console.log('PASS: JSON backup export, restore and invalid-file safeguards');
+
+const beforeApi=vm.runInContext('state.products.length',sandbox);
+element('apiEndpoint').value='https://example.test/search';
+element('term').value='쌀';
+sandbox.fetch=async()=>({ok:true,json:async()=>({products:[
+  {name:'API 쌀',price:12000,size:1000,measure:'g',rating:4.4,reviews:30,seller:'농장',origin:'국내산',ingredients:'쌀'},
+  {name:'API 쌀',price:12000,size:1000,measure:'g',rating:4.4,reviews:30,seller:'농장'},
+  {name:'오류 상품',price:-1,size:0,measure:'g',rating:4,reviews:1}
+]})});
+await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+1,'API must add only one valid unique product');
+assert.match(element('apiStatus').textContent,/1개 신규 등록/,'API result should report accepted count');
+sandbox.fetch=async()=>({ok:false,status:503});
+await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
+assert.match(element('apiStatus').textContent,/조회 실패/,'API failure should show a helpful error');
+assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+1,'Failed API must not alter products');
+console.log('PASS: API search, duplicate filtering, invalid item rejection and server error');
