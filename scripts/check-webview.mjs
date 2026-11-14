@@ -189,3 +189,6 @@ assert.match(html,/판매처 미확인/,'WebView must not invent a direct manufa
 
 assert.match(html,/원산지',p=>p.origin\|\|'공급업체 정보 없음'/,'Missing origin must be labeled as absent from supplier data');
 assert.match(html,/원재료',p=>p.ingredients\|\|'공급업체 정보 없음'/,'Missing ingredients must be labeled as absent from supplier data');
+
+assert.match(html,/출처',p=>p.source\|\|'출처 정보 없음'/,'Missing source must be identified explicitly');
+assert.match(html,/갱신일',p=>p.sourceUpdatedAt\|\|'갱신일 정보 없음'/,'Missing update date must not imply freshness');
