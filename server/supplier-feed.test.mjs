@@ -188,3 +188,14 @@ test('blank measure uses supplied unit without changing quantity conversion',()=
   ]}).products;
   assert.deepEqual(products.map(p=>[p.size,p.measure]),[[2000,'g'],[2,'mL']]);
 });
+
+test('blank size falls back to supplied amount but invalid nonblank size is rejected',()=>{
+  const base={name:'잡곡',price:4000,unit:'kg',amount:2};
+  const products=normalizeSupplierFeed({products:[
+    {...base,size:'   '},
+    {...base,size:null},
+    {...base,size:0},
+    {...base,size:true}
+  ]}).products;
+  assert.deepEqual(products.map(p=>[p.size,p.measure]),[[2000,'g'],[2000,'g']]);
+});
