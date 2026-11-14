@@ -14,7 +14,7 @@ export function normalizeSupplierFeed(input) {
     if (typeof p.name !== 'string' || !p.name.trim() || !Number.isSafeInteger(price) || price <= 0 || !Number.isFinite(size) || size <= 0 || size > 1e9 || !measure) return [];
     const rawUrl = typeof p.url === 'string' ? p.url.trim() : '';
     let url = '';
-    try { const parsed = new URL(rawUrl); if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) url = rawUrl; } catch {}
+    try { const parsed = new URL(rawUrl); if (parsed.protocol === 'https:' && !parsed.username && !parsed.password && !parsed.hash) url = parsed.href; } catch {}
     const validNumeric = value => (typeof value === 'number' || typeof value === 'string') && String(value).trim() !== '';
     const rating = validNumeric(p.rating) ? Number(p.rating) : NaN;
     const reviews = validNumeric(p.reviews) ? Number(p.reviews) : NaN;
