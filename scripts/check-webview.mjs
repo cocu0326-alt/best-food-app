@@ -99,7 +99,7 @@ assert.equal(storage.get('bestfood_v1'),goodData,'Invalid product must not overw
 console.log('PASS: JSON backup export, restore and invalid-file safeguards');
 
 const beforeApi=vm.runInContext('state.products.length',sandbox);
-element('apiEndpoint').value='https://example.test/search';
+element('apiEndpoint').value='https://example.test/api/foods';
 element('term').value='쌀';
 sandbox.fetch=async()=>({ok:true,json:async()=>({products:[
   {name:'API 쌀',price:12000,size:1000,measure:'g',rating:4.4,reviews:30,seller:'농장',origin:'국내산',ingredients:'쌀'},
