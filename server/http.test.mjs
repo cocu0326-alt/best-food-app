@@ -31,6 +31,7 @@ test('health, method rejection, rate limiting and missing supplier',async t=>{
   const health=await (await fetch(base+'/health')).json();
   assert.deepEqual(health,{ok:true,providerConfigured:false});
   assert.equal((await fetch(base+'/api/foods?q=rice',{method:'POST'})).status,405);
+  assert.equal((await fetch(base+'/api/foods?q=rice&q=apple')).status,400,'duplicate search parameters must be rejected');
   assert.equal((await fetch(base+'/api/foods?q=rice')).status,503);
   assert.equal((await fetch(base+'/api/foods?q=rice')).status,503);
   const limited=await fetch(base+'/api/foods?q=rice');
