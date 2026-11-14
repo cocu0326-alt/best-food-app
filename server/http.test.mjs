@@ -139,3 +139,33 @@ test('supplier timeout is cleared after successful body read',async()=>{
   const result=await fetchSupplierJson('https://example.com','',1000,async()=>new Response('{"products":[]}'));
   assert.deepEqual(result,{ok:true,data:{products:[]}});
 });
+
+test('rejects blank and oversized search queries before contacting supplier',async t=>{
+  const port=await freePort();
+  const child=spawn(process.execPath,['server/index.mjs'],{
+    env:{...process.env,PORT:String(port),RATE_LIMIT_PER_MINUTE:'60',FOOD_UPSTREAM_URL:''},
+    stdio:'ignore'
+  });
+  t.after(()=>child.kill());
+  const base='http://127.0.0.1:'+port;
+  let ready=false;
+  for(let i=0;i<60;i++){
+    if(child.exitCode!==null)throw Error('server exited');
+    try{if((await fetch(base+'/health')).ok){ready=true;break}}catch{}
+    await new Promise(resolve=>setTimeout(resolve,50));
+  }
+  assert.ok(ready);
+  for(const query of ['', '   ', 'x'.repeat(121)]){
+    const response=await fetch(base+'/api/foods?q='+encodeURIComponent(query));
+    assert.equal(response.status,400);
+    assert.equal((await response.json()).error,'invalid_query');
+  }
+  const boundary=await fetch(base+'/api/foods?q='+encodeURIComponent('x'.repeat(120)));
+  assert.equal(boundary.status,503,'valid boundary-length query reaches supplier configuration check');
+});
+
+test('handles upstream HTTP failure without parsing its response body',async()=>{
+  const {fetchSupplierJson}=await import('./index.mjs');
+  const result=await fetchSupplierJson('https://example.com','',1000,async()=>new Response('bad gateway',{status:503}));
+  assert.deepEqual(result,{ok:false});
+});
