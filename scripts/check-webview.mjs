@@ -190,6 +190,8 @@ element('term').value='판매처 없는 상품';
 sandbox.fetch=async()=>({ok:true,json:async()=>({products:[{name:'판매처 없는 상품',price:3900,size:300,measure:'g',rating:0,reviews:0}]})});
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 const afterMissingSeller=vm.runInContext('state.products.length',sandbox);
+assert.equal(vm.runInContext('state.products[state.products.length-1].seller',sandbox),'판매처 미확인','Unknown supplier seller must not be presented as manufacturer');
+assert.equal(vm.runInContext('state.products[state.products.length-1].source',sandbox),'공급업체 제공 (원출처 미확인)','Unknown source must not imply direct manufacturer provenance');
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.equal(vm.runInContext('state.products.length',sandbox),afterMissingSeller,'Repeated supplier search must not duplicate products without seller metadata');
 assert.match(element('apiStatus').textContent,/0개 신규 등록/,'Repeated search should report zero new products');
