@@ -90,3 +90,27 @@ test('parses valid supplier JSON below size limit',async()=>{
   const parsed=await readBoundedJson(new Response(JSON.stringify(input)));
   assert.deepEqual(parsed,input);
 });
+
+test('returns no-store and browser-safe headers for API responses',async t=>{
+  const port=await freePort();
+  const child=spawn(process.execPath,['server/index.mjs'],{
+    env:{...process.env,PORT:String(port),FOOD_UPSTREAM_URL:'',RATE_LIMIT_PER_MINUTE:'60'},
+    stdio:'ignore'
+  });
+  t.after(()=>child.kill());
+  const base='http://127.0.0.1:'+port;
+  let ready=false;
+  for(let i=0;i<60;i++){
+    if(child.exitCode!==null)throw Error('server exited');
+    try{if((await fetch(base+'/health')).ok){ready=true;break}}catch{}
+    await new Promise(resolve=>setTimeout(resolve,50));
+  }
+  assert.ok(ready);
+  for(const route of ['/health','/api/foods?q=rice','/missing']){
+    const response=await fetch(base+route);
+    assert.equal(response.headers.get('cache-control'),'no-store');
+    assert.equal(response.headers.get('x-content-type-options'),'nosniff');
+    assert.equal(response.headers.get('referrer-policy'),'no-referrer');
+    assert.match(response.headers.get('content-type'),/application\/json/);
+  }
+});
