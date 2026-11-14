@@ -178,3 +178,13 @@ test('blank seller uses supplied manufacturer rather than unknown seller',()=>{
   ]}).products;
   assert.deepEqual(products.map(p=>p.seller),['생산자 A','판매자 B','판매처 미확인']);
 });
+
+test('blank measure uses supplied unit without changing quantity conversion',()=>{
+  const base={name:'식품',price:2500,size:2};
+  const products=normalizeSupplierFeed({products:[
+    {...base,measure:' ',unit:' kg '},
+    {...base,measure:'mL',unit:'kg'},
+    {...base,measure:' ',unit:'  '}
+  ]}).products;
+  assert.deepEqual(products.map(p=>[p.size,p.measure]),[[2000,'g'],[2,'mL']]);
+});
