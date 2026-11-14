@@ -165,3 +165,6 @@ assert.equal(vm.runInContext("validApiUrl('https://example.test/api/foods#fragme
 assert.equal(vm.runInContext("validApiUrl('https://example.test/other')",sandbox),false,'Wrong API path rejected');
 assert.equal(vm.runInContext("validApiUrl('http://example.test/api/foods')",sandbox),false,'Plain HTTP rejected');
 console.log('PASS: API endpoint validation');
+
+assert.match(html,/공급업체 제공 정보로, 앱이 독립 검증한 결과가 아닙니다/,'Supplier provenance disclaimer must be visible');
+assert.match(html,/공급업체 정보 미검증 · 품질 근거 확인 필요/,'API import status must not imply verified data');
