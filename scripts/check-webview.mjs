@@ -206,3 +206,6 @@ assert.match(html,/출처',p=>p.source\|\|'출처 정보 없음'/,'Missing sourc
 assert.match(html,/갱신일',p=>p.sourceUpdatedAt\|\|'갱신일 정보 없음'/,'Missing update date must not imply freshness');
 
 assert.match(html,/판매처',p=>p.seller\|\|'판매처 정보 없음'/,'Missing seller must be identified explicitly in comparison');
+
+assert.match(element('compareResults').innerHTML,/같은 단위라도 식품 종류·구성·가공방식이 다르면/,'Comparison summary must warn against unlike-food price ranking');
+assert.match(element('compareResults').innerHTML,/품질 점수는 사용자 입력값이며 외부 검증 결과가 아닙니다/,'Comparison summary must disclose unverified quality');
