@@ -39,24 +39,20 @@ test('health, method rejection, rate limiting and missing supplier',async t=>{
   assert.equal((await fetch(base+'/health')).status,200,'health remains available');
 });
 
-test('rejects upstream URLs containing embedded credentials',async t=>{
-  const port=await freePort();
-  const child=spawn(process.execPath,['server/index.mjs'],{
-    env:{...process.env,PORT:String(port),FOOD_UPSTREAM_URL:'https://user:pass@example.com/foods'},
-    stdio:'ignore'
-  });
-  t.after(()=>child.kill());
-  const base='http://127.0.0.1:'+port;
-  let ready=false;
-  for(let i=0;i<60;i++){
-    if(child.exitCode!==null) throw Error('server exited');
-    try {if((await fetch(base+'/health')).ok){ready=true;break}}catch{}
-    await new Promise(resolve=>setTimeout(resolve,50));
+test('rejects invalid startup environment settings',async()=>{
+  for(const env of [
+    {FOOD_UPSTREAM_URL:'https://user:pass@example.com/foods'},
+    {FOOD_UPSTREAM_URL:'http://example.com/foods'},
+    {RATE_LIMIT_PER_MINUTE:'not-a-number'},
+    {RATE_LIMIT_PER_MINUTE:'0'}
+  ]){
+    const child=spawn(process.execPath,['server/index.mjs'],{
+      env:{...process.env,PORT:'0',FOOD_UPSTREAM_URL:'',RATE_LIMIT_PER_MINUTE:'60',...env},
+      stdio:'ignore'
+    });
+    const [code]=await once(child,'exit');
+    assert.notEqual(code,0,'invalid config must prevent startup: '+JSON.stringify(env));
   }
-  assert.ok(ready);
-  const response=await fetch(base+'/api/foods?q=rice');
-  assert.equal(response.status,502);
-  assert.equal((await response.json()).error,'provider_unavailable');
 });
 
 test('rejects oversized supplier feed response without importing data',async t=>{
