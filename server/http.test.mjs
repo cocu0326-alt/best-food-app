@@ -136,7 +136,7 @@ test('supplier timeout stays active while response body is pending',async()=>{
         },{once:true});
       }
     });
-    return new Response(stream,{status:200});
+    return new Response(stream,{status:200,headers:{'content-type':'application/json'}});
   };
   await assert.rejects(()=>fetchSupplierJson('https://example.com','',25,fakeFetch),/aborted_supplier_stream/);
   assert.equal(observedAbort,true);
@@ -144,7 +144,7 @@ test('supplier timeout stays active while response body is pending',async()=>{
 
 test('supplier timeout is cleared after successful body read',async()=>{
   const {fetchSupplierJson}=await import('./index.mjs');
-  const result=await fetchSupplierJson('https://example.com','',1000,async()=>new Response('{"products":[]}'));
+  const result=await fetchSupplierJson('https://example.com','',1000,async()=>new Response('{"products":[]}',{headers:{'content-type':'application/json; charset=utf-8'}}));
   assert.deepEqual(result,{ok:true,data:{products:[]}});
 });
 
@@ -176,4 +176,14 @@ test('handles upstream HTTP failure without parsing its response body',async()=>
   const {fetchSupplierJson}=await import('./index.mjs');
   const result=await fetchSupplierJson('https://example.com','',1000,async()=>new Response('bad gateway',{status:503}));
   assert.deepEqual(result,{ok:false});
+});
+
+test('supplier fetch rejects non-JSON content type',async()=>{
+  const {fetchSupplierJson}=await import('./index.mjs');
+  for(const contentType of ['text/html','text/plain','application/javascript','']){
+    const result=await fetchSupplierJson('https://example.com','',1000,async()=>new Response('{"products":[]}',{headers:{'content-type':contentType}}));
+    assert.deepEqual(result,{ok:false});
+  }
+  const valid=await fetchSupplierJson('https://example.com','',1000,async()=>new Response('{"products":[]}',{headers:{'content-type':'application/json; charset=utf-8'}}));
+  assert.deepEqual(valid,{ok:true,data:{products:[]}});
 });
