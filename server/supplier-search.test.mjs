@@ -71,3 +71,16 @@ test('deduplicates before applying the 100-result cap',()=>{
   assert.equal(results[0].price,1000);
   assert.equal(results[1].price,2000);
 });
+
+test('search normalizes Korean Unicode and repeated whitespace and deduplicates equivalent names',()=>{
+  const composed='카페';
+  const decomposed=composed.normalize('NFD');
+  const feed={products:[
+    {name:'유기농  '+composed+' 원두',price:9000,size:200,unit:'g',seller:'판매자'},
+    {name:'유기농 '+decomposed+' 원두',price:9000,size:200,unit:'g',seller:'판매자'},
+    {name:'유기농 다른 원두',price:9000,size:200,unit:'g',seller:'판매자'}
+  ]};
+  const result=searchSupplierProducts(feed,' 유기농  '+decomposed+' ');
+  assert.equal(result.length,1);
+  assert.equal(result[0].price,9000);
+});
