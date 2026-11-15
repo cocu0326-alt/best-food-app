@@ -431,3 +431,8 @@ assert.ok(html.includes('allUniqueResults.push(item)'), 'All matching survey row
 assert.ok(html.includes('for(const p of allUniqueResults)'), 'Survey comparison must use all matching rows, not only the 30 displayed rows');
 assert.ok(html.includes('전체 검색 결과 기준'), 'Price comparison scope must be visible to users');
 console.log('PASS: CSV comparison is not restricted to the 30 visible rows');
+
+assert.ok(html.includes('id="surveyDisplayLimit"'), 'CSV result count control must exist');
+assert.ok(html.includes('id="surveyDisplaySort"'), 'CSV sort control must exist');
+assert.ok(html.includes('displayPool.slice(0,displayLimit)'), 'Result count must be applied after sorting');
+console.log('PASS: Offline survey sorting and result-count controls are wired');
