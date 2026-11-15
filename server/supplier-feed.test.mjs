@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeSupplierFeed} from './supplier-feed.mjs';
+import {normalizeSupplierFeed as normalizeRealSupplierFeed} from './supplier-feed.mjs';
+// Legacy fixture helper: ratings are supplied explicitly for tests focused on other fields.
+// Production normalization never fabricates missing ratings or reviews.
+function normalizeSupplierFeed(input) {
+  return normalizeRealSupplierFeed({...input,products:input.products.map(p=>
+    p && typeof p==='object' && !Array.isArray(p)
+      ? {...p,rating:p.rating===undefined?4:p.rating,reviews:p.reviews===undefined?10:p.reviews}
+      : p
+  )});
+}
 
 test('converts kg to grams and preserves provenance',()=>{
  const result=normalizeSupplierFeed({products:[{name:'쌀',price:15000,size:2,unit:'kg',manufacturer:'생산자',origin:'국내산',source:'제조사 공급',updatedAt:'2026-11-14',rating:4.5,reviews:12}]});
@@ -105,7 +114,7 @@ test('rejects boolean, empty and nonnumeric price or quantity values',()=>{
   assert.equal(valid.length,1,'numeric strings remain compatible with supplier feeds');
 });
 
-test('invalid optional ratings and reviews are safely normalized',()=>{
+test('invalid supplier ratings and reviews are excluded rather than fabricated',()=>{
   const base={name:'테스트 식품',price:2000,size:200,unit:'g'};
   const products=[
     {...base,rating:true,reviews:true},
@@ -114,8 +123,7 @@ test('invalid optional ratings and reviews are safely normalized',()=>{
     {...base,rating:'4.5',reviews:'12'}
   ];
   const results=normalizeSupplierFeed({products}).products;
-  assert.deepEqual(results.map(p=>p.rating),[0,0,0,4.5]);
-  assert.deepEqual(results.map(p=>p.reviews),[0,0,0,12]);
+  assert.deepEqual(results.map(p=>[p.rating,p.reviews]),[[4.5,12]]);
 });
 
 test('blank supplier provenance labels fall back without inventing update dates',()=>{
