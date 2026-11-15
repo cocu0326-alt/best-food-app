@@ -13,6 +13,18 @@ jobs:
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+      - name: Check app JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('app/src/main/assets/index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>', html, flags=re.I)
+          if not scripts:
+              raise SystemExit('No inline JavaScript found')
+          Path('/tmp/best-food-inline.js').write_text('\\n;\\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/best-food-inline.js
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
       - name: Verify APK
