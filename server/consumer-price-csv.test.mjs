@@ -39,3 +39,12 @@ test('reads official sale and one-plus-one columns without inventing discounts',
  assert.equal(missing[0].saleStatus,null);
  assert.equal(missing[0].onePlusOne,null);
 });
+
+test('accepts common CSV header variants and keeps real sale flags',()=>{
+ const csv=['제품명,조사일자,판매가격(원),판매업소명,세일여부(Y/N),1+1여부','우유,2026-11-10,2900,마트,Y,N'].join(String.fromCharCode(10));
+ const found=parseConsumerPriceCsv(csv,'우유');
+ assert.equal(found.length,1);
+ assert.equal(found[0].price,2900);
+ assert.equal(found[0].saleStatus,'Y');
+ assert.equal(found[0].onePlusOne,'N');
+});
