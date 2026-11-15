@@ -296,6 +296,8 @@ assert.equal(element('localSurveyResults').innerHTML,'','Changing survey file mu
 assert.match(element('localSurveyStatus').textContent,/CSV 파일을 선택했습니다/,'Changing survey file should guide user to enter a query');
 
 // Typing must invalidate and clear previous prices immediately, before debounce.
+// Earlier export tests replace timers with synchronous callbacks; restore real timers here.
+sandbox.setTimeout=setTimeout;
 element('term').value='새 검색';
 element('localSurveyResults').innerHTML='<div>old-price-marker</div>';
 vm.runInContext('scheduleLocalSurveySearch()',sandbox,{timeout:3000});
