@@ -268,6 +268,7 @@ element('surveyCsvFile').files=[{name:'joint-prices.csv',size:jointSurvey.length
 element('term').value='공동 우유';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.equal((element('localSurveyResults').innerHTML.match(/공동 최저 조사가격/g)||[]).length,2,'Both lowest-price sellers should receive a joint-cheapest badge');
+assert.match(element('localSurveyResults').innerHTML,/공동 최저 조사가격 \(2개 결과, 표시된 결과 내\)/,'Joint-cheapest badge should show the number of tied observations');
 // Different products in a broad search must not be presented as directly comparable.
 const mixedProducts=['상품명,판매가격,판매업소,조사일','우유 소형,2000,가게A,2026-11-01','우유 대형,4000,가게B,2026-11-01'].join(String.fromCharCode(10));
 element('surveyCsvFile').files=[{name:'mixed-products.csv',size:mixedProducts.length,text:async()=>mixedProducts}];
