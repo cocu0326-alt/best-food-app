@@ -19,15 +19,19 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Validate WebView JavaScript and survey CSV parser
+      - name: Validate Android WebView JavaScript syntax
         run: |
           mkdir -p build-reports
           set -o pipefail
-          {
-            node server/check-android-webview-syntax.mjs &&
-            node scripts/check-webview.mjs &&
-            node --test server/consumer-price-csv.test.mjs server/demo-consumer-prices.test.mjs server/naver-shopping.test.mjs server/http-api.test.mjs
-          } 2>&1 | tee build-reports/webview-tests.log
+          node server/check-android-webview-syntax.mjs 2>&1 | tee build-reports/webview-syntax.log
+      - name: Test WebView UI and CSV interactions
+        run: |
+          set -o pipefail
+          node scripts/check-webview.mjs 2>&1 | tee build-reports/webview-tests.log
+      - name: Test consumer-price CSV and HTTP API
+        run: |
+          set -o pipefail
+          node --test server/consumer-price-csv.test.mjs server/demo-consumer-prices.test.mjs server/naver-shopping.test.mjs server/http-api.test.mjs 2>&1 | tee build-reports/server-tests.log
       - name: Install Android SDK 35 using runner SDK
         run: |
           mkdir -p build-reports
@@ -65,7 +69,7 @@ jobs:
         run: |
           {
             echo '## APK build diagnostics'
-            for file in build-reports/android-sdk.log build-reports/webview-tests.log build-reports/gradle-build.log build-reports/apk-verification.log; do
+            for file in build-reports/android-sdk.log build-reports/webview-syntax.log build-reports/webview-tests.log build-reports/server-tests.log build-reports/gradle-build.log build-reports/apk-verification.log; do
               if [ -f "$file" ]; then
                 echo "### ${file##*/}"
                 echo '```text'
