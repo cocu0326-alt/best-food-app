@@ -107,11 +107,11 @@ element('term').value='새 검색어';
 vm.runInContext('scheduleLocalSurveySearch()',sandbox,{timeout:3000});
 assert.equal(element('instantSearchResults').innerHTML,'','Editing search query must clear stale saved-product matches');
 assert.equal(element('apiCandidates').innerHTML,'','Editing search query must clear stale remote matches');
-assert.match(element('apiStatus').textContent,/검색 버튼/,'Editing search query should explain when API results refresh');
+assert.match(element('apiStatus').textContent,/자동 검색/,'Editing search query should explain automatic API refresh');
 element('apiEndpoint').value='';
 console.log('PASS: editing food query clears stale prices and shows API refresh guidance');
 
-assert.match(html,/if\(query&&query\.length<=120&&\!\(endpoint&&validApiUrl\(endpoint\.value\.trim\(\)\)\)\)surveySearchTimer=setTimeout\(\(\)=>searchFoodNow\(\),350\)/,'Saved-product search should be debounced without a remote API');
+assert.match(html,/if\(query&&query\.length<=120\)surveySearchTimer=setTimeout\(\(\)=>searchFoodNow\(\),endpoint&&validApiUrl\(endpoint\.value\.trim\(\)\)\?900:350\)/,'Saved and remote food searches should be debounced with distinct delays');
 console.log('PASS: saved food prices automatically search on typing without API calls');
 
 
