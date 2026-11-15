@@ -24,6 +24,8 @@ class MainActivity : Activity() {
         web = WebView(this)
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
+        web.settings.allowFileAccessFromFileURLs = false
+        web.settings.allowUniversalAccessFromFileURLs = false
         web.addJavascriptInterface(object {
             @JavascriptInterface
             fun saveText(name: String, mime: String, content: String) {
@@ -50,7 +52,7 @@ class MainActivity : Activity() {
             override fun onShowFileChooser(
                 webView: WebView?,
                 filePathCallback: ValueCallback<Array<Uri>>?,
-                fileChooserParams: FileChooserParams?
+                fileChooserParams: WebChromeClient.FileChooserParams?
             ): Boolean {
                 pendingFileChoice?.onReceiveValue(null)
                 pendingFileChoice = filePathCallback
@@ -74,7 +76,7 @@ class MainActivity : Activity() {
                 val uri = request.url
                 if (uri.scheme == "file" && uri.path == "/android_asset/index.html") return false
                 if (uri.scheme == "https") {
-                    startActivity(Intent(Intent.ACTION_VIEW, uri))
+                    openExternal(uri)
                 }
                 return true
             }
@@ -83,12 +85,29 @@ class MainActivity : Activity() {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 val uri = url?.let(Uri::parse) ?: return true
                 if (uri.scheme == "file" && uri.path == "/android_asset/index.html") return false
-                if (uri.scheme == "https") startActivity(Intent(Intent.ACTION_VIEW, uri))
+                if (uri.scheme == "https") openExternal(uri)
                 return true
             }
         }
         setContentView(web)
         web.loadUrl("file:///android_asset/index.html")
+    }
+
+    private fun openExternal(uri: Uri) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, uri))
+        } catch (_: Exception) {
+            Toast.makeText(this, "링크를 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onDestroy() {
+        pendingFileChoice?.onReceiveValue(null)
+        pendingFileChoice = null
+        pendingSave = null
+        web.removeJavascriptInterface("AndroidFiles")
+        web.destroy()
+        super.onDestroy()
     }
 
     @Deprecated("Deprecated in Java")
