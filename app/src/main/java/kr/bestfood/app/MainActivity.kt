@@ -26,6 +26,9 @@ class MainActivity : Activity() {
         web.settings.domStorageEnabled = true
         web.settings.allowFileAccessFromFileURLs = false
         web.settings.allowUniversalAccessFromFileURLs = false
+        web.settings.javaScriptCanOpenWindowsAutomatically = false
+        web.settings.setSupportMultipleWindows(false)
+        web.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
         web.addJavascriptInterface(object {
             @JavascriptInterface
             fun saveText(name: String, mime: String, content: String) {
