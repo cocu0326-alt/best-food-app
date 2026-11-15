@@ -227,7 +227,7 @@ test('rejects invisible-only and overlong HTTP searches before supplier lookup',
     await new Promise(resolve=>setTimeout(resolve,50));
   }
   assert.ok(ready);
-  for(const q of ['\\u200b\\ufeff','\\u00a0 \\u200b','a'.repeat(121)]){
+  for(const q of ['\u200b\ufeff','\u00a0 \u200b','a'.repeat(121)]){
     const response=await fetch(base+'/api/foods?q='+encodeURIComponent(q));
     assert.equal(response.status,400,'invalid search must be rejected: '+JSON.stringify(q));
     assert.equal((await response.json()).error,'invalid_query');
