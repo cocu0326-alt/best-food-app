@@ -58,7 +58,15 @@ jobs:
               match = re.match(r'\s*([A-Za-z_$][\w$]*)\s*\(', handler)
               if match and match.group(1) not in functions:
                   raise AssertionError(f'Unknown event handler: {handler}')
-          print(f'Validated {len(controls.ids)} control IDs and {len(controls.handlers)} event handlers')
+          required_controls = {'quickSearch', 'measureFilter', 'priceDropsOnly', 'sort', 'maxUnitPrice', 'minRating', 'minReviews'}
+          absent = required_controls - controls.ids
+          assert not absent, f'Missing essential product filters: {sorted(absent)}'
+          reset = re.search(r'function\s+clearProductFilters\s*\(\)\s*\{([^}]*)\}', script)
+          assert reset, 'Missing product filter reset handler'
+          for control in required_controls:
+              assert f"getElementById('{control}')" in reset.group(1), f'Filter not reset: {control}'
+          assert 'resetProductPage()' in script, 'Missing filter-triggered pagination reset'
+          print(f'Validated {len(controls.ids)} control IDs and {len(controls.handlers)} event handlers; all product filters reset')
           PY
       - name: Test supplier API server
         run: node --test server/server.test.mjs
