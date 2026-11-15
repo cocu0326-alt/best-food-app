@@ -68,7 +68,7 @@ async function searchLocalSurvey(){
   found.sort((a,b)=>b.date.replace(/[-./]/g,'').localeCompare(a.date.replace(/[-./]/g,''))||a.price-b.price);
   const seen=new Set(),results=[];
   for(const item of found){const key=JSON.stringify([item.name,item.seller,item.date,item.price]);if(seen.has(key))continue;seen.add(key);results.push(item);if(results.length>=30)break}
-  status.textContent='무료 조사자료 검색 '+results.length+'개 표시 · 파일 '+file.name+' · 현재 판매가격이 아닌 조사 가격입니다.';
+  status.textContent='무료 조사자료 검색 '+results.length+'개 표시'+(found.length>30?' (최대 30개 표시, 일치 행 '+found.length+'개)':'')+' · 파일 '+(file.name||'이름 없음')+' · 현재 판매가격이 아닌 조사 가격입니다.';
   box.innerHTML=results.map(p=>'<div class="result"><div class="details"><strong>'+esc(p.name)+'</strong><p>'+esc(p.seller)+' · '+p.price.toLocaleString('ko-KR')+'원 · 조사일 '+esc(p.date)+'</p><p class="hint">조사가격(현재 판매가 아님)</p></div></div>').join('');
  }catch(e){status.textContent='CSV를 읽지 못했습니다: '+e.message}
 }
