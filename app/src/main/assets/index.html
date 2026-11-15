@@ -13,6 +13,7 @@ function searchFoodNow(){
  if(!q)return alert('검색할 식품명을 입력해 주세요.');
  if(q.length>120)return alert('검색어는 120자 이하로 입력해 주세요.');
  const instant=document.getElementById('instantSearchResults');if(instant)instant.innerHTML='';
+ const endpoint=document.getElementById('apiEndpoint');if(endpoint&&validApiUrl(endpoint.value.trim())){if(!input.value.trim())input.value=q;if(instant)instant.textContent='「'+q+'」 무료 데이터 연동 서버 검색 중… 결과는 아래 실제 상품 조회 영역에 표시됩니다.';fetchProducts();const results=document.getElementById('apiCandidates');if(results&&results.scrollIntoView)results.scrollIntoView({behavior:'smooth',block:'start'});return;}
  const file=document.getElementById('surveyCsvFile');
  if(file&&file.files&&file.files.length){
   if(!input.value.trim())input.value=q;
@@ -21,7 +22,6 @@ function searchFoodNow(){
   if(results&&results.scrollIntoView)results.scrollIntoView({behavior:'smooth',block:'start'});
   return;
  }
- const endpoint=document.getElementById('apiEndpoint');if(endpoint&&validApiUrl(endpoint.value.trim())){if(!input.value.trim())input.value=q;fetchProducts();const results=document.getElementById('apiCandidates');if(results&&results.scrollIntoView)results.scrollIntoView({behavior:'smooth',block:'start'});return;}
  const box=document.getElementById('instantSearchResults');
  const terms=q.normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean);
  const normalizeSearch=x=>String(x||'').normalize('NFKC').toLowerCase().replace(/\s+/g,'');
