@@ -275,3 +275,11 @@ test('origin and ingredients normalize invisible whitespace without inventing mi
   assert.deepEqual(products.map(p=>p.origin),['','국내 산']);
   assert.deepEqual(products.map(p=>p.ingredients),['','밀가루 설탕']);
 });
+
+test('supplier update timestamps containing only invisible characters are missing',()=>{
+  const products=normalizeSupplierFeed({products:[
+    {name:'쌀',price:5000,size:500,unit:'g',updatedAt:'\u200b\ufeff'},
+    {name:'보리',price:4000,size:500,unit:'g',updatedAt:'\u00a0 2026-11-15\ufeff'}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.sourceUpdatedAt),[null,'2026-11-15']);
+});
