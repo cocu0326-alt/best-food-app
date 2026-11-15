@@ -56,6 +56,7 @@ export function searchSupplierProducts(data, q) {
   const normalizeSearchText = value => value.normalize('NFC').replace(/\s+/gu, ' ').trim().toLocaleLowerCase('ko-KR');
   const query = normalizeSearchText(q);
   const seen = new Set();
+  const exactNameMatches = [];
   const nameMatches = [];
   const sellerMatches = [];
   for (const product of normalized.products) {
@@ -69,9 +70,9 @@ export function searchSupplierProducts(data, q) {
     ]);
     if (seen.has(key)) continue;
     seen.add(key);
-    (nameMatch ? nameMatches : sellerMatches).push(product);
+    (normalizeSearchText(product.name) === query ? exactNameMatches : nameMatch ? nameMatches : sellerMatches).push(product);
   }
-  const results = nameMatches.concat(sellerMatches).slice(0,100);
+  const results = exactNameMatches.concat(nameMatches, sellerMatches).slice(0,100);
   return results;
 }
 const requests = new Map();
