@@ -141,3 +141,12 @@ test('zero-width and nonbreaking spaces do not hide matching product names',()=>
   ]},'유기농 사과');
   assert.equal(products.length,1);
 });
+
+test('multiword searches find products even when terms are separated or in seller name',()=>{
+ const products=searchSupplierProducts({products:[
+  {name:'국산 사과 특품',price:5000,size:500,unit:'g',seller:'청정 농장'},
+  {name:'사과',price:4000,size:500,unit:'g',seller:'청정 농장'},
+  {name:'국산 배',price:3000,size:500,unit:'g',seller:'다른 농장'}
+ ]},'사과 청정');
+ assert.deepEqual(products.map(p=>p.name),['국산 사과 특품','사과']);
+});
