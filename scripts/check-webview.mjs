@@ -40,6 +40,19 @@ vm.runInContext('toggleCompare(102,false)',sandbox,{timeout:3000});
 assert.match(element('compareResults').innerHTML,/현재 1개 선택됨/,'Unselecting should update comparison');
 console.log('PASS: WebView simulated rendering, comparison selection and removal');
 
+element('term').value='국산 쌀';
+vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
+assert.match(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Search should show a saved matching food');
+assert.match(element('instantSearchResults').innerHTML,/국산 쌀 B/,'Search should show all saved matching foods');
+assert.ok(element('instantSearchResults').innerHTML.indexOf('국산 쌀 A')<element('instantSearchResults').innerHTML.indexOf('국산 쌀 B'),'Saved food search should sort by lowest total price');
+element('term').value='만두';
+vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
+assert.match(element('instantSearchResults').innerHTML,/등록된 상품에서 일치하는 항목이 없습니다/,'Search must explain when no matching food is saved');
+assert.doesNotMatch(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Search must clear previous matches');
+console.log('PASS: primary food search, saved-price sorting and empty results');
+element('term').value='';
+
+
 vm.runInContext("state.products.push({id:103,name:'사과즙 C',price:9000,size:1000,measure:'mL',rating:4,reviews:5,seller:'농가',quality:null,transparency:null,origin:'국내산',ingredients:'사과'});toggleCompare(102,true);toggleCompare(103,true)",sandbox,{timeout:3000});
 assert.match(element('compareResults').innerHTML,/단위가격 우열은 표시하지 않습니다/,'Mixed units must not be ranked by unit price');
 assert.match(element('compareResults').innerHTML,/미확인/,'Missing quality should be shown as unverified');
