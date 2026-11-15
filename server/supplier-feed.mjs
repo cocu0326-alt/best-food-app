@@ -29,7 +29,7 @@ export function normalizeSupplierFeed(input) {
     const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
     const calendar = new Date(0);
     if (dateMatch) calendar.setUTCFullYear(Number(dateMatch[1]), Number(dateMatch[2])-1, Number(dateMatch[3]));
-    const validCalendarDate = dateMatch && calendar.toISOString().slice(0,10) === datePart;
+    const validCalendarDate = Boolean(dateMatch && calendar.getUTCFullYear() === Number(dateMatch[1]) && calendar.getUTCMonth() + 1 === Number(dateMatch[2]) && calendar.getUTCDate() === Number(dateMatch[3]));
     const timeMatch = /^\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(Z|[+-](\d{2}):(\d{2}))$/.exec(rawUpdatedAt);
     const validTime = timeMatch && Number(timeMatch[1]) <= 23 && Number(timeMatch[2]) <= 59 && Number(timeMatch[3]) <= 59 &&
       (!timeMatch[5] || (Number(timeMatch[5]) <= 14 && Number(timeMatch[6]) <= 59 && (Number(timeMatch[5]) !== 14 || Number(timeMatch[6]) === 0))) &&
