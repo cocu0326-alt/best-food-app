@@ -88,3 +88,11 @@ test('Naver prices reject booleans, arrays, and scientific notation',()=>{
  const found=normalizeNaverItems({items:candidates});
  assert.deepEqual(found.map(x=>x.price),[2500,2500]);
 });
+
+
+test('Naver candidate filtering tolerates malformed records and rejects invalid prices',()=>{
+ const valid={name:'서울 우유',price:2900,seller:'마트',url:'https://example.com/valid'};
+ const bad=[null,undefined,false,[],{name:'서울 우유',price:NaN},{name:'서울 우유',price:-1},{name:'서울 우유',price:'1000'}];
+ assert.deepEqual(filterNaverCandidates([...bad,valid],'우유'),[valid]);
+ assert.deepEqual(filterNaverCandidates(null,'우유'),[]);
+});
