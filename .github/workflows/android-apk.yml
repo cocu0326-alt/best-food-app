@@ -61,6 +61,14 @@ jobs:
           assert 'frame-src \'none\'' in html
           print('Export integration checks passed')
           PY
+      - name: Verify Android project configuration
+        run: |
+          gradle --version
+          gradle --no-daemon :app:tasks --all > /tmp/best-food-gradle-tasks.txt
+          grep -q 'assembleDebug' /tmp/best-food-gradle-tasks.txt
+          grep -q 'lintDebug' /tmp/best-food-gradle-tasks.txt
+          test -f app/src/main/AndroidManifest.xml
+          test -f app/src/main/assets/index.html
       - name: Build debug APK
         run: |
           set -o pipefail
