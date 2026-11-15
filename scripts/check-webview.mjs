@@ -263,6 +263,7 @@ element('term').value='우유';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyStatus').textContent,/상품 2종/,'Distinct products should be counted');
 assert.match(element('localSurveyStatus').textContent,/서로 다른 상품의 가격은 직접 비교할 수 없습니다/,'Mixed product prices need a comparison warning');
+assert.doesNotMatch(element('localSurveyResults').innerHTML,/동일 상품·동일 조사일 최저 조사가격/,'Different product sizes must not receive a cheapest badge');
 // Future-dated survey observations must not silently appear to be fresh.
 const futureSurvey=['상품명,판매가격,판매업소,조사일','미래 쌀,5000,가게A,2099-01-01'].join(String.fromCharCode(10));
 element('surveyCsvFile').files=[{name:'future-prices.csv',size:futureSurvey.length,text:async()=>futureSurvey}];
