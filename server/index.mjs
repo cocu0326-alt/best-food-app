@@ -46,6 +46,7 @@ export function cleanNaverTitle(value) {
 export function normalizeNaverItems(data) {
   if (!data || !Array.isArray(data.items)) throw Error('invalid_naver_schema');
   return data.items.slice(0,100).flatMap(item => {
+    if(!item||typeof item!=='object'||Array.isArray(item))return [];
     const name=cleanNaverTitle(item.title);
     const price=Number(item.lprice);
     let url='';
