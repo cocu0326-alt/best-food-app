@@ -436,3 +436,8 @@ assert.ok(html.includes('id="surveyDisplayLimit"'), 'CSV result count control mu
 assert.ok(html.includes('id="surveyDisplaySort"'), 'CSV sort control must exist');
 assert.ok(html.includes('displayPool.slice(0,displayLimit)'), 'Result count must be applied after sorting');
 console.log('PASS: Offline survey sorting and result-count controls are wired');
+
+assert.ok(html.includes('for(const p of allUniqueResults){if(p.price<overallMin)'), 'Overall survey price range must use bounded iteration');
+assert.ok(html.includes('for(const x of group){if(x.price<low)'), 'Group price comparison must use bounded iteration');
+assert.ok(!html.includes('Math.min(...allUniqueResults.map'), 'Do not spread large survey arrays into Math.min');
+console.log('PASS: Large CSV price range calculations avoid argument-count overflow');
