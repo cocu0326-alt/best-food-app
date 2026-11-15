@@ -3,7 +3,7 @@
 import {readFileSync} from 'node:fs';
 import {Script} from 'node:vm';
 const html=readFileSync(new URL('../app/src/main/assets/index.html',import.meta.url),'utf8');
-const scripts=[...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script\\s*>/gi)];
+const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script\s*>/gi)];
 if(!scripts.length)throw new Error('No inline scripts found in Android asset');
 let checked=0;
 for(const [index,match] of scripts.entries()){
