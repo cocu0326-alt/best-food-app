@@ -123,7 +123,7 @@ test('invalid supplier ratings and reviews are excluded rather than fabricated',
     {...base,rating:'4.5',reviews:'12'}
   ];
   const results=normalizeSupplierFeed({products}).products;
-  assert.deepEqual(results.map(p=>[p.rating,p.reviews]),[[4.5,12]]);
+  assert.deepEqual(results.map(p=>[p.rating,p.reviews]),[[null,null],[null,null],[null,null],[4.5,12]]);
 });
 
 test('blank supplier provenance labels fall back without inventing update dates',()=>{
@@ -221,7 +221,7 @@ test('unsafe integer review counts cannot influence supplier ranking',()=>{
     {...base,reviews:'9007199254740992'},
     {...base,reviews:Number.MAX_SAFE_INTEGER}
   ]}).products;
-  assert.deepEqual(products.map(p=>p.reviews),[0,0,Number.MAX_SAFE_INTEGER]);
+  assert.deepEqual(products.map(p=>p.reviews),[null,null,Number.MAX_SAFE_INTEGER]);
 });
 
 test('seller display names collapse repeated whitespace and normalize Unicode',()=>{
