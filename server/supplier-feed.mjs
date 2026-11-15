@@ -22,7 +22,8 @@ export function normalizeSupplierFeed(input) {
     const rating = validNumeric(p.rating) ? Number(p.rating) : NaN;
     const reviews = validNumeric(p.reviews) ? Number(p.reviews) : NaN;
     const normalizedSeller = (typeof p.seller === 'string' && p.seller.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() ? p.seller : typeof p.manufacturer === 'string' && p.manufacturer.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() ? p.manufacturer : '판매처 미확인').replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC').slice(0,120);
-    const source = typeof p.source === 'string' && p.source.trim() ? p.source.trim().slice(0,120) : '공급업체 제공 (원출처 미확인)';
+    const cleanSource = typeof p.source === 'string' ? p.source.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC') : '';
+    const source = cleanSource ? cleanSource.slice(0,120) : '공급업체 제공 (원출처 미확인)';
     return [{
       name:normalizedName, price, size, measure,
       rating:Number.isFinite(rating) && rating >= 0 && rating <= 5 ? rating : 0,
