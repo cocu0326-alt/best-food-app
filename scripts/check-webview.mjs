@@ -128,6 +128,8 @@ assert.equal((groupedHtml.match(/100단위 예상가격 최저/g)||[]).length,2,
 assert.match(groupedHtml,/서울 우유 1L/,'Milk candidate should be visible');
 assert.match(groupedHtml,/사과 주스 500ml/,'Juice candidate should be visible');
 assert.match(groupedHtml,/용량 확인 4개/,'Unit-price-ready candidate count should be displayed');
+assert.ok(groupedHtml.indexOf('<strong>서울 우유 1L</strong>')<groupedHtml.indexOf('<strong>서울 우유 500ml</strong>'),'Cheaper per-100ml milk must appear before higher-unit-price milk');
+assert.ok(groupedHtml.indexOf('<strong>사과 주스 500ml</strong>')<groupedHtml.indexOf('<strong>사과 주스 1L</strong>'),'Cheaper per-100ml juice must appear before higher-unit-price juice');
 assert.match(groupedHtml,/비교 가능한 동일 상품명 그룹 2개/,'Two product groups should be reported');
 assert.ok(groupedHtml.indexOf('서울 우유 (2개 후보')<groupedHtml.indexOf('사과 주스 (2개 후보'),'Groups with larger percentage spreads should be listed first');
 assert.match(groupedHtml,/서울 우유 \(2개 후보, 280~360원\/100ml, 차이 80원 · 최고 단가 대비 22% 낮음\)/,'Milk group should show its own labeled unit-price spread');
