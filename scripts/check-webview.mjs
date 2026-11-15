@@ -100,6 +100,18 @@ vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.equal(vm.runInContext('surveySearchRequest',sandbox,{timeout:3000}),beforeSurveyRequest+1,'New search must invalidate pending CSV reads');
 console.log('PASS: new food search invalidates pending CSV reads');
 
+element('apiEndpoint').value='https://example.test/api/foods';
+element('instantSearchResults').innerHTML='<p>이전 상품 가격</p>';
+element('apiCandidates').innerHTML='<p>이전 API 가격</p>';
+element('term').value='새 검색어';
+vm.runInContext('scheduleLocalSurveySearch()',sandbox,{timeout:3000});
+assert.equal(element('instantSearchResults').innerHTML,'','Editing search query must clear stale saved-product matches');
+assert.equal(element('apiCandidates').innerHTML,'','Editing search query must clear stale remote matches');
+assert.match(element('apiStatus').textContent,/검색 버튼/,'Editing search query should explain when API results refresh');
+element('apiEndpoint').value='';
+console.log('PASS: editing food query clears stale prices and shows API refresh guidance');
+
+
 
 
 
