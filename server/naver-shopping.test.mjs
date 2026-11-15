@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeNaverItems,filterNaverCandidates,loadConsumerSurveyCsv} from './index.mjs';
+import {cleanNaverTitle,normalizeNaverItems,filterNaverCandidates,loadConsumerSurveyCsv} from './index.mjs';
 
 test('Naver shopping results retain source prices without invented quality metadata',()=>{
  const items=normalizeNaverItems({items:[{title:'<b>서울</b> 우유',lprice:'3200',link:'https://example.com/item',mallName:'쇼핑몰A'}]});
@@ -65,4 +65,11 @@ test('Naver results match independent Korean search terms and sort by lowest lis
  assert.deepEqual(results.map(x=>x.price),[2800,3500]);
  assert.deepEqual(filterNaverCandidates(results,'없는상품'),[]);
  assert.deepEqual(filterNaverCandidates(results,'저지방 우유',1).map(x=>x.price),[2800]);
+});
+
+
+test('Naver shopping product titles preserve decoded Korean brand names',()=>{
+ assert.equal(cleanNaverTitle('<b>서울</b> 우유 &amp; 치즈'),'서울 우유 & 치즈');
+ assert.equal(cleanNaverTitle('우유&nbsp;1L &quot;특가&quot;'),'우유 1L "특가"');
+ assert.equal(cleanNaverTitle('A &lt; B &gt; C'), 'A < B > C');
 });
