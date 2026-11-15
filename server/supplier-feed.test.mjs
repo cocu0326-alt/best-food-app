@@ -301,3 +301,9 @@ test('supplier update timestamps enforce UTC offset maximum of fourteen hours',(
  const products=normalizeSupplierFeed({products:dates.map((updatedAt,i)=>({name:'상품'+i,price:1000,size:100,unit:'g',updatedAt}))}).products;
  assert.deepEqual(products.map(p=>p.sourceUpdatedAt),[dates[0],dates[1],null,null,dates[4]]);
 });
+
+test('supplier date validation handles year zero and early years without exceptions',()=>{
+ const dates=['0000-01-01','0001-01-01','0099-12-31','0100-01-01','2026-00-10','2026-11-00'];
+ const products=normalizeSupplierFeed({products:dates.map((updatedAt,i)=>({name:'상품'+i,price:1000,size:100,unit:'g',updatedAt}))}).products;
+ assert.deepEqual(products.map(p=>p.sourceUpdatedAt),[dates[0],dates[1],dates[2],dates[3],null,null]);
+});
