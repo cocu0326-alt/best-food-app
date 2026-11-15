@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -14,12 +15,29 @@ class MainActivity : Activity() {
     private lateinit var web: WebView
     private var pendingFileChoice: ValueCallback<Array<Uri>>? = null
     private val filePickerRequestCode = 4102
+    private val saveRequestCode = 4103
+    private var pendingSave: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         web = WebView(this)
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
+        web.addJavascriptInterface(object {
+            @JavascriptInterface
+            fun saveText(name: String, mime: String, content: String) {
+                if (content.length > 2_000_000 || name !in setOf("best-food-backup.json", "best-food-products.csv", "best-food-price-changes.csv")) return
+                runOnUiThread {
+                    pendingSave = content
+                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = if (mime == "application/json") "application/json" else "text/csv"
+                        putExtra(Intent.EXTRA_TITLE, name)
+                    }
+                    try { startActivityForResult(intent, saveRequestCode) } catch (_: Exception) { pendingSave = null }
+                }
+            }
+        }, "AndroidFiles")
         web.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
                 webView: WebView?,
@@ -68,6 +86,17 @@ class MainActivity : Activity() {
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == saveRequestCode) {
+            val content = pendingSave
+            pendingSave = null
+            if (resultCode == RESULT_OK && content != null && data?.data != null) {
+                try {
+                    contentResolver.openOutputStream(data.data!!)?.use { stream ->
+                        stream.write(content.toByteArray(Charsets.UTF_8))
+                    }
+                } catch (_: Exception) { }
+            }
+        }
         if (requestCode == filePickerRequestCode) {
             val chosen = if (resultCode == RESULT_OK) data?.data?.let { arrayOf(it) } else null
             pendingFileChoice?.onReceiveValue(chosen)
