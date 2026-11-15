@@ -266,3 +266,12 @@ test('source with invisible-only text is marked unverified, and real source is n
   ]}).products;
   assert.deepEqual(products.map(p=>p.source),['공급업체 제공 (원출처 미확인)','산지 공급사']);
 });
+
+test('origin and ingredients normalize invisible whitespace without inventing missing provenance',()=>{
+  const products=normalizeSupplierFeed({products:[
+    {name:'쌀',price:5000,size:500,unit:'g',origin:'\u200b\ufeff',ingredients:'\u00a0\u200b'},
+    {name:'과자',price:4000,size:200,unit:'g',origin:'\u00a0국내\u200b 산\ufeff',ingredients:'밀가루\u200b  설탕'}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.origin),['','국내 산']);
+  assert.deepEqual(products.map(p=>p.ingredients),['','밀가루 설탕']);
+});
