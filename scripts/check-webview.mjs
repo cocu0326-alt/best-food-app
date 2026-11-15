@@ -25,7 +25,7 @@ const storage = new Map([['bestfood_v1',JSON.stringify(sample)]]);
 const sandbox = {
   document:{getElementById:element},
   localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,val)=>storage.set(key,val)},
-  console,URL,Date,Math,Number,String,Array,JSON,Set,window:{},TextEncoder,AbortController,setTimeout,clearTimeout,confirm:()=>true,alert:()=>{}
+  console,URL,Date,Math,Number,String,Array,JSON,Set,window:{},TextEncoder,TextDecoder,AbortController,setTimeout,clearTimeout,confirm:()=>true,alert:()=>{}
 };
 vm.createContext(sandbox);
 for(const match of scripts) vm.runInContext(match[1],sandbox,{timeout:3000});
@@ -235,3 +235,11 @@ assert.match(element('localSurveyResults').innerHTML,/12,000원/,'Quoted multili
 assert.match(element('localSurveyResults').innerHTML,/11,000원/,'Valid survey date should be included');
 assert.doesNotMatch(element('localSurveyResults').innerHTML,/9,900원/,'Impossible survey date should be excluded');
 assert.match(element('localSurveyStatus').textContent,/2개 표시/,'Offline CSV search should report matching rows');
+
+
+// Exercise the Android File.arrayBuffer decoding path used by downloaded UTF-8 CSV.
+const utf8Survey=new TextEncoder().encode(surveyFixture);
+element('surveyCsvFile').files=[{size:utf8Survey.byteLength,arrayBuffer:async()=>utf8Survey.buffer}];
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyResults').innerHTML,/12,000원/,'UTF-8 ArrayBuffer CSV should render Korean prices');
+assert.match(element('localSurveyStatus').textContent,/2개 표시/,'UTF-8 file decoding should retain two valid matches');
