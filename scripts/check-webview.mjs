@@ -18,7 +18,7 @@ const sample = {include:[],exclude:[],products:[
 ]};
 const elements = new Map();
 const element = id => {
-  if (!elements.has(id)) elements.set(id, {value: id === 'sort' ? 'score' : '', innerHTML:'', textContent:'', style:{display:''}, checked:false});
+  if (!elements.has(id)) elements.set(id, {value: id === 'sort' ? 'score' : id === 'measureFilter' ? 'all' : '', innerHTML:'', textContent:'', style:{display:''}, checked:false});
   return elements.get(id);
 };
 const storage = new Map([['bestfood_v1',JSON.stringify(sample)]]);
