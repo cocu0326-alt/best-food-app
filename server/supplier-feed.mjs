@@ -21,6 +21,8 @@ export function normalizeSupplierFeed(input) {
     const validNumeric = value => (typeof value === 'number' || typeof value === 'string') && String(value).trim() !== '';
     const rating = validNumeric(p.rating) ? Number(p.rating) : NaN;
     const reviews = validNumeric(p.reviews) ? Number(p.reviews) : NaN;
+    // Do not invent ratings or review counts when the supplier omitted them.
+    if (!Number.isFinite(rating) || rating < 0 || rating > 5 || !Number.isSafeInteger(reviews) || reviews < 0 || reviews > 100000000) return [];
     const normalizedSeller = (typeof p.seller === 'string' && p.seller.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() ? p.seller : typeof p.manufacturer === 'string' && p.manufacturer.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() ? p.manufacturer : '판매처 미확인').replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC').slice(0,120);
     const cleanSource = typeof p.source === 'string' ? p.source.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC') : '';
     const source = cleanSource ? cleanSource.slice(0,120) : '공급업체 제공 (원출처 미확인)';
@@ -37,8 +39,8 @@ export function normalizeSupplierFeed(input) {
     const sourceUpdatedAt = validCalendarDate && (rawUpdatedAt.length === 10 || validTime) ? rawUpdatedAt.slice(0,40) : null;
     return [{
       name:normalizedName, price, size, measure,
-      rating:Number.isFinite(rating) && rating >= 0 && rating <= 5 ? rating : 0,
-      reviews:Number.isSafeInteger(reviews) && reviews >= 0 ? reviews : 0,
+      rating,
+      reviews,
       seller:normalizedSeller,
       url, source, sourceUpdatedAt,
       origin:typeof p.origin === 'string' ? p.origin.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC').slice(0,200) : '',
