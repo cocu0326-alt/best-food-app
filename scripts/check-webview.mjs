@@ -256,6 +256,13 @@ assert.match(element('localSurveyStatus').textContent,/상품 1종 \/ 판매업�
 assert.match(element('localSurveyStatus').textContent,/표시된 전체 가격 범위 5,000~5,000원/,'Survey summary should label the displayed price range');
 assert.match(element('localSurveyStatus').textContent,/표시된 조사기간 2026-11-01 ~ 2026-11-01/,'Survey summary should show the date range of displayed records');
 assert.match(element('localSurveyStatus').textContent,/1개 조사일/,'Survey summary should count distinct survey dates');
+// Different products in a broad search must not be presented as directly comparable.
+const mixedProducts=['상품명,판매가격,판매업소,조사일','우유 소형,2000,가게A,2026-11-01','우유 대형,4000,가게B,2026-11-01'].join(String.fromCharCode(10));
+element('surveyCsvFile').files=[{name:'mixed-products.csv',size:mixedProducts.length,text:async()=>mixedProducts}];
+element('term').value='우유';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/상품 2종/,'Distinct products should be counted');
+assert.match(element('localSurveyStatus').textContent,/서로 다른 상품의 가격은 직접 비교할 수 없습니다/,'Mixed product prices need a comparison warning');
 // Future-dated survey observations must not silently appear to be fresh.
 const futureSurvey=['상품명,판매가격,판매업소,조사일','미래 쌀,5000,가게A,2099-01-01'].join(String.fromCharCode(10));
 element('surveyCsvFile').files=[{name:'future-prices.csv',size:futureSurvey.length,text:async()=>futureSurvey}];
