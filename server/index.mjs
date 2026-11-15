@@ -149,7 +149,7 @@ export const server = http.createServer(async (req, res) => {
   if (!upstream && consumerPriceCsvPath) {
     try {
       const stat=await import('node:fs/promises').then(fs=>fs.stat(consumerPriceCsvPath));
-      if(!stat.isFile()||stat.size>12_000_000)return send(res,502,{error:'invalid_consumer_csv'},origin);
+      if(!stat.isFile()||stat.size>80_000_000)return send(res,502,{error:'invalid_consumer_csv'},origin);
       const csv=await readFile(consumerPriceCsvPath,'utf8');
       return send(res,200,{products:[],candidates:parseConsumerPriceCsv(csv,q),notice:'한국소비자원 조사 가격이며 실시간 판매가격이 아닙니다.'},origin);
     } catch {return send(res,502,{error:'consumer_csv_unavailable'},origin);}
