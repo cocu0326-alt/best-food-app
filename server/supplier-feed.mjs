@@ -30,8 +30,8 @@ export function normalizeSupplierFeed(input) {
       reviews:Number.isSafeInteger(reviews) && reviews >= 0 ? reviews : 0,
       seller:normalizedSeller,
       url, source, sourceUpdatedAt:typeof p.updatedAt === 'string' && p.updatedAt.trim() ? p.updatedAt.trim().slice(0,40) : null,
-      origin:typeof p.origin === 'string' ? p.origin.trim().slice(0,200) : '',
-      ingredients:typeof p.ingredients === 'string' ? p.ingredients.trim().slice(0,1000) : ''
+      origin:typeof p.origin === 'string' ? p.origin.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC').slice(0,200) : '',
+      ingredients:typeof p.ingredients === 'string' ? p.ingredients.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC').slice(0,1000) : ''
     }];
   })};
 }
