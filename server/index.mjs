@@ -1,5 +1,5 @@
 import http from 'node:http';
-import {readFile} from 'node:fs/promises';
+import {readFile,stat} from 'node:fs/promises';
 import {parseConsumerPriceCsv} from './consumer-price-csv.mjs';
 import {normalizeSupplierFeed} from './supplier-feed.mjs';
 
@@ -140,7 +140,13 @@ export const server = http.createServer(async (req, res) => {
   catch { return send(res, 400, {error:'invalid_request_url'}, origin); }
   if (req.method !== 'GET') return send(res, 405, {error:'method_not_allowed'}, origin);
   if (url.pathname === '/api/foods' && limited(req.socket.remoteAddress || 'unknown')) return send(res, 429, {error:'rate_limited',message:'잠시 후 다시 요청하세요.'}, origin);
-  if (url.pathname === '/health') return send(res, 200, {ok: true, providerConfigured: Boolean(upstream || consumerPriceCsvPath || (naverClientId && naverClientSecret))}, origin);
+  if (url.pathname === '/health') {
+    let csvReady=false;
+    if (consumerPriceCsvPath) {
+      try { const file=await stat(consumerPriceCsvPath);csvReady=file.isFile()&&file.size>0&&file.size<=80_000_000; } catch {}
+    }
+    return send(res,200,{ok:true,providerConfigured:Boolean(upstream||csvReady||(naverClientId&&naverClientSecret)),csvReady},origin);
+  }
   if (url.pathname !== '/api/foods') return send(res, 404, {error: 'not_found'}, origin);
   const queryValues = url.searchParams.getAll('q');
   if (queryValues.length !== 1 || [...url.searchParams.keys()].some(key => key !== 'q')) return send(res, 400, {error: 'invalid_query'}, origin);
@@ -148,7 +154,7 @@ export const server = http.createServer(async (req, res) => {
   if (!q || q.length > 120 || !q.replace(/[\s\u00a0\u200b\ufeff]+/gu, '') || /[\u0000-\u001f\u007f]/u.test(q)) return send(res, 400, {error: 'invalid_query'}, origin);
   if (!upstream && consumerPriceCsvPath) {
     try {
-      const stat=await import('node:fs/promises').then(fs=>fs.stat(consumerPriceCsvPath));
+      const stat=await stat(consumerPriceCsvPath);
       if(!stat.isFile()||stat.size>80_000_000)return send(res,502,{error:'invalid_consumer_csv'},origin);
       const csv=await readFile(consumerPriceCsvPath,'utf8');
       return send(res,200,{products:[],candidates:parseConsumerPriceCsv(csv,q),notice:'한국소비자원 조사 가격이며 실시간 판매가격이 아닙니다.'},origin);
