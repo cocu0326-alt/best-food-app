@@ -53,7 +53,7 @@ async function searchLocalSurvey(){
  if(!/\.csv$/i.test(file.name||'')&&file.name)return status.textContent='CSV(.csv) 파일만 선택할 수 있습니다.';
  const typedQuery=(document.getElementById('term').value||'').trim();
  // Saved include chips are independent required terms, not one contiguous phrase.
- const requiredTerms=(typedQuery?[typedQuery]:state.include).map(x=>x.normalize('NFC').toLowerCase().replace(/\s+/g,'')).filter(Boolean);
+ const requiredTerms=(typedQuery?typedQuery.split(/\s+/):state.include).map(x=>x.normalize('NFC').toLowerCase().replace(/\s+/g,'')).filter(Boolean);
  const exclusions=state.exclude.map(x=>x.normalize('NFC').toLowerCase().replace(/\s+/g,'')).filter(Boolean);
  if(!requiredTerms.length)return status.textContent='상품 검색어를 입력하거나 포함 검색어를 등록하세요.';
  try{
