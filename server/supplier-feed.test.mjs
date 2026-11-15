@@ -295,3 +295,9 @@ test('supplier update timestamps reject invalid clock and timezone values',()=>{
  const products=normalizeSupplierFeed({products:dates.map((updatedAt,i)=>({name:'상품'+i,price:1000,size:100,unit:'g',updatedAt}))}).products;
  assert.deepEqual(products.map(p=>p.sourceUpdatedAt),[null,null,null,null,'2024-02-29',null,'2026-11-15T12:30:00+09:00']);
 });
+
+test('supplier update timestamps enforce UTC offset maximum of fourteen hours',()=>{
+ const dates=['2026-11-15T10:00:00+14:00','2026-11-15T10:00:00-14:00','2026-11-15T10:00:00+14:30','2026-11-15T10:00:00-15:00','2026-11-15T10:00:00+13:45'];
+ const products=normalizeSupplierFeed({products:dates.map((updatedAt,i)=>({name:'상품'+i,price:1000,size:100,unit:'g',updatedAt}))}).products;
+ assert.deepEqual(products.map(p=>p.sourceUpdatedAt),[dates[0],dates[1],null,null,dates[4]]);
+});
