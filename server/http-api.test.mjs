@@ -128,3 +128,10 @@ test('public CSV downloader rejects oversized streaming responses without a Cont
  const stream=new ReadableStream({start(controller){controller.enqueue(new Uint8Array(80_000_001));controller.close()}});
  await assert.rejects(loadRemoteConsumerSurveyCsv('https://www.data.go.kr/download/oversized.csv',async()=>new Response(stream,{headers:{'content-type':'text/csv'}}),30000001),/invalid_consumer_csv/);
 });
+
+test('public CSV downloader refuses header-only feeds with no actual surveyed prices',async()=>{
+ const {loadRemoteConsumerSurveyCsv}=await import('./index.mjs');
+ const csv='상품명,조사일,판매가격,판매업소\n';
+ const fakeFetch=async()=>new Response(csv,{headers:{'content-type':'text/csv'}});
+ await assert.rejects(loadRemoteConsumerSurveyCsv('https://www.data.go.kr/download/header-only.csv',fakeFetch,40000000),/consumer_csv_no_valid_prices/);
+});
