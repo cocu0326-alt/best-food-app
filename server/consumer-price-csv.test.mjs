@@ -66,7 +66,9 @@ test('Korean product search ignores spaces in query and survey product name',()=
  const csv=['상품명,조사일,판매가격,판매업소','서울 우유 1L,2026-11-10,3200,마트A'].join(String.fromCharCode(10));
  assert.equal(parseConsumerPriceCsv(csv,'서울우유').length,1);
  assert.equal(parseConsumerPriceCsv(csv,'서울  우유').length,1);
- assert.equal(parseConsumerPriceCsv(csv,'우유').length,1);
+ const results=parseConsumerPriceCsv(csv,'우유');
+ assert.equal(results.length,1);
+ assert.equal(results[0].surveyDate,'2026-11-01');
 });
 
 
