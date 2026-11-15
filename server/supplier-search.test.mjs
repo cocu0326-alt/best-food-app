@@ -150,3 +150,12 @@ test('multiword searches find products even when terms are separated or in selle
  ]},'사과 청정');
  assert.deepEqual(products.map(p=>p.name),['국산 사과 특품','사과']);
 });
+
+test('multiword product-name token matches outrank seller-only and cross-field matches',()=>{
+ const products=searchSupplierProducts({products:[
+  {name:'배',price:1000,size:100,unit:'g',seller:'사과 청정 농장'},
+  {name:'사과',price:2000,size:100,unit:'g',seller:'청정 농장'},
+  {name:'청정 국내산 사과',price:3000,size:100,unit:'g',seller:'과수원'}
+ ]},'사과 청정');
+ assert.deepEqual(products.map(p=>p.name),['청정 국내산 사과','배','사과']);
+});
