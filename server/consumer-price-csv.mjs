@@ -9,7 +9,7 @@ export function parseCsv(text) {
     else if(afterQuote && ch!==',' && ch!=='\n' && ch!=='\r')throw Error('invalid_csv_quote');
     else if(ch==='"'){if(cell)throw Error('invalid_csv_quote');quoted=true}
     else if(ch===','){row.push(cell);cell='';afterQuote=false}
-    else if(ch==='\n'||ch==='\r'){row.push(cell);rows.push(row);row=[];cell='';afterQuote=false;if(ch==='\r'&&text[i+1]==='\n')i++;if(rows.length>300000)throw Error('too_many_rows')}
+    else if(ch==='\n'||ch==='\r'){if(rows.length>=300000)throw Error('too_many_rows');row.push(cell);rows.push(row);row=[];cell='';afterQuote=false;if(ch==='\r'&&text[i+1]==='\n')i++;}
     else cell+=ch;
   }
   if(quoted)throw Error('unclosed_csv_quote');
