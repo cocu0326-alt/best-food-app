@@ -68,3 +68,11 @@ test('Korean product search ignores spaces in query and survey product name',()=
  assert.equal(parseConsumerPriceCsv(csv,'서울  우유').length,1);
  assert.equal(parseConsumerPriceCsv(csv,'우유').length,1);
 });
+
+
+test('accepts UTF-8 BOM at the start of official CSV headers',()=>{
+ const csv='\uFEFF상품명,조사일,판매가격,판매업소\n사과,2026-11-12,3500,마트A';
+ const found=parseConsumerPriceCsv(csv,'사과');
+ assert.equal(found.length,1);
+ assert.equal(found[0].price,3500);
+});
