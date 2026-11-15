@@ -1,7 +1,7 @@
 // Offline adapter for the freely downloadable Korean Consumer Agency price CSV.
 // Preview only: survey prices are not current online checkout prices.
 export function parseCsv(text) {
-  if (typeof text !== 'string' || text.length > 12_000_000) throw Error('invalid_csv_size');
+  if (typeof text !== 'string' || text.length > 80_000_000) throw Error('invalid_csv_size');
   const rows=[];let row=[],cell='',quoted=false;
   for(let i=0;i<text.length;i++){
     const ch=text[i];
