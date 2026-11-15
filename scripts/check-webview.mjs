@@ -429,7 +429,7 @@ element('surveyDisplayLimit').value='30';
 const hiddenCheapest=['상품명,판매가격,판매업소,조사일'];
 for(let i=0;i<30;i++)hiddenCheapest.push('국산 쌀,20000,가게'+i+',2026-11-02');
 hiddenCheapest.push('국산 쌀,1000,숨은최저가마트,2026-11-01');
-const hiddenCsv=hiddenCheapest.join('\\n');
+const hiddenCsv=hiddenCheapest.join(String.fromCharCode(10));
 element('surveyCsvFile').files=[{name:'hidden.csv',size:hiddenCsv.length,text:async()=>hiddenCsv}];
 element('term').value='쌀';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
