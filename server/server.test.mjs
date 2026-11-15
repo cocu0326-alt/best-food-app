@@ -47,6 +47,18 @@ test('supplier fetch rejects non-JSON responses and oversized feeds',async()=>{
   assert.equal(nonJson.ok,false);
   await assert.rejects(readBoundedJson(new Response('x'.repeat(1024*1024+1),{headers:{'content-type':'application/json'}})),/feed_too_large/);
 });
+test('server replies with safe CORS headers and never grants unknown origins',async()=>{
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  try {
+    const base='http://127.0.0.1:'+server.address().port;
+    for(const origin of ['null','https://untrusted.example']){
+      const response=await fetch(base+'/health',{headers:{Origin:origin}});
+      assert.equal(response.status,200);
+      // Default is deny-by-omission. A null origin is never enabled implicitly.
+      assert.equal(response.headers.get('access-control-allow-origin'),null);
+    }
+  } finally {await new Promise((resolve,reject)=>server.close(err=>err?reject(err):resolve()));}
+});
 test('API health and unconfigured provider responses',async()=>{
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   try {
