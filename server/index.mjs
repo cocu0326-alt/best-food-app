@@ -76,7 +76,8 @@ export function searchSupplierProducts(data, q) {
     const key = JSON.stringify([
       normalizeSearchText(product.name),
       normalizeSearchText(product.seller),
-      product.price, product.size, product.measure
+      product.price, product.size, product.measure,
+      product.url || ''
     ]);
     if (seen.has(key)) continue;
     seen.add(key);
