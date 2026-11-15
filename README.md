@@ -28,4 +28,13 @@
 
 ## 자동 검증
 
-`.github/workflows/android-apk.yml`에서 JavaScript 문법, 파일 저장 연결, APK 빌드·구성·압축 무결성, Android Lint를 검사합니다. 빌드가 성공하면 APK를 먼저 업로드하므로 이후 Lint 실패와 관계없이 생성된 APK를 확보할 수 있습니다. 실제 단말 실행과 파일 입출력은 별도 확인이 필요합니다.
+`.github/workflows/android-apk-build.yml`에서 앱에 포함된 JavaScript 문법 검사, 공공 가격조사 CSV 회귀 테스트, Android APK 빌드 및 패키지 이름 확인을 순서대로 수행합니다. 검사가 실패하면 APK 빌드 단계로 진행하지 않습니다. 실제 단말 실행과 파일 입출력은 별도 확인이 필요합니다. CSV 단독 테스트는 `.github/workflows/consumer-price-csv-tests.yml`에서도 실행됩니다.
+
+## 무료 데이터로 사용하기
+
+1. 앱의 검색어 입력창에 상품명을 입력합니다.
+2. [한국소비자원 참가격 공공데이터](https://www.data.go.kr/data/15083256/fileData.do)에서 CSV를 내려받습니다.
+3. 앱의 CSV 파일 선택 버튼으로 내려받은 파일을 엽니다. 검색어가 있으면 자동 검색하며, 검색어 변경 시에도 결과가 갱신됩니다.
+4. 동일한 상품명과 조사일의 표시된 결과끼리 최저가·최고가·차액을 확인합니다. **이는 과거 조사 가격이며 현재 온라인 결제 가격이 아닙니다.**
+
+실시간 상품 가격을 자동으로 가져오려면 이용 권한이 있는 공급 API와 HTTPS 서버가 필요합니다. 앱에는 유료 API 가입이나 유료 서버를 강제하지 않으며, 인증키를 앱에 직접 넣지 않습니다. 서버 구성은 [`server/README.md`](server/README.md)를 참고하세요.
