@@ -22,3 +22,10 @@ test('rejects oversized official price page before reading response body',async(
  await assert.rejects(fetchPublicWeeklyPrices(async()=>fake),/public_price_page_too_large/);
  assert.equal(read,false);
 });
+
+test('official homepage price adapter supports egg packs and food sachets',()=>{
+ const html='<section>풀무원 동물복지 유정란(10개) 금주 9,507 2주전 대비 260</section><section>매일두유 99.9(12팩) 금주 11,394 2주전 대비 234</section>';
+ const prices=parsePublicWeeklyPrices(html);
+ assert.ok(prices.some(x=>x.name.includes('유정란')&&x.price===9507));
+ assert.ok(prices.some(x=>x.name.includes('매일두유')&&x.price===11394));
+});
