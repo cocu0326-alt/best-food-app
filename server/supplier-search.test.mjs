@@ -167,3 +167,9 @@ test('repeated search words do not require repeated product words',()=>{
  ]},'사과 사과');
  assert.deepEqual(products.map(p=>p.name),['국산 사과']);
 });
+
+test('invisible-only queries never return all supplier products',()=>{
+ const feed={products:[{name:'국산 사과',price:1000,size:100,unit:'g',seller:'농장'}]};
+ assert.deepEqual(searchSupplierProducts(feed,'\u200b\ufeff'),[]);
+ assert.deepEqual(searchSupplierProducts(feed,'\u00a0 \u200b'),[]);
+});
