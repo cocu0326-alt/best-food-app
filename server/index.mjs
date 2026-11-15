@@ -21,8 +21,21 @@ export async function loadRemoteConsumerSurveyCsv(url, fetchImpl=fetch, now=Date
   if(mime.includes('text/html')||mime.includes('application/json'))throw Error('consumer_csv_not_download');
   const size=Number(response.headers.get('content-length'));
   if(Number.isFinite(size)&&size>80_000_000)throw Error('invalid_consumer_csv');
-  const bytes=new Uint8Array(await response.arrayBuffer());
-  if(!bytes.length||bytes.length>80_000_000)throw Error('invalid_consumer_csv');
+  // Enforce the byte limit while streaming; Content-Length can be absent or false.
+  if(!response.body)throw Error('consumer_csv_download_failed');
+  const reader=response.body.getReader(),chunks=[];let total=0;
+  try{
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      total+=value.byteLength;
+      if(total>80_000_000)throw Error('invalid_consumer_csv');
+      chunks.push(value);
+    }
+  }catch(error){await reader.cancel().catch(()=>{});throw error}
+  if(!total)throw Error('invalid_consumer_csv');
+  const bytes=new Uint8Array(total);let offset=0;
+  for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength}
   let text;
   try{text=new TextDecoder('utf-8',{fatal:true}).decode(bytes)}
   catch{text=new TextDecoder('euc-kr',{fatal:true}).decode(bytes)}
