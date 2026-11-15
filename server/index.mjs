@@ -53,7 +53,7 @@ export async function fetchSupplierJson(target, authToken = '', timeoutMs = 8000
 export function searchSupplierProducts(data, q) {
   if (!data || !Array.isArray(data.products)) throw new Error('invalid_upstream_schema');
   const normalized = normalizeSupplierFeed(data);
-  const normalizeSearchText = value => value.normalize('NFC').replace(/\s+/gu, ' ').trim().toLocaleLowerCase('ko-KR');
+  const normalizeSearchText = value => value.normalize('NFC').replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().toLocaleLowerCase('ko-KR');
   const query = normalizeSearchText(q);
   const seen = new Set();
   const exactNameMatches = [];
