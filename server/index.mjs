@@ -60,10 +60,15 @@ export function searchSupplierProducts(data, q) {
   const startsWithNameMatches = [];
   const nameMatches = [];
   const sellerMatches = [];
+  const tokenMatches = [];
+  const tokens = query.split(' ').filter(Boolean);
   for (const product of normalized.products) {
-    const nameMatch = normalizeSearchText(product.name).includes(query);
-    const sellerMatch = normalizeSearchText(product.seller).includes(query);
-    if (!nameMatch && !sellerMatch) continue;
+    const nameText = normalizeSearchText(product.name);
+    const sellerText = normalizeSearchText(product.seller);
+    const nameMatch = nameText.includes(query);
+    const sellerMatch = sellerText.includes(query);
+    const tokenMatch = tokens.length > 1 && tokens.every(token => nameText.includes(token) || sellerText.includes(token));
+    if (!nameMatch && !sellerMatch && !tokenMatch) continue;
     const key = JSON.stringify([
       normalizeSearchText(product.name),
       normalizeSearchText(product.seller),
@@ -71,9 +76,9 @@ export function searchSupplierProducts(data, q) {
     ]);
     if (seen.has(key)) continue;
     seen.add(key);
-    (normalizeSearchText(product.name) === query ? exactNameMatches : normalizeSearchText(product.name).startsWith(query) ? startsWithNameMatches : nameMatch ? nameMatches : sellerMatches).push(product);
+    (nameText === query ? exactNameMatches : nameText.startsWith(query) ? startsWithNameMatches : nameMatch ? nameMatches : sellerMatch ? sellerMatches : tokenMatches).push(product);
   }
-  const results = exactNameMatches.concat(startsWithNameMatches, nameMatches, sellerMatches).slice(0,100);
+  const results = exactNameMatches.concat(startsWithNameMatches, nameMatches, sellerMatches, tokenMatches).slice(0,100);
   return results;
 }
 const requests = new Map();
