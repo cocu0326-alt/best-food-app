@@ -259,3 +259,10 @@ element('surveyCsvFile').files=[{size:hostileCsv.length,text:async()=>hostileCsv
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.doesNotMatch(element('localSurveyResults').innerHTML,/<img|<script>/i,'Untrusted CSV must not inject HTML');
 assert.match(element('localSurveyResults').innerHTML,/&lt;img/,'Untrusted CSV must display escaped product names');
+
+
+// Android document picker must reject non-CSV extensions before parsing.
+element('surveyCsvFile').files=[{name:'backup.json',size:100,text:async()=>surveyFixture}];
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/CSV\(\.csv\) 파일만/,'Non-CSV file selection must be rejected');
+assert.equal(element('localSurveyResults').innerHTML,'','Non-CSV file must clear previous search results');
