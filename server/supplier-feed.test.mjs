@@ -283,3 +283,9 @@ test('supplier update timestamps containing only invisible characters are missin
   ]}).products;
   assert.deepEqual(products.map(p=>p.sourceUpdatedAt),[null,'2026-11-15']);
 });
+
+test('invalid supplier calendar dates do not appear as verified update dates',()=>{
+ const dates=['2026-02-30','2026-13-01','yesterday','2026-11-15','2026-11-15T09:10:00Z'];
+ const products=normalizeSupplierFeed({products:dates.map((updatedAt,i)=>({name:'상품'+i,price:1000,size:100,unit:'g',updatedAt}))}).products;
+ assert.deepEqual(products.map(p=>p.sourceUpdatedAt),[null,null,null,'2026-11-15','2026-11-15T09:10:00Z']);
+});
