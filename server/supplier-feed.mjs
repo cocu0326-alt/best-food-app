@@ -24,12 +24,17 @@ export function normalizeSupplierFeed(input) {
     const normalizedSeller = (typeof p.seller === 'string' && p.seller.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() ? p.seller : typeof p.manufacturer === 'string' && p.manufacturer.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() ? p.manufacturer : '판매처 미확인').replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC').slice(0,120);
     const cleanSource = typeof p.source === 'string' ? p.source.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC') : '';
     const source = cleanSource ? cleanSource.slice(0,120) : '공급업체 제공 (원출처 미확인)';
+    const rawUpdatedAt = typeof p.updatedAt === 'string' ? p.updatedAt.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() : '';
+    const datePart = rawUpdatedAt.slice(0,10);
+    const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+    const validCalendarDate = dateMatch && new Date(Date.UTC(Number(dateMatch[1]), Number(dateMatch[2])-1, Number(dateMatch[3]))).toISOString().slice(0,10) === datePart;
+    const sourceUpdatedAt = validCalendarDate && (rawUpdatedAt.length === 10 || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(rawUpdatedAt) && !Number.isNaN(Date.parse(rawUpdatedAt))) ? rawUpdatedAt.slice(0,40) : null;
     return [{
       name:normalizedName, price, size, measure,
       rating:Number.isFinite(rating) && rating >= 0 && rating <= 5 ? rating : 0,
       reviews:Number.isSafeInteger(reviews) && reviews >= 0 ? reviews : 0,
       seller:normalizedSeller,
-      url, source, sourceUpdatedAt:typeof p.updatedAt === 'string' && p.updatedAt.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() ? p.updatedAt.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().slice(0,40) : null,
+      url, source, sourceUpdatedAt,
       origin:typeof p.origin === 'string' ? p.origin.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC').slice(0,200) : '',
       ingredients:typeof p.ingredients === 'string' ? p.ingredients.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC').slice(0,1000) : ''
     }];
