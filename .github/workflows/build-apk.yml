@@ -83,7 +83,8 @@ jobs:
           assert "saveDownload('best-food-backup.json','application/json'" in html, 'Backup MIME mismatch'
           for filename in filenames[1:]:
               assert f"saveDownload('{filename}','text/csv;charset=utf-8'" in html, f'CSV MIME mismatch: {filename}'
-          assert 'mime != if (name.endsWith(".json")) "application/json" else "text/csv;charset=utf-8"' in native, 'Android MIME validation missing'
+          assert 'mime != expectedMime' in native, 'Android MIME validation missing'
+          assert 'val expectedMime = if (name == "best-food-backup.json") "application/json" else "text/csv;charset=utf-8"' in native, 'Android MIME mapping missing'
           assert 'Intent.ACTION_CREATE_DOCUMENT' in native, 'Android save dialog missing'
           print('Web and Android export filenames, byte limits, and save dialog verified')
           PY
