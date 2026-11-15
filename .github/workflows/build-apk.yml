@@ -110,6 +110,9 @@ jobs:
               assert setting in native, f'Missing WebView security setting: {setting}'
           assert 'android:usesCleartextTraffic="false"' in manifest, 'Cleartext traffic must be disabled'
           assert 'web.loadUrl("file:///android_asset/index.html")' in native, 'Unexpected app entrypoint'
+          assert 'data?.data?.takeIf { it.scheme == "content" }' in native, 'File import must validate content URI'
+          assert 'val destination = if (resultCode == RESULT_OK) data?.data?.takeIf { it.scheme == "content" } else null' in native, 'File export must validate content URI'
+          assert 'contentResolver.openOutputStream(destination)' in native, 'File export must use validated URI'
           print('Android WebView security settings verified')
           PY
       - name: Test supplier API server
