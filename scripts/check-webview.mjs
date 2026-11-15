@@ -45,7 +45,7 @@ vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.match(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Search should show a saved matching food');
 assert.match(element('instantSearchResults').innerHTML,/국산 쌀 B/,'Search should show all saved matching foods');
 assert.match(element('instantSearchResults').innerHTML,/100g당 1,000원/,'Saved food search must show calculated unit price');
-assert.match(element('instantSearchResults').innerHTML,/동일 상품·단위 최저 단위가격/,'Search must label a lowest unit price');
+assert.doesNotMatch(element('instantSearchResults').innerHTML,/동일 상품·단위 최저 단위가격/,'Single item in each food-name and unit group must not imply a price comparison');
 vm.runInContext("state.products.push({id:999,name:'국산 쌀 A',price:12000,size:2000,measure:'g',seller:'테스트 대용량'})",sandbox,{timeout:3000});
 vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.match(element('instantSearchResults').innerHTML,/100g당 600원 · 동일 상품·단위 최저 단위가격/,'Larger pack with lower unit price must win');
