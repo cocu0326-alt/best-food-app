@@ -35,6 +35,20 @@ jobs:
           Path('/tmp/best-food-inline.js').write_text('\n;\n'.join(scripts), encoding='utf-8')
           PY
           node --check /tmp/best-food-inline.js
+      - name: Check export integration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path('app/src/main/assets/index.html').read_text(encoding='utf-8')
+          native = Path('app/src/main/java/kr/bestfood/app/MainActivity.kt').read_text(encoding='utf-8')
+          assert 'function saveDownload(' in html
+          assert html.count('saveDownload(') == 4, 'Expected one helper and three export calls'
+          assert 'fun saveText(' in native
+          assert 'Intent.ACTION_CREATE_DOCUMENT' in native
+          assert 'Intent.ACTION_OPEN_DOCUMENT' in native
+          assert 'JavascriptInterface' in native
+          print('Export integration checks passed')
+          PY
       - name: Run Android lint
         run: gradle --no-daemon :app:lintDebug
       - name: Build debug APK
