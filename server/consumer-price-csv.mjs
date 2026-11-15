@@ -40,5 +40,13 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
   }
   // The source file can be ordered oldest-first; show the newest surveyed prices first.
   out.sort((a,b)=>b.surveyDate.replace(/[-./]/g,'').localeCompare(a.surveyDate.replace(/[-./]/g,''))||a.price-b.price);
-  return out.slice(0,limit);
+  // Keep one record per product/store/date; duplicated source rows must not flood the preview.
+  const seen=new Set(),unique=[];
+  for(const item of out){
+    const key=JSON.stringify([item.name,item.seller,item.surveyDate,item.price]);
+    if(seen.has(key))continue;
+    seen.add(key);unique.push(item);
+    if(unique.length>=limit)break;
+  }
+  return unique;
 }
