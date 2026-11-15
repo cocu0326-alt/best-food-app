@@ -31,7 +31,9 @@ if(candidates.length){status.textContent='실제 검색 결과 '+candidates.leng
 render();
 </script><script>
 const surveyCsvCache=new WeakMap();
+let surveySearchRequest=0;
 async function searchLocalSurvey(){
+ const requestId=++surveySearchRequest;
  const file=document.getElementById('surveyCsvFile').files[0],status=document.getElementById('localSurveyStatus'),box=document.getElementById('localSurveyResults');
  box.innerHTML='';status.textContent='';
  if(!file)return status.textContent='먼저 무료 가격조사 CSV 파일을 선택하세요.';
@@ -65,6 +67,7 @@ async function searchLocalSurvey(){
   if(cell||row.length){row.push(cell);rows.push(row)}
   surveyCsvCache.set(file,rows);
   }
+  if(requestId!==surveySearchRequest)return;
   const headers=(rows[0]||[]).map(x=>x.replace(/^\uFEFF/,'').trim().replace(/\s+/g,''));
   const col=(...names)=>headers.findIndex(x=>names.includes(x));
   const ni=col('상품명','제품명'),pi=col('판매가격','판매가격(원)','가격','가격(원)'),si=col('판매업소','판매업소명','판매점','판매점명','업소명'),di=col('조사일','조사일자','조사일시');
@@ -74,13 +77,15 @@ async function searchLocalSurvey(){
   found.sort((a,b)=>b.date.replace(/[-./]/g,'').localeCompare(a.date.replace(/[-./]/g,''))||a.price-b.price);
   const seen=new Set(),results=[];
   for(const item of found){const key=JSON.stringify([item.name,item.seller,item.date,item.price]);if(seen.has(key))continue;seen.add(key);if(results.length<30)results.push(item)}
+  if(requestId!==surveySearchRequest)return;
   status.textContent='무료 조사자료 검색 '+results.length+'개 표시'+(seen.size>30?' (최대 30개 표시, 중복 제외 '+seen.size+'개)':'')+' · 파일 '+(file.name||'이름 없음')+' · 현재 판매가격이 아닌 조사 가격입니다.';
   // Only compare the exact same product name on the exact same survey date.
   // Different products or survey dates must never share a cheapest-price label.
   const groups=new Map();
   for(const p of results){const key=JSON.stringify([p.name.normalize('NFC').trim(),p.date.replace(/[-./]/g,'')]);const group=groups.get(key)||[];group.push(p);groups.set(key,group)}
   const shownGroupSummary=new Set();
+  if(!results.length){box.innerHTML='<p class="hint">검색 결과가 없습니다. 다른 상품명으로 검색하거나 CSV의 조사기간을 확인하세요.</p>';return}
   box.innerHTML=results.map(p=>{const key=JSON.stringify([p.name.normalize('NFC').trim(),p.date.replace(/[-./]/g,'')]);const group=groups.get(key)||[];const firstInGroup=!shownGroupSummary.has(key);shownGroupSummary.add(key);const low=Math.min(...group.map(x=>x.price)),high=Math.max(...group.map(x=>x.price));const cheapest=group.length>1&&p.price===low;const spread=firstInGroup&&group.length>1&&high>low?'<p class="hint">같은 상품·조사일의 표시된 '+group.length+'개 결과: 최저 '+low.toLocaleString('ko-KR')+'원 / 최고 '+high.toLocaleString('ko-KR')+'원 (차이 '+(high-low).toLocaleString('ko-KR')+'원 · 최고가 대비 '+((high-low)/high*100).toFixed(1)+'% 절약 가능)</p>':'';return '<div class="result"><div class="details"><strong>'+esc(p.name)+'</strong><p>'+esc(p.seller)+' · '+p.price.toLocaleString('ko-KR')+'원 · 조사일 '+esc(p.date)+'</p>'+(cheapest?'<p class="hint" style="color:#17663d;font-weight:700">동일 상품·동일 조사일 최저 조사가격 (표시된 결과 내)</p>':'') +spread+'<p class="hint">조사가격(현재 판매가 아님)</p></div></div>'}).join('');
- }catch(e){status.textContent='CSV를 읽지 못했습니다: '+e.message}
+ }catch(e){if(requestId===surveySearchRequest)status.textContent='CSV를 읽지 못했습니다: '+e.message}
 }
 </script></body></html>
