@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -19,6 +20,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
       - name: Set up Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -55,7 +58,7 @@ jobs:
           print('Export integration checks passed')
           PY
       - name: Build debug APK
-        run: gradle --no-daemon :app:assembleDebug
+        run: gradle --no-daemon --stacktrace :app:assembleDebug
       - name: Verify APK output
         run: |
           test -s app/build/outputs/apk/debug/app-debug.apk
@@ -81,7 +84,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Run Android lint
-        run: gradle --no-daemon :app:lintDebug
+        run: gradle --no-daemon --stacktrace :app:lintDebug
       - name: Upload Android lint diagnostics
         if: always()
         uses: actions/upload-artifact@v4
