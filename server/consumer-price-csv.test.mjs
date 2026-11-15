@@ -99,3 +99,10 @@ test('zero result limit cannot bypass maximum CSV size',()=>{
  const oversized='x'.repeat(80_000_001);
  assert.throws(()=>parseConsumerPriceCsv(oversized,'',0),/invalid_csv_size/);
 });
+
+
+test('rejects stray characters after a closing CSV quote',()=>{
+ assert.throws(()=>parseCsv('name,price\n"apple"junk,3500'),/invalid_csv_quote/);
+ assert.deepEqual(parseCsv('name,price\n"apple",3500'),[['name','price'],['apple','3500']]);
+ assert.deepEqual(parseCsv('name,price\n"a""b",3500'),[['name','price'],['a"b','3500']]);
+});
