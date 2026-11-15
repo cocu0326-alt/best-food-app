@@ -48,3 +48,9 @@ test('accepts common CSV header variants and keeps real sale flags',()=>{
  assert.equal(found[0].saleStatus,'Y');
  assert.equal(found[0].onePlusOne,'N');
 });
+
+test('shows newest survey dates first even when CSV is oldest-first',()=>{
+ const csv=['상품명,조사일,판매가격,판매업소','사과,2024-01-10,1000,마트A','사과,2026-11-10,3000,마트B','사과,2025-05-10,2000,마트C'].join(String.fromCharCode(10));
+ const found=parseConsumerPriceCsv(csv,'사과',2);
+ assert.deepEqual(found.map(x=>x.price),[3000,2000]);
+});
