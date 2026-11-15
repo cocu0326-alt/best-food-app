@@ -31,7 +31,7 @@ jobs:
         run: |
           node server/check-android-webview-syntax.mjs
           node scripts/check-webview.mjs
-          node --test server/consumer-price-csv.test.mjs server/naver-shopping.test.mjs server/http-api.test.mjs
+          node --test server/consumer-price-csv.test.mjs server/demo-consumer-prices.test.mjs server/naver-shopping.test.mjs server/http-api.test.mjs
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
       - name: Verify generated APK and package identity
