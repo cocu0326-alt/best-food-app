@@ -25,6 +25,41 @@ jobs:
           Path('/tmp/best-food-inline.js').write_text('\n;\n'.join(scripts), encoding='utf-8')
           PY
           node --check /tmp/best-food-inline.js
+      - name: Validate app controls and event handlers
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import re
+          html = Path('app/src/main/assets/index.html').read_text(encoding='utf-8')
+          script = '\\n'.join(re.findall(r'<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>', html, flags=re.I))
+          class Controls(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = set()
+                  self.duplicates = set()
+                  self.handlers = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if 'id' in attrs:
+                      if attrs['id'] in self.ids: self.duplicates.add(attrs['id'])
+                      self.ids.add(attrs['id'])
+                  for key, value in attrs.items():
+                      if key.startswith('on') and value:
+                          self.handlers.append(value)
+          controls = Controls()
+          controls.feed(html)
+          assert not controls.duplicates, f'Duplicate HTML IDs: {controls.duplicates}'
+          referenced = set(re.findall(r"document\\.getElementById\\(['\\\"]([^'\\\"]+)['\\\"]\\)", script))
+          missing = referenced - controls.ids
+          assert not missing, f'Missing DOM controls: {sorted(missing)}'
+          functions = set(re.findall(r'function\\s+([A-Za-z_$][\\w$]*)\\s*\\(', script))
+          for handler in controls.handlers:
+              match = re.match(r'\\s*([A-Za-z_$][\\w$]*)\\s*\\(', handler)
+              if match and match.group(1) not in functions:
+                  raise AssertionError(f'Unknown event handler: {handler}')
+          print(f'Validated {len(controls.ids)} control IDs and {len(controls.handlers)} event handlers')
+          PY
       - name: Test supplier API server
         run: node --test server/server.test.mjs
       - name: Build debug APK
