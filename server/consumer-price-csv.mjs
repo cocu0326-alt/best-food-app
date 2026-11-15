@@ -7,7 +7,7 @@ export function parseCsv(text) {
     const ch=text[i];
     if(quoted){if(ch==='"'&&text[i+1]==='"'){cell+='"';i++}else if(ch==='"'){quoted=false;afterQuote=true}else cell+=ch}
     else if(afterQuote && ch!==',' && ch!=='\n' && ch!=='\r')throw Error('invalid_csv_quote');
-    else if(ch==='"'){if(cell)throw Error('invalid_csv_quote');quoted=true}
+    else if(ch==='"'){if(cell || afterQuote)throw Error('invalid_csv_quote');quoted=true}
     else if(ch===','){row.push(cell);cell='';afterQuote=false}
     else if(ch==='\n'||ch==='\r'){if(rows.length>=300000)throw Error('too_many_rows');row.push(cell);rows.push(row);row=[];cell='';afterQuote=false;if(ch==='\r'&&text[i+1]==='\n')i++;}
     else cell+=ch;
