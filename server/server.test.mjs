@@ -65,7 +65,7 @@ test('API health and unconfigured provider responses',async()=>{
     const base='http://127.0.0.1:'+server.address().port;
     const health=await fetch(base+'/health');
     assert.equal(health.status,200);
-    assert.deepEqual(await health.json(),{ok:true,providerConfigured:false});
+    assert.deepEqual(await health.json(),{ok:true,providerConfigured:false,csvReady:false});
     const missing=await fetch(base+'/api/foods?q='+encodeURIComponent('사과'));
     assert.equal(missing.status,503);
     assert.equal((await missing.json()).error,'provider_not_configured');
