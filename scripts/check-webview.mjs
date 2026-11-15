@@ -425,3 +425,9 @@ element('surveyCsvFile').files=[{name:'bom.csv',size:bomCsv.length,text:async()=
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyStatus').textContent,/1개 표시/,'UTF-8 BOM CSV should produce a search result');
 assert.match(element('localSurveyResults').innerHTML,/국산 사과/,'UTF-8 BOM CSV product should render');
+
+// Display limit must not silently narrow the survey-price comparison pool.
+assert.ok(html.includes('allUniqueResults.push(item)'), 'All matching survey rows must be retained for comparison');
+assert.ok(html.includes('for(const p of allUniqueResults)'), 'Survey comparison must use all matching rows, not only the 30 displayed rows');
+assert.ok(html.includes('전체 검색 결과 기준'), 'Price comparison scope must be visible to users');
+console.log('PASS: CSV comparison is not restricted to the 30 visible rows');
