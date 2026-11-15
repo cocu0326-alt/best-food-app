@@ -26,7 +26,7 @@ export function normalizeSupplierFeed(input) {
       name:normalizedName, price, size, measure,
       rating:Number.isFinite(rating) && rating >= 0 && rating <= 5 ? rating : 0,
       reviews:Number.isSafeInteger(reviews) && reviews >= 0 ? reviews : 0,
-      seller:(typeof p.seller === 'string' && p.seller.trim() ? p.seller : typeof p.manufacturer === 'string' && p.manufacturer.trim() ? p.manufacturer : '판매처 미확인').trim().replace(/\s+/gu, ' ').normalize('NFC').slice(0,120),
+      seller:(typeof p.seller === 'string' && p.seller.trim() ? p.seller : typeof p.manufacturer === 'string' && p.manufacturer.trim() ? p.manufacturer : '판매처 미확인').trim().replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC').slice(0,120),
       url, source, sourceUpdatedAt:typeof p.updatedAt === 'string' && p.updatedAt.trim() ? p.updatedAt.trim().slice(0,40) : null,
       origin:typeof p.origin === 'string' ? p.origin.trim().slice(0,200) : '',
       ingredients:typeof p.ingredients === 'string' ? p.ingredients.trim().slice(0,1000) : ''
