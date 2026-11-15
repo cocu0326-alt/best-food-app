@@ -154,8 +154,8 @@ export const server = http.createServer(async (req, res) => {
   if (!q || q.length > 120 || !q.replace(/[\s\u00a0\u200b\ufeff]+/gu, '') || /[\u0000-\u001f\u007f]/u.test(q)) return send(res, 400, {error: 'invalid_query'}, origin);
   if (!upstream && consumerPriceCsvPath) {
     try {
-      const stat=await stat(consumerPriceCsvPath);
-      if(!stat.isFile()||stat.size>80_000_000)return send(res,502,{error:'invalid_consumer_csv'},origin);
+      const csvFileStat=await stat(consumerPriceCsvPath);
+      if(!csvFileStat.isFile()||csvFileStat.size>80_000_000)return send(res,502,{error:'invalid_consumer_csv'},origin);
       const csv=await readFile(consumerPriceCsvPath,'utf8');
       return send(res,200,{products:[],candidates:parseConsumerPriceCsv(csv,q),notice:'한국소비자원 조사 가격이며 실시간 판매가격이 아닙니다.'},origin);
     } catch {return send(res,502,{error:'consumer_csv_unavailable'},origin);}
