@@ -2,19 +2,7 @@ name: Android debug APK build
 on:
   push:
     branches: [main]
-    paths:
-      - 'app/**'
-      - 'build.gradle.kts'
-      - 'settings.gradle.kts'
-      - 'gradle.properties'
-      - '.github/workflows/android-apk-build.yml'
   pull_request:
-    paths:
-      - 'app/**'
-      - 'build.gradle.kts'
-      - 'settings.gradle.kts'
-      - 'gradle.properties'
-      - '.github/workflows/android-apk-build.yml'
   workflow_dispatch:
 jobs:
   build:
@@ -36,6 +24,12 @@ jobs:
           gradle-version: '8.9'
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
+      - name: Verify generated APK and package identity
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "package: name='kr.bestfood.app'"
+          sha256sum "$APK"
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
