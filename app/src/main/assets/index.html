@@ -32,7 +32,7 @@ render();
 </script><script>
 async function searchLocalSurvey(){
  const file=document.getElementById('surveyCsvFile').files[0],status=document.getElementById('localSurveyStatus'),box=document.getElementById('localSurveyResults');
- box.textContent='';
+ box.innerHTML='';
  if(!file)return status.textContent='먼저 무료 가격조사 CSV 파일을 선택하세요.';
  if(file.size>80_000_000)return status.textContent='80MB 이하 CSV만 열 수 있습니다.';
  const q=(document.getElementById('term').value||'').trim().normalize('NFC').toLowerCase().replace(/\s+/g,'');
