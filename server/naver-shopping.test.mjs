@@ -118,3 +118,16 @@ test('shopping size extraction recognizes only single unambiguous packages',()=>
  assert.deepEqual([items[0].size,items[0].measure],[1000,'ml']);
  assert.equal(items[1].size,null);
 });
+
+test('unit-price comparison must distinguish pack prices from comparable quantities',()=>{
+ const items=normalizeNaverItems({items:[
+  {title:'우유 500ml',lprice:'1800',link:'https://example.com/a'},
+  {title:'우유 1L',lprice:'2800',link:'https://example.com/b'},
+  {title:'우유 1L 2팩',lprice:'4500',link:'https://example.com/c'}
+ ]});
+ assert.deepEqual(items.map(x=>x.size),[500,1000,null]);
+ const comparable=items.filter(x=>x.size!==null);
+ assert.equal(comparable[0].price/comparable[0].size*100,360);
+ assert.equal(comparable[1].price/comparable[1].size*100,280);
+ assert.equal(comparable[1].name,'우유 1L');
+});
