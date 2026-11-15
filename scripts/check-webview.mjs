@@ -286,6 +286,8 @@ assert.doesNotMatch(element('localSurveyResults').innerHTML,/11,000원/,'No-matc
 
 
 // Switching CSV sources must clear old prices before the new file is searched.
+// Earlier tests may leave include chips populated, so isolate the no-query branch.
+vm.runInContext('state.include=[]',sandbox,{timeout:3000});
 element('localSurveyResults').innerHTML='<div>old-price-marker</div>';
 element('term').value='';
 element('surveyCsvFile').files=[{name:'another.csv',size:12,text:async()=>''}];
