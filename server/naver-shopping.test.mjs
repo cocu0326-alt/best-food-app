@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeNaverItems,loadConsumerSurveyCsv} from './index.mjs';
+import {normalizeNaverItems,filterNaverCandidates,loadConsumerSurveyCsv} from './index.mjs';
 
 test('Naver shopping results retain source prices without invented quality metadata',()=>{
  const items=normalizeNaverItems({items:[{title:'<b>서울</b> 우유',lprice:'3200',link:'https://example.com/item',mallName:'쇼핑몰A'}]});
@@ -54,4 +54,15 @@ test('survey CSV loader decodes EUC-KR when UTF-8 is invalid',async()=>{
  const bytes=Buffer.concat([Buffer.from('name\\n'),Buffer.from([0xb0,0xa1])]);
  const decoded=await loadConsumerSurveyCsv('/test/euc-kr.csv',async()=>({isFile:()=>true,size:bytes.length,mtimeMs:1}),async()=>bytes);
  assert.equal(decoded,'name\\n가');
+});
+
+
+test('Naver results match independent Korean search terms and sort by lowest listing price',()=>{
+ const mk=(name,price,seller='몰')=>({name,price,seller,url:'https://example.com/'+price});
+ const results=filterNaverCandidates([
+  mk('서울 저지방 우유',3500),mk('저지방 서울 우유',2800),mk('초코 우유',2000),mk('서울 저지방 우유',3500)
+ ],'우유 저지방');
+ assert.deepEqual(results.map(x=>x.price),[2800,3500]);
+ assert.deepEqual(filterNaverCandidates(results,'없는상품'),[]);
+ assert.deepEqual(filterNaverCandidates(results,'저지방 우유',1).map(x=>x.price),[2800]);
 });
