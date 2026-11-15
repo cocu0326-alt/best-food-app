@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -28,13 +29,20 @@ class MainActivity : Activity() {
             fun saveText(name: String, mime: String, content: String) {
                 if (content.length > 2_000_000 || name !in setOf("best-food-backup.json", "best-food-products.csv", "best-food-price-changes.csv")) return
                 runOnUiThread {
+                    if (pendingSave != null) {
+                        Toast.makeText(this@MainActivity, "이전 파일 저장을 먼저 완료해 주세요.", Toast.LENGTH_SHORT).show()
+                        return@runOnUiThread
+                    }
                     pendingSave = content
                     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                         addCategory(Intent.CATEGORY_OPENABLE)
                         type = if (mime == "application/json") "application/json" else "text/csv"
                         putExtra(Intent.EXTRA_TITLE, name)
                     }
-                    try { startActivityForResult(intent, saveRequestCode) } catch (_: Exception) { pendingSave = null }
+                    try { startActivityForResult(intent, saveRequestCode) } catch (_: Exception) {
+                        pendingSave = null
+                        Toast.makeText(this@MainActivity, "파일 저장창을 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }, "AndroidFiles")
@@ -91,10 +99,13 @@ class MainActivity : Activity() {
             pendingSave = null
             if (resultCode == RESULT_OK && content != null && data?.data != null) {
                 try {
-                    contentResolver.openOutputStream(data.data!!)?.use { stream ->
-                        stream.write(content.toByteArray(Charsets.UTF_8))
-                    }
-                } catch (_: Exception) { }
+                    val stream = contentResolver.openOutputStream(data.data!!)
+                        ?: throw IllegalStateException("Cannot open output stream")
+                    stream.use { it.write(content.toByteArray(Charsets.UTF_8)) }
+                    Toast.makeText(this, "파일 저장 완료", Toast.LENGTH_SHORT).show()
+                } catch (_: Exception) {
+                    Toast.makeText(this, "파일 저장에 실패했습니다.", Toast.LENGTH_LONG).show()
+                }
             }
         }
         if (requestCode == filePickerRequestCode) {
