@@ -56,7 +56,7 @@ async function searchLocalSurvey(){
   const ni=col('상품명','제품명'),pi=col('판매가격','판매가격(원)','가격','가격(원)'),si=col('판매업소','판매업소명','판매점','판매점명','업소명'),di=col('조사일','조사일자','조사일시');
   if([ni,pi,si,di].some(x=>x<0))throw Error('필수 열(상품명·가격·판매업소·조사일)을 확인하세요.');
   const found=[];
-  for(const row of rows){const name=(row[ni]||'').trim(),date=(row[di]||'').trim(),seller=(row[si]||'').trim(),price=Number((row[pi]||'').replace(/[\s,원]/g,''));if(!name.normalize('NFC').toLowerCase().replace(/\s+/g,'').includes(q)||!seller||!/^\d{4}[-./]\d{2}[-./]\d{2}$/.test(date)||!Number.isSafeInteger(price)||price<=0)continue;found.push({name,seller,date,price});}
+  for(const row of rows){const name=(row[ni]||'').trim(),date=(row[di]||'').trim(),seller=(row[si]||'').trim(),price=Number((row[pi]||'').replace(/[\s,원]/g,''));if(!name.normalize('NFC').toLowerCase().replace(/\s+/g,'').includes(q)||!seller||!/^\d{4}[-./]\d{2}[-./]\d{2}$/.test(date)||!Number.isSafeInteger(price)||price<=0)continue;const [year,month,day]=date.split(/[-./]/).map(Number),actual=new Date(0);actual.setUTCFullYear(year,month-1,day);if(actual.getUTCFullYear()!==year||actual.getUTCMonth()+1!==month||actual.getUTCDate()!==day)continue;found.push({name,seller,date,price});}
   found.sort((a,b)=>b.date.replace(/[-./]/g,'').localeCompare(a.date.replace(/[-./]/g,''))||a.price-b.price);
   const seen=new Set(),results=[];
   for(const item of found){const key=JSON.stringify([item.name,item.seller,item.date,item.price]);if(seen.has(key))continue;seen.add(key);results.push(item);if(results.length>=30)break}
