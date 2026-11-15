@@ -25,3 +25,17 @@ test('rejects impossible survey calendar dates without changing genuine prices',
   assert.equal(found[0].price,2800);
   assert.equal(found[0].surveyDate,'2024-02-29');
 });
+
+test('reads official sale and one-plus-one columns without inventing discounts',()=>{
+ const csv=[
+ '상품명,조사일,판매가격,판매업소,세일여부,원플러스원',
+ '사과,2026-11-03,2500,마트A,Y,N'
+ ].join(String.fromCharCode(10));
+ const found=parseConsumerPriceCsv(csv,'사과');
+ assert.equal(found.length,1);
+ assert.equal(found[0].saleStatus,'Y');
+ assert.equal(found[0].onePlusOne,'N');
+ const missing=parseConsumerPriceCsv('상품명,조사일,판매가격,판매업소'+String.fromCharCode(10)+'사과,2026-11-03,2500,마트A','사과');
+ assert.equal(missing[0].saleStatus,null);
+ assert.equal(missing[0].onePlusOne,null);
+});
