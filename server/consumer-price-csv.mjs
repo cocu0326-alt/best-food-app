@@ -28,7 +28,7 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
   if(limit===0)return [];
   const manufacturer=col('제조사','제조업체');
   const sale=col('세일여부','세일여부(Y/N)'),onePlusOne=col('원플러스원','원플러스원여부','1+1여부');
-  const requiredTerms=String(query).normalize('NFC').trim().toLowerCase().split(/\s+/g).filter(Boolean);
+  const requiredTerms=String(query).normalize('NFC').trim().toLowerCase().split(/\s+/g).filter(Boolean).map(term=>term.replace(/\s+/g,''));
   const out=[];
   for(const row of rows){
     const title=(row[name]||'').trim(),store=(row[seller]||'').trim(),day=(row[date]||'').trim();
