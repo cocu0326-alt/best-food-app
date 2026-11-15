@@ -78,6 +78,8 @@ function onSurveyCsvSelected(){
  status.textContent='CSV 파일을 선택했습니다. 상품명을 입력하거나 포함 검색어를 등록하세요.';
 }
 function scheduleLocalSurveySearch(){
+ ++apiSearchRequest;
+ const oldApiResults=document.getElementById('apiCandidates');if(oldApiResults)oldApiResults.innerHTML='';
  clearTimeout(surveySearchTimer);
  // Invalidate in-flight file reads immediately when the query changes.
  ++surveySearchRequest;
