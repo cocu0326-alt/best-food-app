@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import {normalizeSupplierFeed} from './supplier-feed.mjs';
 
 test('converts kg to grams and preserves provenance',()=>{
- const result=normalizeSupplierFeed({products:[{name:'쌀',price:15000,size:2,unit:'kg',manufacturer:'생산자',origin:'국내산',source:'제조사 공급',updatedAt:'2026-11-14'}]});
+ const result=normalizeSupplierFeed({products:[{name:'쌀',price:15000,size:2,unit:'kg',manufacturer:'생산자',origin:'국내산',source:'제조사 공급',updatedAt:'2026-11-14',rating:4.5,reviews:12}]});
  assert.equal(result.products[0].size,2000);
  assert.equal(result.products[0].measure,'g');
  assert.equal(result.products[0].origin,'국내산');
 });
 test('rejects invalid product and unsafe links',()=>{
- const result=normalizeSupplierFeed({products:[{name:'A',price:10,size:100,unit:'g',url:'javascript:alert(1)'},{name:'B',price:-1,size:2,unit:'kg'}]});
+ const result=normalizeSupplierFeed({products:[{name:'A',price:10,size:100,unit:'g',url:'javascript:alert(1)',rating:4,reviews:10},{name:'B',price:-1,size:2,unit:'kg'}]});
  assert.equal(result.products.length,1);
  assert.equal(result.products[0].url,'');
 });
@@ -32,7 +32,7 @@ test('drops credential-bearing links and invalid seller metadata',()=>{
   const result=normalizeSupplierFeed({products:[{
     name:'사과',price:3000,size:500,unit:'g',
     url:'https://user:secret@example.com/product',
-    seller:{unexpected:true},rating:9,reviews:-5
+    seller:{unexpected:true},rating:0,reviews:0
   }]});
   const product=result.products[0];
   assert.equal(product.url,'');
@@ -43,7 +43,7 @@ test('drops credential-bearing links and invalid seller metadata',()=>{
 
 test('preserves origin and ingredients while bounding supplied metadata',()=>{
   const result=normalizeSupplierFeed({products:[{
-    name:'테스트 과자',price:1200,size:80,unit:'g',
+    name:'테스트 과자',price:1200,size:80,unit:'g',rating:4,reviews:10,
     origin:'국내산'.repeat(100),
     ingredients:'밀가루, 설탕'.repeat(200),
     source:'가상 공급자'.repeat(100),
