@@ -25,7 +25,7 @@ const storage = new Map([['bestfood_v1',JSON.stringify(sample)]]);
 const sandbox = {
   document:{getElementById:element},
   localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,val)=>storage.set(key,val)},
-  console,URL,Date,Math,Number,String,Array,JSON,Set,window:{},TextEncoder,confirm:()=>true,alert:()=>{}
+  console,URL,Date,Math,Number,String,Array,JSON,Set,window:{},TextEncoder,AbortController,setTimeout,clearTimeout,confirm:()=>true,alert:()=>{}
 };
 vm.createContext(sandbox);
 for(const match of scripts) vm.runInContext(match[1],sandbox,{timeout:3000});
