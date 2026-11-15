@@ -27,7 +27,6 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
   const q=query.normalize('NFC').trim().toLowerCase();
   const out=[];
   for(const row of rows){
-    if(out.length>=limit)break;
     const title=(row[name]||'').trim(),store=(row[seller]||'').trim(),day=(row[date]||'').trim();
     if(!title||!store||!/^\d{4}[-./]\d{2}[-./]\d{2}$/.test(day))continue;
     const [year,month,dayOfMonth]=day.split(/[-./]/).map(Number);
@@ -39,5 +38,7 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
     if(!Number.isSafeInteger(amount)||amount<=0)continue;
     out.push({name:title.slice(0,200),price:amount,seller:store.slice(0,120),surveyDate:day,manufacturer:manufacturer>=0?(row[manufacturer]||'').trim().slice(0,120):'',saleStatus:sale>=0?(row[sale]||'').trim().slice(0,30):null,onePlusOne:onePlusOne>=0?(row[onePlusOne]||'').trim().slice(0,30):null,source:'한국소비자원 참가격 조사',size:null,measure:null,rating:null,reviews:null,url:''});
   }
-  return out;
+  // The source file can be ordered oldest-first; show the newest surveyed prices first.
+  out.sort((a,b)=>b.surveyDate.replace(/[-./]/g,'').localeCompare(a.surveyDate.replace(/[-./]/g,''))||a.price-b.price);
+  return out.slice(0,limit);
 }
