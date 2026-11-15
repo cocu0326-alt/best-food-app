@@ -54,3 +54,10 @@ test('shows newest survey dates first even when CSV is oldest-first',()=>{
  const found=parseConsumerPriceCsv(csv,'사과',2);
  assert.deepEqual(found.map(x=>x.price),[3000,2000]);
 });
+
+test('deduplicates identical source records but preserves different stores',()=>{
+ const csv=['상품명,조사일,판매가격,판매업소','사과,2026-11-10,3000,마트A','사과,2026-11-10,3000,마트A','사과,2026-11-10,3000,마트B'].join(String.fromCharCode(10));
+ const found=parseConsumerPriceCsv(csv,'사과');
+ assert.equal(found.length,2);
+ assert.deepEqual(found.map(x=>x.seller),['마트A','마트B']);
+});
