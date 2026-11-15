@@ -285,6 +285,23 @@ assert.match(element('localSurveyResults').innerHTML,/검색 결과가 없습니
 assert.doesNotMatch(element('localSurveyResults').innerHTML,/11,000원/,'No-match searches must remove previous product prices');
 
 
+// Switching CSV sources must clear old prices before the new file is searched.
+element('localSurveyResults').innerHTML='<div>old-price-marker</div>';
+element('term').value='';
+element('surveyCsvFile').files=[{name:'another.csv',size:12,text:async()=>''}];
+vm.runInContext('onSurveyCsvSelected()',sandbox,{timeout:3000});
+assert.equal(element('localSurveyResults').innerHTML,'','Changing survey file must clear old prices');
+assert.match(element('localSurveyStatus').textContent,/CSV 파일을 선택했습니다/,'Changing survey file should guide user to enter a query');
+
+// Typing must invalidate and clear previous prices immediately, before debounce.
+element('term').value='새 검색';
+element('localSurveyResults').innerHTML='<div>old-price-marker</div>';
+vm.runInContext('scheduleLocalSurveySearch()',sandbox,{timeout:3000});
+assert.equal(element('localSurveyResults').innerHTML,'','Typing must clear old prices immediately');
+assert.match(element('localSurveyStatus').textContent,/검색 중/,'Typing must show a pending-search status');
+vm.runInContext('clearTimeout(surveySearchTimer)',sandbox,{timeout:3000});
+
+
 // An empty public CSV file should be rejected without displaying stale results.
 element('surveyCsvFile').files=[{name:'empty.csv',size:0,text:async()=>''}];
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
