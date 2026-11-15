@@ -93,3 +93,9 @@ test('zero result limit still rejects invalid CSV input types',()=>{
   assert.throws(()=>parseConsumerPriceCsv(value,'',0),/invalid_csv_size/);
  }
 });
+
+
+test('zero result limit cannot bypass maximum CSV size',()=>{
+ const oversized='x'.repeat(80_000_001);
+ assert.throws(()=>parseConsumerPriceCsv(oversized,'',0),/invalid_csv_size/);
+});
