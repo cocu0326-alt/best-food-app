@@ -47,6 +47,11 @@ jobs:
           assert 'Intent.ACTION_CREATE_DOCUMENT' in native
           assert 'Intent.ACTION_OPEN_DOCUMENT' in native
           assert 'JavascriptInterface' in native
+          manifest = Path('app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
+          assert 'android.permission.INTERNET' in manifest
+          assert 'if (pendingSave != null)' in native
+          assert 'stream.use { it.write(' in native
+          assert 'Toast.makeText' in native
           print('Export integration checks passed')
           PY
       - name: Run Android lint
