@@ -252,6 +252,7 @@ element('term').value='날짜 쌀';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyStatus').textContent,/1개 표시/,'Equivalent date separators should be deduplicated');
 assert.match(element('localSurveyStatus').textContent,/2026-11-01/,'Survey date should display in canonical ISO form');
+assert.match(element('localSurveyStatus').textContent,/상품 1종 \/ 판매업소 1곳/,'Survey summary should count unique products and sellers');
 // Future-dated survey observations must not silently appear to be fresh.
 const futureSurvey=['상품명,판매가격,판매업소,조사일','미래 쌀,5000,가게A,2099-01-01'].join(String.fromCharCode(10));
 element('surveyCsvFile').files=[{name:'future-prices.csv',size:futureSurvey.length,text:async()=>futureSurvey}];
