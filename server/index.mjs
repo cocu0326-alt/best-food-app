@@ -62,7 +62,7 @@ export function searchSupplierProducts(data, q) {
   const sellerMatches = [];
   const nameTokenMatches = [];
   const tokenMatches = [];
-  const tokens = query.split(' ').filter(Boolean);
+  const tokens = [...new Set(query.split(' ').filter(Boolean))];
   for (const product of normalized.products) {
     const nameText = normalizeSearchText(product.name);
     const sellerText = normalizeSearchText(product.seller);
