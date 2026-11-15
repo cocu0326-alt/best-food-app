@@ -55,6 +55,9 @@ jobs:
           assert 'if (pendingSave != null)' in native
           assert 'stream.use { it.write(' in native
           assert 'Toast.makeText' in native
+          assert 'Array.isArray(state.products)' in html
+          assert 'try{localStorage.setItem(KEY' in html
+          assert 'frame-src \'none\'' in html
           print('Export integration checks passed')
           PY
       - name: Build debug APK
