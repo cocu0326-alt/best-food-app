@@ -142,3 +142,9 @@ test('deduplicates equivalent survey dates with different separators',()=>{
  const csv=['상품명,판매가격,판매업소,조사일','우유,3000,마트,2026-11-01','우유,3000,마트,2026.11.01','우유,3000,마트,2026/11/01'].join(String.fromCharCode(10));
  assert.equal(parseConsumerPriceCsv(csv,'우유').length,1);
 });
+
+test('zero-result limit still validates CSV headers',()=>{
+ assert.throws(()=>parseConsumerPriceCsv('상품명,가격'+String.fromCharCode(10)+'우유,3000','',0),/missing_required_columns/);
+ const valid=['상품명,판매가격,판매업소,조사일','우유,3000,마트,2026-11-01'].join(String.fromCharCode(10));
+ assert.deepEqual(parseConsumerPriceCsv(valid,'우유',0),[]);
+});
