@@ -23,6 +23,7 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
   const name=col('상품명'),price=col('판매가격','가격'),seller=col('판매업소','판매점','업소명'),date=col('조사일','조사일자');
   if([name,price,seller,date].some(i=>i<0))throw Error('missing_required_columns');
   const manufacturer=col('제조사','제조업체');
+  const sale=col('세일여부'),onePlusOne=col('원플러스원');
   const q=query.normalize('NFC').trim().toLowerCase();
   const out=[];
   for(const row of rows){
@@ -36,7 +37,7 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
     if(q&&!title.normalize('NFC').toLowerCase().includes(q))continue;
     const amount=Number((row[price]||'').replace(/[\s,원]/g,''));
     if(!Number.isSafeInteger(amount)||amount<=0)continue;
-    out.push({name:title.slice(0,200),price:amount,seller:store.slice(0,120),surveyDate:day,manufacturer:manufacturer>=0?(row[manufacturer]||'').trim().slice(0,120):'',source:'한국소비자원 참가격 조사',size:null,measure:null,rating:null,reviews:null,url:''});
+    out.push({name:title.slice(0,200),price:amount,seller:store.slice(0,120),surveyDate:day,manufacturer:manufacturer>=0?(row[manufacturer]||'').trim().slice(0,120):'',saleStatus:sale>=0?(row[sale]||'').trim().slice(0,30):null,onePlusOne:onePlusOne>=0?(row[onePlusOne]||'').trim().slice(0,30):null,source:'한국소비자원 참가격 조사',size:null,measure:null,rating:null,reviews:null,url:''});
   }
   return out;
 }
