@@ -29,6 +29,10 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
     if(out.length>=limit)break;
     const title=(row[name]||'').trim(),store=(row[seller]||'').trim(),day=(row[date]||'').trim();
     if(!title||!store||!/^\d{4}[-./]\d{2}[-./]\d{2}$/.test(day))continue;
+    const [year,month,dayOfMonth]=day.split(/[-./]/).map(Number);
+    const actual=new Date(0);
+    actual.setUTCFullYear(year,month-1,dayOfMonth);
+    if(actual.getUTCFullYear()!==year||actual.getUTCMonth()+1!==month||actual.getUTCDate()!==dayOfMonth)continue;
     if(q&&!title.normalize('NFC').toLowerCase().includes(q))continue;
     const amount=Number((row[price]||'').replace(/[\s,원]/g,''));
     if(!Number.isSafeInteger(amount)||amount<=0)continue;
