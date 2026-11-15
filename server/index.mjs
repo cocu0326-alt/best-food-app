@@ -96,7 +96,7 @@ if (upstream) {
 }
 function limited(ip) {
   const now = Date.now(), entry = requests.get(ip);
-  if (!entry || now - entry.start >= 60000) { requests.set(ip, {start: now, count: 1}); return false; }
+  if (!entry || now - entry.start >= 60000) { if(!entry && requests.size>=10000){for(const [key,value] of requests){if(now-value.start>=60000)requests.delete(key)}if(requests.size>=10000)return true}requests.set(ip, {start: now, count: 1}); return false; }
   entry.count++;
   return entry.count > rateLimit;
 }
@@ -111,7 +111,9 @@ function send(res, status, body, origin = '') {
 
 export const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin || '';
-  const url = new URL(req.url || '/', 'http://localhost');
+  let url;
+  try { url = new URL(req.url || '/', 'http://localhost'); }
+  catch { return send(res, 400, {error:'invalid_request_url'}, origin); }
   if (req.method !== 'GET') return send(res, 405, {error:'method_not_allowed'}, origin);
   if (url.pathname === '/api/foods' && limited(req.socket.remoteAddress || 'unknown')) return send(res, 429, {error:'rate_limited',message:'잠시 후 다시 요청하세요.'}, origin);
   if (url.pathname === '/health') return send(res, 200, {ok: true, providerConfigured: Boolean(upstream)}, origin);
