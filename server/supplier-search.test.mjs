@@ -199,3 +199,12 @@ test('deduplicates equivalent canonical product URLs',()=>{
  ]},'사과');
  assert.equal(products.length,2);
 });
+
+test('product URL fragments do not create duplicate supplier listings',()=>{
+ const products=searchSupplierProducts({products:[
+  {name:'국산 사과',price:5000,size:500,unit:'g',seller:'농장',url:'https://shop.example/item/1#reviews'},
+  {name:'국산 사과',price:5000,size:500,unit:'g',seller:'농장',url:'https://shop.example/item/1#details'},
+  {name:'국산 사과',price:5000,size:500,unit:'g',seller:'농장',url:'https://shop.example/item/2'}
+ ]},'사과');
+ assert.equal(products.length,2);
+});
