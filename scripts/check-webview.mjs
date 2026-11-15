@@ -109,7 +109,7 @@ Object.defineProperty(sandbox,'fetch',{
       const data=await response.json();
       response.text=async()=>JSON.stringify(data);
     }
-    if(!response.headers)response.headers={get:()=>null};
+    if(!response.headers)response.headers={get:name=>name.toLowerCase()==='content-type'?'application/json':null};
     return response;
   }}
 });
