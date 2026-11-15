@@ -70,7 +70,8 @@ class MainActivity : Activity() {
                 return try {
                     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                         addCategory(Intent.CATEGORY_OPENABLE)
-                        type = "application/json"
+                        type = "*/*"
+                        putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/json", "text/csv", "text/comma-separated-values", "text/plain", "application/vnd.ms-excel"))
                     }
                     startActivityForResult(intent, filePickerRequestCode)
                     true
