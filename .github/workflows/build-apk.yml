@@ -91,6 +91,27 @@ jobs:
           assert 'Intent.ACTION_CREATE_DOCUMENT' in native, 'Android save dialog missing'
           print('Web and Android export filenames, byte limits, and save dialog verified')
           PY
+      - name: Verify Android WebView security configuration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          native = Path('app/src/main/java/kr/bestfood/app/MainActivity.kt').read_text(encoding='utf-8')
+          manifest = Path('app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
+          required = (
+              'allowFileAccessFromFileURLs = false',
+              'allowUniversalAccessFromFileURLs = false',
+              'javaScriptCanOpenWindowsAutomatically = false',
+              'setSupportMultipleWindows(false)',
+              'MIXED_CONTENT_NEVER_ALLOW',
+              'safeBrowsingEnabled = true',
+              'setWebContentsDebuggingEnabled(false)',
+          )
+          for setting in required:
+              assert setting in native, f'Missing WebView security setting: {setting}'
+          assert 'android:usesCleartextTraffic="false"' in manifest, 'Cleartext traffic must be disabled'
+          assert 'web.loadUrl("file:///android_asset/index.html")' in native, 'Unexpected app entrypoint'
+          print('Android WebView security settings verified')
+          PY
       - name: Test supplier API server
         run: node --test server/server.test.mjs
       - name: Build debug APK
