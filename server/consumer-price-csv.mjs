@@ -18,7 +18,7 @@ export function parseCsv(text) {
 export function parseConsumerPriceCsv(text, query='',limit=100) {
   const rows=parseCsv(text.replace(/^\uFEFF/,''));
   if(!rows.length)return [];
-  const headers=rows.shift().map(v=>v.trim().replace(/\s+/g,''));
+  const headers=rows.shift().map(v=>v.replace(/^\uFEFF/,'').trim().replace(/\s+/g,''));
   const col=(...names)=>headers.findIndex(h=>names.includes(h));
   const name=col('상품명','제품명'),price=col('판매가격','판매가격(원)','가격','가격(원)'),seller=col('판매업소','판매업소명','판매점','판매점명','업소명'),date=col('조사일','조사일자','조사일시');
   if([name,price,seller,date].some(i=>i<0))throw Error('missing_required_columns');
