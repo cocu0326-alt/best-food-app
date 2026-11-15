@@ -106,7 +106,17 @@ jobs:
           grep -q "launchable-activity: name='kr.bestfood.app.MainActivity'" /tmp/best-food-apk-badging.txt
           grep -q "sdkVersion:'24'" /tmp/best-food-apk-badging.txt
       - name: Run Android lint
-        run: gradle --no-daemon --stacktrace :app:lintDebug
+        run: |
+          set -o pipefail
+          gradle --no-daemon --stacktrace :app:lintDebug 2>&1 | tee /tmp/best-food-lint.log
+      - name: Upload lint console log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-lint-console-log
+          path: /tmp/best-food-lint.log
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Upload Android lint diagnostics
         if: always()
         uses: actions/upload-artifact@v4
