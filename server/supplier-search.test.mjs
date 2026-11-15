@@ -159,3 +159,11 @@ test('multiword product-name token matches outrank seller-only and cross-field m
  ]},'사과 청정');
  assert.deepEqual(products.map(p=>p.name),['청정 국내산 사과','배','사과']);
 });
+
+test('repeated search words do not require repeated product words',()=>{
+ const products=searchSupplierProducts({products:[
+  {name:'국산 사과',price:5000,size:500,unit:'g',seller:'과수원'},
+  {name:'국산 배',price:4000,size:500,unit:'g',seller:'과수원'}
+ ]},'사과 사과');
+ assert.deepEqual(products.map(p=>p.name),['국산 사과']);
+});
