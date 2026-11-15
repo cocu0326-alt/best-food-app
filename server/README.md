@@ -13,7 +13,7 @@ node server/index.mjs
 기본 포트는 8787이며, `PORT` 환경변수로 변경할 수 있습니다.
 
 - `GET /health`: 서버 상태
-- `GET /api/foods?q=검색어`: CSV 또는 네이버 쇼핑 검색을 연결한 경우 `candidates` 배열 반환. 별도 상품 공급 API를 연결한 경우 `products` 배열 반환. 아무 공급원도 없으면 HTTP 503
+- `GET /api/foods?q=검색어`: CSV 또는 네이버 쇼핑 검색을 연결한 경우 `candidates` 배열 반환. 별도 상품 공급 API를 연결한 경우 `products` 배열 반환. 아무 공급원도 없으면 한국소비자원 공식 2026-08-28 공개 가격동향 중 검증한 만두 4종의 과거 집계가격만 반환하며, 해당 없는 상품은 빈 결과를 반환합니다. 이는 실시간 연동이 아닙니다.
 - `FOOD_UPSTREAM_URL`: 합법적으로 접근 가능한 상품 공급 API URL. 검색어는 `q` 쿼리로 전달합니다.
 - `FOOD_API_TOKEN`: 공급 API에 필요한 경우 서버 환경변수로만 설정. 앱에는 입력하지 않습니다.
 - `CONSUMER_PRICE_CSV_PATH`: 한국소비자원 참가격 CSV 파일의 서버 내 경로. 조사 시점의 가격이며 실시간 판매가가 아닙니다.
