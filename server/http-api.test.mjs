@@ -135,3 +135,14 @@ test('public CSV downloader refuses header-only feeds with no actual surveyed pr
  const fakeFetch=async()=>new Response(csv,{headers:{'content-type':'text/csv'}});
  await assert.rejects(loadRemoteConsumerSurveyCsv('https://www.data.go.kr/download/header-only.csv',fakeFetch,40000000),/consumer_csv_no_valid_prices/);
 });
+
+test('official public report supplies actual historical dumpling prices without API keys',async()=>{
+ const {searchPublishedSurveyPrices,reportDate}=await import('./published-survey.mjs');
+ const results=searchPublishedSurveyPrices('만두');
+ assert.equal(reportDate,'2026-08-28');
+ assert.equal(results.length,3);
+ assert.ok(results.some(x=>x.name.includes('고향만두')&&x.price===7980));
+ assert.ok(results.some(x=>x.name.includes('고기만두')&&x.minPrice===7480&&x.maxPrice===10490));
+ assert.ok(results.every(x=>x.surveyDate===reportDate&&x.seller.includes('개별 판매처 미제공')));
+ assert.deepEqual(searchPublishedSurveyPrices('존재하지않는상품'),[]);
+});
