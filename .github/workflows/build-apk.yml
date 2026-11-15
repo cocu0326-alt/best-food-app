@@ -50,7 +50,7 @@ jobs:
           controls = Controls()
           controls.feed(html)
           assert not controls.duplicates, f'Duplicate HTML IDs: {controls.duplicates}'
-          referenced = set(re.findall(r"document\.getElementById\(['\\"]([^'\\"]+)['\\"]\)", script))
+          referenced = set(re.findall(r"""document\.getElementById\(["']([^"']+)["']\)""", script))
           missing = referenced - controls.ids
           assert not missing, f'Missing DOM controls: {sorted(missing)}'
           functions = set(re.findall(r'function\s+([A-Za-z_$][\w$]*)\s*\(', script))
