@@ -12,6 +12,16 @@
 
 **주의:** 공급 API 주소·토큰을 GitHub 코드나 앱에 직접 기록하지 마세요. 운영 배포 전에 API 공급자 사용 조건, 인증, 속도 제한, HTTPS, 데이터 정확성, CORS와 WebView 접근 정책을 확인해야 합니다. Render의 무료 인스턴스는 휴면 후 첫 요청이 지연될 수 있습니다.
 
+## 네이버쇼핑 API로 실제 상품 검색 연결
+
+네이버 개발자센터에서 검색 API 사용 신청 후 발급받은 **Client ID**와 **Client Secret**을 Render 서비스의 환경변수 `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`에 각각 등록합니다. 인증정보는 GitHub 저장소나 Android 앱에 넣지 않습니다.
+
+`FOOD_UPSTREAM_URL`이 비어 있고 네이버 인증정보 두 가지가 모두 등록되어 있으면 서버는 네이버쇼핑 검색 API(`https://openapi.naver.com/v1/search/shop.json`)를 사용합니다. 기존 공급업체 API가 설정되어 있으면 해당 공급업체가 우선합니다.
+
+서버 배포 후 `/health`에서 `providerConfigured:true`를 확인하고 `/api/foods?q=만두`를 호출합니다. 네이버 모드의 응답은 `products:[]`와 `candidates` 배열로 구성됩니다. `candidates`에는 상품명·가격·판매처·상품 링크만 담고, 네이버가 제공하지 않는 용량·평점·리뷰 수는 임의로 생성하지 않습니다. 앱은 이를 **검색 결과 미리보기**로 표시하며 종합 평가에 자동 등록하지 않습니다.
+
+Android WebView에서 호출하려면 아래 CORS 설정도 필요합니다. `providerConfigured:true`만으로 실제 조회 성공을 보증하지 않으므로 반드시 실제 검색어로 검증하세요. 네이버 API 이용 조건, 호출량 및 표시·보관 제한은 운영 전에 개발자센터의 최신 정책을 확인해야 합니다.
+
 ## 요청 제한 및 보안
 
 - `RATE_LIMIT_PER_MINUTE` (기본 60): IP별 분당 상품 검색 요청 제한. 초과 시 HTTP 429 반환.
