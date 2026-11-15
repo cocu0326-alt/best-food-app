@@ -60,7 +60,8 @@ vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.doesNotMatch(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Every query word must match the product');
 element('term').value='만두';
 vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
-assert.match(element('instantSearchResults').innerHTML,/등록된 상품에서 일치하는 항목이 없습니다/,'Search must explain when no matching food is saved');
+assert.match(element('instantSearchResults').innerHTML,/체험용 김치만두/,'Dumpling search must show a demo result when no saved food matches');
+assert.match(element('instantSearchResults').innerHTML,/가상 상품·가상 가격/,'Demo food prices must be clearly marked as fictional');
 assert.doesNotMatch(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Search must clear previous matches');
 console.log('PASS: primary food search, saved-price sorting and empty results');
 
