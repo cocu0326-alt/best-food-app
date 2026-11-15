@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {normalizeSupplierFeed} from './supplier-feed.mjs';
-import {searchSupplierProducts, server} from './index.mjs';
+import {searchSupplierProducts, fetchSupplierJson, readBoundedJson, server} from './index.mjs';
 
 const sample={products:[
   {name:'국산 사과',price:5000,size:1,unit:'kg',rating:4.5,reviews:12,seller:'농장 A',url:'https://example.com/apple'},
@@ -29,6 +29,23 @@ test('supplier search matches Korean names and returns only valid products',()=>
   assert.equal(results.length,1);
   assert.equal(results[0].name,'국산 사과');
   assert.equal(searchSupplierProducts(sample,'존재하지않는상품').length,0);
+});
+test('supplier fetch sends credentials only in Authorization header and disables redirects',async()=>{
+  let observed;
+  const result=await fetchSupplierJson(new URL('https://provider.example/foods?q=apple'),'private-token',1000,async (url,options)=>{
+    observed={url:url.href,headers:options.headers,redirect:options.redirect};
+    return new Response(JSON.stringify({products:[]}),{status:200,headers:{'content-type':'application/json'}});
+  });
+  assert.equal(result.ok,true);
+  assert.deepEqual(result.data,{products:[]});
+  assert.equal(observed.headers.authorization,'Bearer private-token');
+  assert.equal(observed.redirect,'error');
+  assert.ok(!observed.url.includes('private-token'));
+});
+test('supplier fetch rejects non-JSON responses and oversized feeds',async()=>{
+  const nonJson=await fetchSupplierJson('https://provider.example', '',1000,async()=>new Response('<html/>',{headers:{'content-type':'text/html'}}));
+  assert.equal(nonJson.ok,false);
+  await assert.rejects(readBoundedJson(new Response('x'.repeat(1024*1024+1),{headers:{'content-type':'application/json'}})),/feed_too_large/);
 });
 test('API health and unconfigured provider responses',async()=>{
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
