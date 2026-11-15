@@ -76,21 +76,27 @@ test('real HTTP API serves the sample CSV without paid API credentials',async()=
  const {copyFile}=await import('node:fs/promises');
  const csvPath=resolve(folder,'demo.csv');
  await copyFile(fileURLToPath(new URL('../samples/demo-consumer-prices.csv',import.meta.url)),csvPath);
+ const net=await import('node:net');
+ const probe=net.createServer();
+ await new Promise(resolve=>probe.listen(0,'127.0.0.1',resolve));
+ const port=probe.address().port;
+ await new Promise(resolve=>probe.close(resolve));
+ const base='http://127.0.0.1:'+port;
  const child=spawn(process.execPath,[fileURLToPath(new URL('./index.mjs',import.meta.url))],{
-  env:{...process.env,PORT:'18789',FOOD_UPSTREAM_URL:'',NAVER_CLIENT_ID:'',NAVER_CLIENT_SECRET:'',CONSUMER_PRICE_CSV_PATH:csvPath},
+  env:{...process.env,PORT:String(port),FOOD_UPSTREAM_URL:'',NAVER_CLIENT_ID:'',NAVER_CLIENT_SECRET:'',CONSUMER_PRICE_CSV_PATH:csvPath},
   stdio:['ignore','pipe','pipe']
  });
  try{
   let response;
   for(let attempt=0;attempt<35;attempt++){
    if(child.exitCode!==null)throw Error('sample server exited before readiness');
-   try{response=await fetch('http://127.0.0.1:18789/health',{signal:AbortSignal.timeout(500)});if(response.ok)break}catch{}
+   try{response=await fetch(base+'/health',{signal:AbortSignal.timeout(500)});if(response.ok)break}catch{}
    await new Promise(done=>setTimeout(done,100));
   }
   assert.ok(response?.ok,'sample server did not become ready');
   const ready=await response.json();
   assert.equal(ready.csvReady,true);
-  const result=await fetch('http://127.0.0.1:18789/api/foods?q='+encodeURIComponent('저지방 우유'));
+  const result=await fetch(base+'/api/foods?q='+encodeURIComponent('저지방 우유'));
   assert.equal(result.status,200);
   const body=await result.json();
   assert.deepEqual(body.products,[]);
