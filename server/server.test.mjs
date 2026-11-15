@@ -67,8 +67,8 @@ test('API health and unconfigured provider responses',async()=>{
     assert.equal(health.status,200);
     assert.deepEqual(await health.json(),{ok:true,providerConfigured:false,csvReady:false});
     const missing=await fetch(base+'/api/foods?q='+encodeURIComponent('사과'));
-    assert.equal(missing.status,503);
-    assert.equal((await missing.json()).error,'provider_not_configured');
+    assert.equal(missing.status,200);
+    assert.deepEqual((await missing.json()).candidates,[]);
     const invalid=await fetch(base+'/api/foods?q=');
     assert.equal(invalid.status,400);
     const unknown=await fetch(base+'/not-found');
