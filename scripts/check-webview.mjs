@@ -113,6 +113,21 @@ Object.defineProperty(sandbox,'fetch',{
     return response;
   }}
 });
+// Mixed product candidates should be compared only inside their own matching name/unit groups.
+element('apiEndpoint').value='https://example.test/api/foods';
+element('term').value='음료';
+sandbox.fetch=async()=>({ok:true,json:async()=>({products:[],candidates:[
+ {name:'서울 우유 500ml',price:1800,size:500,measure:'ml',source:'네이버쇼핑 검색',url:'https://example.test/milk-small'},
+ {name:'서울 우유 1L',price:2800,size:1000,measure:'ml',source:'네이버쇼핑 검색',url:'https://example.test/milk-large'},
+ {name:'사과 주스 500ml',price:1200,size:500,measure:'ml',source:'네이버쇼핑 검색',url:'https://example.test/juice-small'},
+ {name:'사과 주스 1L',price:3000,size:1000,measure:'ml',source:'네이버쇼핑 검색',url:'https://example.test/juice-large'}
+]})});
+await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
+const groupedHtml=element('apiCandidates').innerHTML;
+assert.equal((groupedHtml.match(/100단위 예상가격 최저/g)||[]).length,2,'Each product group must have its own lowest unit-price listing');
+assert.match(groupedHtml,/서울 우유 1L/,'Milk candidate should be visible');
+assert.match(groupedHtml,/사과 주스 500ml/,'Juice candidate should be visible');
+assert.match(groupedHtml,/용량 확인 4개/,'Unit-price-ready candidate count should be displayed');
 const beforeApi=vm.runInContext('state.products.length',sandbox);
 element('apiEndpoint').value='https://example.test/api/foods';
 element('term').value='쌀';
