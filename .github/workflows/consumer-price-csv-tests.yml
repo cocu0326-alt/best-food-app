@@ -1,0 +1,24 @@
+name: Consumer price CSV tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/consumer-price-csv.mjs'
+      - 'server/consumer-price-csv.test.mjs'
+      - '.github/workflows/consumer-price-csv-tests.yml'
+  pull_request:
+    paths:
+      - 'server/consumer-price-csv.mjs'
+      - 'server/consumer-price-csv.test.mjs'
+      - '.github/workflows/consumer-price-csv-tests.yml'
+jobs:
+  csv-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run consumer price CSV regression tests
+        run: node --test server/consumer-price-csv.test.mjs
