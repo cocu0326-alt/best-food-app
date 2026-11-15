@@ -17,3 +17,11 @@ test('required columns and malformed prices are rejected',()=>{
   assert.throws(()=>parseConsumerPriceCsv('상품명,가격\na,100'),/missing_required_columns/);
   assert.equal(parseConsumerPriceCsv('상품명,조사일,판매가격,판매업소\na,2026-10-23,없음,마트').length,0);
 });
+
+test('rejects impossible survey calendar dates without changing genuine prices',()=>{
+  const csv='상품명,조사일,판매가격,판매업소\\n사과,2026-02-30,2500,마트A\\n사과,2024-02-29,2800,마트B';
+  const found=parseConsumerPriceCsv(csv,'사과');
+  assert.equal(found.length,1);
+  assert.equal(found[0].price,2800);
+  assert.equal(found[0].surveyDate,'2024-02-29');
+});
