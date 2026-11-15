@@ -224,3 +224,14 @@ assert.match(html,/판매처',p=>p.seller\|\|'판매처 정보 없음'/,'Missing
 
 assert.match(element('compareResults').innerHTML,/같은 단위라도 식품 종류·구성·가공방식이 다르면/,'Comparison summary must warn against unlike-food price ranking');
 assert.match(element('compareResults').innerHTML,/품질 점수는 사용자 입력값이며 외부 검증 결과가 아닙니다/,'Comparison summary must disclose unverified quality');
+
+
+// Exercise offline public CSV import with quoted commas, embedded newlines, and invalid dates.
+const surveyFixture='상품명,판매가격,판매업소,조사일\\n"국산, 쌀\\n특품",12000,가게A,2026-11-01\\n국산 쌀,9900,가게B,2026-02-30\\n국산 쌀,11000,가게C,2026-11-02';
+element('surveyCsvFile').files=[{size:surveyFixture.length,text:async()=>surveyFixture}];
+element('term').value='쌀';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyResults').innerHTML,/12,000원/,'Quoted multiline CSV record should be parsed');
+assert.match(element('localSurveyResults').innerHTML,/11,000원/,'Valid survey date should be included');
+assert.doesNotMatch(element('localSurveyResults').innerHTML,/9,900원/,'Impossible survey date should be excluded');
+assert.match(element('localSurveyStatus').textContent,/2개 표시/,'Offline CSV search should report matching rows');
