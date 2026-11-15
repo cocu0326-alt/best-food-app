@@ -254,7 +254,7 @@ assert.equal(element('localSurveyResults').innerHTML,'','Malformed CSV must not 
 
 
 // Public CSV text is untrusted: product and shop names must be HTML-escaped.
-const hostileCsv='상품명,판매가격,판매업소,조사일\\n"<img src=x onerror=alert(1)> 쌀",5000,"<script>alert(1)</script>",2026-11-02';
+const hostileCsv='상품명,판매가격,판매업소,조사일\n"<img src=x onerror=alert(1)> 쌀",5000,"<script>alert(1)</script>",2026-11-02';
 element('surveyCsvFile').files=[{size:hostileCsv.length,text:async()=>hostileCsv}];
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.doesNotMatch(element('localSurveyResults').innerHTML,/<img|<script>/i,'Untrusted CSV must not inject HTML');
