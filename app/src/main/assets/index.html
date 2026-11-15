@@ -89,7 +89,13 @@ function scheduleLocalSurveySearch(){
  const status=document.getElementById('localSurveyStatus');
  box.innerHTML='';
  const fileInput=document.getElementById('surveyCsvFile');
- if(!fileInput||!fileInput.files||!fileInput.files.length)return;
+ if(!fileInput||!fileInput.files||!fileInput.files.length){
+  const endpoint=document.getElementById('apiEndpoint');
+  const query=(document.getElementById('term').value||'').trim();
+  // Local saved products can be searched without network traffic or a search button.
+  if(query&&query.length<=120&&!(endpoint&&validApiUrl(endpoint.value.trim())))surveySearchTimer=setTimeout(()=>searchFoodNow(),350);
+  return;
+ }
  const q=(document.getElementById('term').value||'').trim();
  if(!q&&!state.include.length){status.textContent='상품명을 입력하거나 포함 검색어를 등록하면 자동 검색합니다.';return}
  status.textContent='검색어 변경됨 · 가격조사 CSV 검색 중…';
