@@ -121,6 +121,7 @@ vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.match(element('instantSearchResults').innerHTML,/체험용 김치만두/,'Offline food search should show a sample result');
 assert.match(element('instantSearchResults').innerHTML,/가상 상품·가상 가격/,'Sample prices must never be presented as real prices');
 console.log('PASS: searching 만두 shows visibly labeled offline demo results');
+assert.match(html,/연결된 데이터 공급원에서 일치하는 상품을 찾지 못했습니다/,'Empty real API responses must show an honest no-results message');
 assert.match(html,/실제 가격 서버 연결 실패/,'Failed remote searches must explain that fallback data is fictional');
 assert.match(html,/가상 상품·가상 가격/,'Fallback must label demo prices as fictional');
 
