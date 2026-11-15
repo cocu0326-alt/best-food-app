@@ -68,9 +68,9 @@ jobs:
             for file in build-reports/android-sdk.log build-reports/webview-tests.log build-reports/gradle-build.log build-reports/apk-verification.log; do
               if [ -f "$file" ]; then
                 echo "### ${file##*/}"
-                echo '\`\`\`text'
-                tail -n 35 "$file" | sed 's/\`/\x27/g'
-                echo '\`\`\`'
+                echo '```text'
+                tail -n 35 "$file"
+                echo '```'
               fi
             done
           } >> "$GITHUB_STEP_SUMMARY"
