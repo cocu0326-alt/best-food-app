@@ -38,7 +38,13 @@ async function searchLocalSurvey(){
  const q=(document.getElementById('term').value||'').trim().normalize('NFC').toLowerCase().replace(/\s+/g,'');
  if(!q)return status.textContent='상품 검색어를 입력하세요.';
  try{
-  const raw=(await file.text()).replace(/^\uFEFF/,'');
+  let raw;
+  if(typeof file.arrayBuffer==='function'){
+   const bytes=await file.arrayBuffer();
+   try{raw=new TextDecoder('utf-8',{fatal:true}).decode(bytes)}
+   catch{raw=new TextDecoder('euc-kr',{fatal:true}).decode(bytes)}
+  }else raw=await file.text();
+  raw=raw.replace(/^\uFEFF/,'');
   // Parse quoted commas and embedded newlines without breaking survey records.
   const rows=[];let row=[],cell='',quoted=false;
   for(let i=0;i<raw.length;i++){
