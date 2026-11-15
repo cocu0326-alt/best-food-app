@@ -254,6 +254,7 @@ assert.match(element('localSurveyStatus').textContent,/1개 표시/,'Equivalent 
 assert.match(element('localSurveyStatus').textContent,/2026-11-01/,'Survey date should display in canonical ISO form');
 assert.match(element('localSurveyStatus').textContent,/상품 1종 \/ 판매업소 1곳/,'Survey summary should count unique products and sellers');
 assert.match(element('localSurveyStatus').textContent,/표시된 전체 가격 범위 5,000~5,000원/,'Survey summary should label the displayed price range');
+assert.match(element('localSurveyStatus').textContent,/표시된 조사기간 2026-11-01 ~ 2026-11-01/,'Survey summary should show the date range of displayed records');
 // Future-dated survey observations must not silently appear to be fresh.
 const futureSurvey=['상품명,판매가격,판매업소,조사일','미래 쌀,5000,가게A,2099-01-01'].join(String.fromCharCode(10));
 element('surveyCsvFile').files=[{name:'future-prices.csv',size:futureSurvey.length,text:async()=>futureSurvey}];
