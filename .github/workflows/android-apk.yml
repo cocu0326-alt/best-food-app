@@ -61,7 +61,17 @@ jobs:
           print('Export integration checks passed')
           PY
       - name: Build debug APK
-        run: gradle --no-daemon --stacktrace :app:assembleDebug
+        run: |
+          set -o pipefail
+          gradle --no-daemon --stacktrace :app:assembleDebug 2>&1 | tee /tmp/best-food-build.log
+      - name: Upload build failure log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-failure-log
+          path: /tmp/best-food-build.log
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Verify APK output
         run: |
           test -s app/build/outputs/apk/debug/app-debug.apk
