@@ -56,6 +56,7 @@ jobs:
           assert 'stream.use { it.write(' in native
           assert 'Toast.makeText' in native
           assert 'Array.isArray(state.products)' in html
+          assert 'file.size>2_000_000' in html
           assert 'try{localStorage.setItem(KEY' in html
           assert 'frame-src \'none\'' in html
           print('Export integration checks passed')
