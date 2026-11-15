@@ -33,7 +33,7 @@ test('Naver shopping adapter rejects missing or malformed results',()=>{
 test('survey CSV is read once for unchanged file and reloaded after modification',async()=>{
  let version=1,reads=0;
  const statImpl=async()=>({isFile:()=>true,size:42,mtimeMs:version});
- const readImpl=async()=>{reads++;return Buffer.from('상품명,조사일,판매가격,판매업소\\n우유,2026-11-10,3000,마트A')};
+ const readImpl=async()=>{reads++;return Buffer.from('상품명,조사일,판매가격,판매업소\n우유,2026-11-10,3000,마트A')};
  const first=await loadConsumerSurveyCsv('/test/cache-survey.csv',statImpl,readImpl);
  const second=await loadConsumerSurveyCsv('/test/cache-survey.csv',statImpl,readImpl);
  assert.equal(first,second);
@@ -51,9 +51,9 @@ test('survey CSV loader rejects invalid file sizes before reading',async()=>{
 
 
 test('survey CSV loader decodes EUC-KR when UTF-8 is invalid',async()=>{
- const bytes=Buffer.concat([Buffer.from('name\\n'),Buffer.from([0xb0,0xa1])]);
+ const bytes=Buffer.concat([Buffer.from('name\n'),Buffer.from([0xb0,0xa1])]);
  const decoded=await loadConsumerSurveyCsv('/test/euc-kr.csv',async()=>({isFile:()=>true,size:bytes.length,mtimeMs:1}),async()=>bytes);
- assert.equal(decoded,'name\\n가');
+ assert.equal(decoded,'name\n가');
 });
 
 
