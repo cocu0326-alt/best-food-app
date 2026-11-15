@@ -64,9 +64,11 @@ export function filterNaverCandidates(items, query, limit=30) {
   if(!terms.length||!Number.isSafeInteger(limit)||limit<0)return [];
   const normalize=value=>String(value||'').normalize('NFC').toLowerCase().replace(/\s+/g,'');
   const seen=new Set(),matches=[];
+  if(!Array.isArray(items))return [];
   for(const item of items){
+    if(!item||typeof item!=='object'||Array.isArray(item)||!Number.isSafeInteger(item.price)||item.price<=0)continue;
     const name=normalize(item.name);
-    if(!terms.every(term=>name.includes(normalize(term))))continue;
+    if(!name||!terms.every(term=>name.includes(normalize(term))))continue;
     const key=JSON.stringify([name,normalize(item.seller),item.price,item.url]);
     if(seen.has(key))continue;
     seen.add(key);
