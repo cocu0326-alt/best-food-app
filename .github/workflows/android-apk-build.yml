@@ -44,11 +44,14 @@ jobs:
           gradle --no-daemon :app:assembleDebug 2>&1 | tee build-reports/gradle-build.log
       - name: Verify generated APK and package identity
         run: |
-          APK=app/build/outputs/apk/debug/app-debug.apk
-          test -s "$APK"
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "package: name='kr.bestfood.app'"
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
-          sha256sum "$APK"
+          set -o pipefail
+          {
+            APK=app/build/outputs/apk/debug/app-debug.apk
+            test -s "$APK" &&
+            "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "package: name='kr.bestfood.app'" &&
+            "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK" &&
+            sha256sum "$APK"
+          } 2>&1 | tee build-reports/apk-verification.log
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
