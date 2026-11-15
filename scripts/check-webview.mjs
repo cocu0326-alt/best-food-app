@@ -111,6 +111,10 @@ assert.match(element('apiStatus').textContent,/검색 버튼/,'Editing search qu
 element('apiEndpoint').value='';
 console.log('PASS: editing food query clears stale prices and shows API refresh guidance');
 
+assert.match(html,/if\(query&&query\.length<=120&&\!\(endpoint&&validApiUrl\(endpoint\.value\.trim\(\)\)\)\)surveySearchTimer=setTimeout\(\(\)=>searchFoodNow\(\),350\)/,'Saved-product search should be debounced without a remote API');
+console.log('PASS: saved food prices automatically search on typing without API calls');
+
+
 
 
 
