@@ -439,6 +439,14 @@ assert.match(element('localSurveyResults').innerHTML,/최저가 판매처 숨은
 assert.match(element('localSurveyStatus').textContent,/중복 제외 31개/,'Full match count should include the hidden seller');
 element('surveyDisplaySort').value='newest';
 
+// CSV parsers must reject a second quote after a closed quoted field.
+const badQuoteCsv=['상품명,판매가격,판매업소,조사일','"국산 쌀"""잘못된",1000,마트,2026-11-02'].join(String.fromCharCode(10));
+element('surveyCsvFile').files=[{name:'bad-quotes.csv',size:badQuoteCsv.length,text:async()=>badQuoteCsv}];
+element('term').value='쌀';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/CSV를 읽지 못했습니다/,'Malformed quote sequence must be rejected');
+assert.equal(element('localSurveyResults').innerHTML,'','Malformed CSV must not retain earlier results');
+
 // UTF-8 BOM at the start of the first CSV header must not break column detection.
 const bomCsv='\uFEFF상품명,판매가격,판매업소,조사일\n국산 사과,3900,동네마트,2026-11-03';
 element('term').value='사과';
