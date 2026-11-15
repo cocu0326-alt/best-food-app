@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeNaverItems} from './index.mjs';
+import {normalizeNaverItems,loadConsumerSurveyCsv} from './index.mjs';
 
 test('Naver shopping results retain source prices without invented quality metadata',()=>{
  const items=normalizeNaverItems({items:[{title:'<b>서울</b> 우유',lprice:'3200',link:'https://example.com/item',mallName:'쇼핑몰A'}]});
@@ -27,4 +27,24 @@ test('Naver shopping adapter rejects unsafe links and invalid prices',()=>{
 test('Naver shopping adapter rejects missing or malformed results',()=>{
  assert.throws(()=>normalizeNaverItems(null),/invalid_naver_schema/);
  assert.throws(()=>normalizeNaverItems({items:{}}),/invalid_naver_schema/);
+});
+
+
+test('survey CSV is read once for unchanged file and reloaded after modification',async()=>{
+ let version=1,reads=0;
+ const statImpl=async()=>({isFile:()=>true,size:42,mtimeMs:version});
+ const readImpl=async()=>{reads++;return Buffer.from('상품명,조사일,판매가격,판매업소\\n우유,2026-11-10,3000,마트A')};
+ const first=await loadConsumerSurveyCsv('/test/cache-survey.csv',statImpl,readImpl);
+ const second=await loadConsumerSurveyCsv('/test/cache-survey.csv',statImpl,readImpl);
+ assert.equal(first,second);
+ assert.equal(reads,1);
+ version=2;
+ await loadConsumerSurveyCsv('/test/cache-survey.csv',statImpl,readImpl);
+ assert.equal(reads,2);
+});
+
+test('survey CSV loader rejects invalid file sizes before reading',async()=>{
+ let reads=0;
+ await assert.rejects(loadConsumerSurveyCsv('/test/too-large.csv',async()=>({isFile:()=>true,size:80_000_001,mtimeMs:1}),async()=>{reads++;return Buffer.alloc(0)}),/invalid_consumer_csv/);
+ assert.equal(reads,0);
 });
