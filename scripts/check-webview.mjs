@@ -243,3 +243,11 @@ element('surveyCsvFile').files=[{size:utf8Survey.byteLength,arrayBuffer:async()=
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyResults').innerHTML,/12,000원/,'UTF-8 ArrayBuffer CSV should render Korean prices');
 assert.match(element('localSurveyStatus').textContent,/2개 표시/,'UTF-8 file decoding should retain two valid matches');
+
+
+// Reject malformed official CSV headers rather than silently presenting empty results.
+const badSurvey='상품명,판매업소,조사일\\n국산 쌀,가게A,2026-11-01';
+element('surveyCsvFile').files=[{size:badSurvey.length,text:async()=>badSurvey}];
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/필수 열/,'Missing CSV price column must show actionable error');
+assert.equal(element('localSurveyResults').innerHTML,'','Malformed CSV must not show stale price results');
