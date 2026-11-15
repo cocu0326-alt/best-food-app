@@ -29,7 +29,9 @@ class MainActivity : Activity() {
         web.addJavascriptInterface(object {
             @JavascriptInterface
             fun saveText(name: String, mime: String, content: String) {
-                if (content.toByteArray(Charsets.UTF_8).size > 2_000_000 || name !in setOf("best-food-backup.json", "best-food-products.csv", "best-food-price-changes.csv") || mime != if (name.endsWith(".json")) "application/json" else "text/csv;charset=utf-8") return
+                val allowedNames = setOf("best-food-backup.json", "best-food-products.csv", "best-food-price-changes.csv")
+                val expectedMime = if (name == "best-food-backup.json") "application/json" else "text/csv;charset=utf-8"
+                if (name !in allowedNames || mime != expectedMime || content.toByteArray(Charsets.UTF_8).size > 2_000_000) return
                 runOnUiThread {
                     if (pendingSave != null) {
                         Toast.makeText(this@MainActivity, "이전 파일 저장을 먼저 완료해 주세요.", Toast.LENGTH_SHORT).show()
