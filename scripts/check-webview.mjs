@@ -135,6 +135,14 @@ assert.match(groupedHtml,/비교 가능한 동일 상품명 그룹 2개/,'Two pr
 assert.ok(groupedHtml.indexOf('서울 우유 (2개 후보')<groupedHtml.indexOf('사과 주스 (2개 후보'),'Groups with larger percentage spreads should be listed first');
 assert.match(groupedHtml,/서울 우유 \(2개 후보, 280~360원\/100ml, 차이 80원 · 최고 단가 대비 22% 낮음\)/,'Milk group should show its own labeled unit-price spread');
 assert.match(groupedHtml,/사과 주스 \(2개 후보, 240~300원\/100ml, 차이 60원 · 최고 단가 대비 20% 낮음\)/,'Juice group should show its own labeled unit-price spread');
+sandbox.fetch=async()=>({ok:true,json:async()=>({products:[],candidates:[
+ {name:'동일가 쌀 500g',price:1500,size:500,measure:'g',source:'네이버쇼핑 검색'},
+ {name:'동일가 쌀 1kg',price:3000,size:1000,measure:'g',source:'네이버쇼핑 검색'}
+]})});
+await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
+const tiedHtml=element('apiCandidates').innerHTML;
+assert.match(tiedHtml,/비교 가능한 동일 상품명 그룹 1개 \(단가 동일 1개 그룹\)/,'Tied unit-price groups should remain visible');
+assert.doesNotMatch(tiedHtml,/100단위 예상가격 최저/,'Equal unit prices must not produce a single cheapest badge');
 const beforeApi=vm.runInContext('state.products.length',sandbox);
 element('apiEndpoint').value='https://example.test/api/foods';
 element('term').value='쌀';
