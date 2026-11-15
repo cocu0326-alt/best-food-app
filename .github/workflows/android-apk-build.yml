@@ -27,7 +27,7 @@ jobs:
       - name: Validate WebView JavaScript and survey CSV parser
         run: |
           node server/check-android-webview-syntax.mjs
-          node --test server/consumer-price-csv.test.mjs server/naver-shopping.test.mjs
+          node --test server/consumer-price-csv.test.mjs server/naver-shopping.test.mjs server/http-api.test.mjs
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
       - name: Verify generated APK and package identity
