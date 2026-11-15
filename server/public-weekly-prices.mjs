@@ -8,7 +8,7 @@ export function parsePublicWeeklyPrices(html){
  if(typeof html!=='string'||html.length>MAX_HTML_BYTES)throw Error('invalid_price_page');
  const text=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<[^>]*>/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/\s+/g,' ');
  const result=[];
- const pattern=/([가-힣A-Za-z0-9][가-힣A-Za-z0-9\s().·-]{2,90}\(\d+(?:\.\d+)?(?:kg|g|L|ml)\))\s*금주\s*([\d,]{3,12})/gi;
+ const pattern=/([가-힣A-Za-z0-9][가-힣A-Za-z0-9\s().·-]{2,90}\(\d+(?:\.\d+)?(?:kg|g|L|ml|개|개입|팩|봉|롤)\))\s*금주\s*([\d,]{3,12})/gi;
  for(const match of text.matchAll(pattern)){
   const name=match[1].trim(),price=Number(match[2].replace(/,/g,''));
   if(!Number.isSafeInteger(price)||price<100||price>1000000)continue;
