@@ -14,6 +14,16 @@ test('supplier adapter converts kg to g and rejects invalid prices',()=>{
   assert.equal(products[0].size,1000);
   assert.equal(products[0].measure,'g');
 });
+test('supplier data without genuine ratings is not assigned fabricated zero reviews',()=>{
+  const products=normalizeSupplierFeed({products:[
+    {name:'평점 없는 상품',price:1000,size:100,unit:'g',seller:'A'},
+    {name:'리뷰 없는 상품',price:1000,size:100,unit:'g',rating:4.5,seller:'A'},
+    {name:'정상 상품',price:1000,size:100,unit:'g',rating:0,reviews:0,seller:'A'}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.name),['정상 상품']);
+  assert.equal(products[0].rating,0);
+  assert.equal(products[0].reviews,0);
+});
 test('supplier search matches Korean names and returns only valid products',()=>{
   const results=searchSupplierProducts(sample,'사과');
   assert.equal(results.length,1);
