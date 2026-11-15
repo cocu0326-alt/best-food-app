@@ -245,6 +245,12 @@ element('surveyCsvFile').files=[{name:'old-prices.csv',size:oldSurveyDate.length
 element('term').value='오래된 쌀';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyStatus').textContent,/90일 이상 지난 조사자료/,'Old survey results must display age warning');
+// Future-dated survey observations must not silently appear to be fresh.
+const futureSurvey=['상품명,판매가격,판매업소,조사일','미래 쌀,5000,가게A,2099-01-01'].join(String.fromCharCode(10));
+element('surveyCsvFile').files=[{name:'future-prices.csv',size:futureSurvey.length,text:async()=>futureSurvey}];
+element('term').value='미래 쌀';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/현재 날짜보다 미래/,'Future survey dates should trigger a warning');
 element('surveyCsvFile').files=[{name:'prices.csv',size:surveyFixture.length,text:async()=>surveyFixture}];
 element('term').value='쌀';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
