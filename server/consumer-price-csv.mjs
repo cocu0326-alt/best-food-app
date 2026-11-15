@@ -20,10 +20,10 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
   if(!rows.length)return [];
   const headers=rows.shift().map(v=>v.trim().replace(/\s+/g,''));
   const col=(...names)=>headers.findIndex(h=>names.includes(h));
-  const name=col('상품명'),price=col('판매가격','가격'),seller=col('판매업소','판매점','업소명'),date=col('조사일','조사일자');
+  const name=col('상품명','제품명'),price=col('판매가격','판매가격(원)','가격','가격(원)'),seller=col('판매업소','판매업소명','판매점','판매점명','업소명'),date=col('조사일','조사일자','조사일시');
   if([name,price,seller,date].some(i=>i<0))throw Error('missing_required_columns');
   const manufacturer=col('제조사','제조업체');
-  const sale=col('세일여부'),onePlusOne=col('원플러스원');
+  const sale=col('세일여부','세일여부(Y/N)'),onePlusOne=col('원플러스원','원플러스원여부','1+1여부');
   const q=query.normalize('NFC').trim().toLowerCase();
   const out=[];
   for(const row of rows){
