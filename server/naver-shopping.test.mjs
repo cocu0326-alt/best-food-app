@@ -73,3 +73,11 @@ test('Naver shopping product titles preserve decoded Korean brand names',()=>{
  assert.equal(cleanNaverTitle('우유&nbsp;1L &quot;특가&quot;'),'우유 1L "특가"');
  assert.equal(cleanNaverTitle('A &lt; B &gt; C'), 'A < B > C');
 });
+
+
+test('Naver adapter skips malformed individual records and retains valid listings',()=>{
+ const found=normalizeNaverItems({items:[null,false,42,[],{title:'정상 우유',lprice:'2500',link:'https://example.com/milk',mallName:'마트'}]});
+ assert.equal(found.length,1);
+ assert.equal(found[0].name,'정상 우유');
+ assert.equal(found[0].price,2500);
+});
