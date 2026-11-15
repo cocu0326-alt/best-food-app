@@ -29,7 +29,7 @@ test('health, method rejection, rate limiting and missing supplier',async t=>{
   }
   assert.ok(ready,'server must start');
   const health=await (await fetch(base+'/health')).json();
-  assert.deepEqual(health,{ok:true,providerConfigured:false});
+  assert.deepEqual(health,{ok:true,providerConfigured:false,csvReady:false});
   assert.equal((await fetch(base+'/api/foods?q=rice',{method:'POST'})).status,405);
   assert.equal((await fetch(base+'/api/foods?q=rice&q=apple')).status,400,'duplicate search parameters must be rejected');
   assert.equal((await fetch(base+'/api/foods?q=rice&token=secret')).status,400,'unsupported query parameters must be rejected');
