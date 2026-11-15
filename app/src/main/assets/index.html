@@ -59,7 +59,7 @@ async function searchLocalSurvey(){
   }
   if(quoted)throw Error('닫히지 않은 CSV 따옴표');
   if(cell||row.length){row.push(cell);rows.push(row)}
-  const headers=(rows.shift()||[]).map(x=>x.trim().replace(/\s+/g,''));
+  const headers=(rows.shift()||[]).map(x=>x.replace(/^\uFEFF/,'').trim().replace(/\s+/g,''));
   const col=(...names)=>headers.findIndex(x=>names.includes(x));
   const ni=col('상품명','제품명'),pi=col('판매가격','판매가격(원)','가격','가격(원)'),si=col('판매업소','판매업소명','판매점','판매점명','업소명'),di=col('조사일','조사일자','조사일시');
   if([ni,pi,si,di].some(x=>x<0))throw Error('필수 열(상품명·가격·판매업소·조사일)을 확인하세요.');
