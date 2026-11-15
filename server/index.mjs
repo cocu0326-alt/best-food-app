@@ -3,6 +3,7 @@ import {readFile,stat} from 'node:fs/promises';
 import {parseConsumerPriceCsv} from './consumer-price-csv.mjs';
 import {normalizeSupplierFeed} from './supplier-feed.mjs';
 import {searchPublishedSurveyPrices,reportDate} from './published-survey.mjs';
+import {fetchPublicWeeklyPrices,searchPublicWeeklyPrices} from './public-weekly-prices.mjs';
 
 const port = Number(process.env.PORT || 8787);
 const upstream = process.env.FOOD_UPSTREAM_URL || '';
@@ -273,7 +274,13 @@ export const server = http.createServer(async (req, res) => {
       return send(res,200,{products:[],candidates:filterNaverCandidates(normalizeNaverItems(data),q),notice:'네이버쇼핑 검색 결과입니다. 용량·평점·리뷰 정보가 제공되지 않아 종합평가에 자동 등록하지 않습니다.'},origin);
     } catch {return send(res,502,{error:'naver_provider_unavailable'},origin);}
   }
-  if (!upstream) return send(res,200,{products:[],candidates:searchPublishedSurveyPrices(q),notice:'한국소비자원 공식 공개자료 '+reportDate+' 조사 집계 평균가격입니다. 개별 판매점 가격 또는 현재 판매가격이 아닙니다. 최신 데이터 공급원은 연결되지 않았습니다.'},origin);
+  if (!upstream) {
+    try {
+      const live=searchPublicWeeklyPrices(await fetchPublicWeeklyPrices(),q);
+      if(live.length)return send(res,200,{products:[],candidates:live,notice:'한국소비자원 참가격 홈페이지의 최근 주간 평균 조사 가격입니다. 실시간 판매가 또는 개별 판매점 가격이 아닙니다.'},origin);
+    } catch { /* Official site unavailable: use explicitly dated, historical records only. */ }
+    return send(res,200,{products:[],candidates:searchPublishedSurveyPrices(q),notice:'최근 공개가격 조회 불가 또는 검색 결과 없음. '+reportDate+' 과거 조사 집계가격만 표시합니다. 실시간 판매가가 아닙니다.'},origin);
+  }
   try {
     const target = new URL(upstream);
     if (target.protocol !== 'https:' || target.username || target.password || target.hash || !target.hostname) throw new Error('Valid HTTPS upstream required');
