@@ -77,7 +77,7 @@ export function searchSupplierProducts(data, q) {
       normalizeSearchText(product.name),
       normalizeSearchText(product.seller),
       product.price, product.size, product.measure,
-      product.url || ''
+      product.url ? new URL(product.url).href : ''
     ]);
     if (seen.has(key)) continue;
     seen.add(key);
