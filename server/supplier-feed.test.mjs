@@ -258,3 +258,11 @@ test('invisible-only seller falls back to manufacturer or unknown seller',()=>{
   ]}).products;
   assert.deepEqual(products.map(p=>p.seller),['산들 농장','판매처 미확인']);
 });
+
+test('source with invisible-only text is marked unverified, and real source is normalized',()=>{
+  const products=normalizeSupplierFeed({products:[
+    {name:'쌀',price:5000,size:500,unit:'g',source:'\u200b\ufeff'},
+    {name:'보리',price:4000,size:500,unit:'g',source:'\u00a0산지\u200b  공급사\ufeff'}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.source),['공급업체 제공 (원출처 미확인)','산지 공급사']);
+});
