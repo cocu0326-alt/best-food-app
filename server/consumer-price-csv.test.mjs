@@ -106,3 +106,17 @@ test('rejects stray characters after a closing CSV quote',()=>{
  assert.deepEqual(parseCsv('name,price\n"apple",3500'),[['name','price'],['apple','3500']]);
  assert.deepEqual(parseCsv('name,price\n"a""b",3500'),[['name','price'],['a"b','3500']]);
 });
+
+
+test('only valid Korean survey price formats are accepted',()=>{
+ const csv=['상품명,조사일,판매가격,판매업소',
+  '사과,2026-11-10,3500,마트A',
+  '사과,2026-11-10,"3,500",마트B',
+  '사과,2026-11-10,3500원,마트C',
+  '사과,2026-11-10,3원500,마트D',
+  '사과,2026-11-10,"35,00",마트E',
+  '사과,2026-11-10,1e3,마트F'].join('\n');
+ const found=parseConsumerPriceCsv(csv,'사과');
+ assert.deepEqual(found.map(x=>x.seller),['마트A','마트B','마트C']);
+ assert.deepEqual(found.map(x=>x.price),[3500,3500,3500]);
+});
