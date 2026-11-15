@@ -37,7 +37,12 @@ const token = process.env.FOOD_API_TOKEN || '';
 const naverClientId = process.env.NAVER_CLIENT_ID || '';
 const naverClientSecret = process.env.NAVER_CLIENT_SECRET || '';
 if (Boolean(naverClientId) !== Boolean(naverClientSecret)) throw Error('NAVER_CLIENT_ID and NAVER_CLIENT_SECRET must be configured together');
-function cleanNaverTitle(value) {return String(value || '').replace(/<[^>]*>/g,' ').replace(/&(?:amp|lt|gt|quot|apos);/g,' ').replace(/\s+/g,' ').trim().slice(0,200)}
+export function cleanNaverTitle(value) {
+  const entities={amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:' '};
+  return String(value||'').replace(/<[^>]*>/g,' ')
+    .replace(/&(?:amp|lt|gt|quot|apos|nbsp);/gi,entity=>entities[entity.slice(1,-1).toLowerCase()]||' ')
+    .replace(/\s+/g,' ').trim().slice(0,200);
+}
 export function normalizeNaverItems(data) {
   if (!data || !Array.isArray(data.items)) throw Error('invalid_naver_schema');
   return data.items.slice(0,100).flatMap(item => {
