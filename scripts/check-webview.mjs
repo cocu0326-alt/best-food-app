@@ -114,6 +114,13 @@ console.log('PASS: editing food query clears stale prices and shows API refresh 
 assert.match(html,/if\(query&&query\.length<=120\)surveySearchTimer=setTimeout\(\(\)=>searchFoodNow\(\),endpoint&&validApiUrl\(endpoint\.value\.trim\(\)\)\?900:350\)/,'Saved and remote food searches should be debounced with distinct delays');
 console.log('PASS: saved food prices automatically search on typing without API calls');
 
+element('term').value='만두';
+vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
+assert.match(element('instantSearchResults').innerHTML,/체험용 김치만두/,'Offline food search should show a sample result');
+assert.match(element('instantSearchResults').innerHTML,/가상 상품·가상 가격/,'Sample prices must never be presented as real prices');
+console.log('PASS: searching 만두 shows visibly labeled offline demo results');
+
+
 
 
 
