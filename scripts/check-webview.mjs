@@ -282,3 +282,10 @@ element('term').value='존재하지않는상품';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyStatus').textContent,/0개 표시/,'No-match searches must clearly show zero results');
 assert.equal(element('localSurveyResults').innerHTML,'','No-match searches must remove previous products');
+
+
+// An empty public CSV file should be rejected without displaying stale results.
+element('surveyCsvFile').files=[{name:'empty.csv',size:0,text:async()=>''}];
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/비어 있습니다/,'Empty survey file must show a clear error');
+assert.equal(element('localSurveyResults').innerHTML,'','Empty survey file must not retain previous results');
