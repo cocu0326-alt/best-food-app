@@ -117,7 +117,7 @@ export const server = http.createServer(async (req, res) => {
   const queryValues = url.searchParams.getAll('q');
   if (queryValues.length !== 1 || [...url.searchParams.keys()].some(key => key !== 'q')) return send(res, 400, {error: 'invalid_query'}, origin);
   const q = queryValues[0].trim();
-  if (!q || q.length > 120 || !q.replace(/[\s\u00a0\u200b\ufeff]+/gu, '')) return send(res, 400, {error: 'invalid_query'}, origin);
+  if (!q || q.length > 120 || !q.replace(/[\s\u00a0\u200b\ufeff]+/gu, '') || /[\u0000-\u001f\u007f]/u.test(q)) return send(res, 400, {error: 'invalid_query'}, origin);
   if (!upstream) return send(res, 503, {error: 'provider_not_configured', message: '상품 공급 API 연결이 필요합니다.'}, origin);
   try {
     const target = new URL(upstream);
