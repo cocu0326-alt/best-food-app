@@ -86,3 +86,10 @@ test('result limit zero returns no survey records and invalid limits fail',()=>{
   assert.throws(()=>parseConsumerPriceCsv(csv,'사과',limit),/invalid_result_limit/);
  }
 });
+
+
+test('zero result limit still rejects invalid CSV input types',()=>{
+ for(const value of [null,undefined,42,{},[]]){
+  assert.throws(()=>parseConsumerPriceCsv(value,'',0),/invalid_csv_size/);
+ }
+});
