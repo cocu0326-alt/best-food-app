@@ -289,3 +289,9 @@ test('invalid supplier calendar dates do not appear as verified update dates',()
  const products=normalizeSupplierFeed({products:dates.map((updatedAt,i)=>({name:'상품'+i,price:1000,size:100,unit:'g',updatedAt}))}).products;
  assert.deepEqual(products.map(p=>p.sourceUpdatedAt),[null,null,null,'2026-11-15','2026-11-15T09:10:00Z']);
 });
+
+test('supplier update timestamps reject invalid clock and timezone values',()=>{
+ const dates=['2026-11-15T25:00:00Z','2026-11-15T12:60:00Z','2026-11-15T12:00:60Z','2026-11-15T12:00:00+25:00','2024-02-29','2025-02-29','2026-11-15T12:30:00+09:00'];
+ const products=normalizeSupplierFeed({products:dates.map((updatedAt,i)=>({name:'상품'+i,price:1000,size:100,unit:'g',updatedAt}))}).products;
+ assert.deepEqual(products.map(p=>p.sourceUpdatedAt),[null,null,null,null,'2024-02-29',null,'2026-11-15T12:30:00+09:00']);
+});
