@@ -50,6 +50,9 @@ export function parseListingPackageSize(title) {
   if(/(?:\d+\s*[x×*]\s*\d+\s*(?:ml|l|kg|g)\b|\d+\s*(?:ml|l|kg|g)\s*[x×*]\s*\d+|\d+\s*(?:개입|입|팩|병|캔|봉|개|세트)|\d+\s*\+\s*\d+|\d+\s*인분|묶음|번들|멀티팩|증정|사은품|대용량\s*\+|리필\s*\+|\d+\s*(?:ml|l|kg|g)\s*\+\s*\d+\s*(?:ml|l|kg|g))/i.test(value))return null;
   const found=[...value.matchAll(/(^|[^\dA-Za-z])((?:[1-9]\d*(?:\.\d+)?|0\.\d*[1-9]\d*))\s*(ml|kg|g|l)(?![A-Za-z])/gi)];
   if(found.length!==1)return null;
+  // A malformed leading decimal (e.g. 0.0L) must never be read as a smaller suffix quantity.
+  const match=found[0],start=match.index+match[1].length;
+  if(start>0&&/[\d.]/.test(value[start-1]))return null;
   const quantity=Number(found[0][2]),unit=found[0][3].toLowerCase();
   const measure=unit==='ml'||unit==='l'?'ml':'g';
   const size=quantity*(unit==='l'||unit==='kg'?1000:1);
