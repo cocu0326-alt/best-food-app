@@ -94,6 +94,13 @@ assert.equal(element('apiCandidates').innerHTML,'','New search must clear stale 
 assert.equal(element('localSurveyResults').innerHTML,'','New search must clear stale survey results');
 console.log('PASS: new food search clears previous remote and CSV results');
 
+const beforeSurveyRequest=vm.runInContext('surveySearchRequest',sandbox,{timeout:3000});
+element('term').value='국산 쌀';
+vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
+assert.equal(vm.runInContext('surveySearchRequest',sandbox,{timeout:3000}),beforeSurveyRequest+1,'New search must invalidate pending CSV reads');
+console.log('PASS: new food search invalidates pending CSV reads');
+
+
 
 
 element('term').value='';
