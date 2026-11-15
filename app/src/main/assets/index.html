@@ -40,8 +40,8 @@ function searchFoodNow(){
  ];
  const historicalDate='2026-08-28';
  const historicalSource='https://www.price.go.kr/tprice/portal/pricenews/pricereport/priceReportList.do?inspectDay=28&inspectMonth=08&inspectYear=2026';
- const terms=q.normalize('NFKC').toLowerCase().split(/\\s+/).filter(Boolean);
- const normalizeSearch=x=>String(x||'').normalize('NFKC').toLowerCase().replace(/\\s+/g,'');
+ const terms=q.normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean);
+ const normalizeSearch=x=>String(x||'').normalize('NFKC').toLowerCase().replace(/\s+/g,'');
  const matches=state.products.filter(p=>{const name=normalizeSearch(p.name);return terms.every(t=>name.includes(normalizeSearch(t)))&&!state.exclude.some(t=>name.includes(normalizeSearch(t)))}).sort((a,b)=>Number(a.price)-Number(b.price));
  if(box){
   const countByNameUnit=new Map();for(const p of matches){const key=String(p.name||'').normalize('NFKC').trim().toLowerCase()+'|'+String(p.measure||'').toLowerCase();countByNameUnit.set(key,(countByNameUnit.get(key)||0)+1)}
