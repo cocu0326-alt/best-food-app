@@ -151,6 +151,6 @@ test('zero-result limit still validates CSV headers',()=>{
 
 
 test('rejects stray quotes after a completed quoted CSV field',()=>{
-  assert.throws(()=>parseCsv('"milk""oops",price'),/invalid_csv_quote|unclosed_csv_quote/);
+  assert.throws(()=>parseCsv('"milk""oops"extra,price'),/invalid_csv_quote|unclosed_csv_quote/);
   assert.throws(()=>parseCsv('"milk" "oops",price'),/invalid_csv_quote/);
 });
