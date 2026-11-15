@@ -131,3 +131,14 @@ test('unit-price comparison must distinguish pack prices from comparable quantit
  assert.equal(comparable[1].price/comparable[1].size*100,280);
  assert.equal(comparable[1].name,'우유 1L');
 });
+
+test('shopping listing metadata never treats a bundle as a unit-price-ready product',()=>{
+ const products=normalizeNaverItems({items:[
+  {title:'같은 우유 1L',lprice:'2900',link:'https://example.com/single'},
+  {title:'같은 우유 1L 2팩',lprice:'4500',link:'https://example.com/bundle'},
+  {title:'같은 우유 1L + 증정',lprice:'3100',link:'https://example.com/gift'}
+ ]});
+ assert.equal(products.length,3);
+ assert.deepEqual(products.map(p=>p.size),[1000,null,null]);
+ assert.equal(products.filter(p=>Number.isSafeInteger(p.size)&&p.size>0).length,1);
+});
