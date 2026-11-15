@@ -131,7 +131,7 @@ test('multiple search words match independently and in either order',()=>{
 
 
 test('CSV parser enforces row cap even when the final line has no newline',()=>{
- const rows='x\\n'.repeat(300000);
+ const rows=('x'+String.fromCharCode(10)).repeat(300000);
  assert.equal(parseCsv(rows).length,300000);
  assert.throws(()=>parseCsv(rows+'extra'),/too_many_rows/);
 });
