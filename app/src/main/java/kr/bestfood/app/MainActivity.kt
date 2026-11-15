@@ -29,6 +29,10 @@ class MainActivity : Activity() {
         web.settings.javaScriptCanOpenWindowsAutomatically = false
         web.settings.setSupportMultipleWindows(false)
         web.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            web.settings.safeBrowsingEnabled = true
+        }
+        WebView.setWebContentsDebuggingEnabled(false)
         web.addJavascriptInterface(object {
             @JavascriptInterface
             fun saveText(name: String, mime: String, content: String) {
