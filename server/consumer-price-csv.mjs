@@ -38,7 +38,10 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
     actual.setUTCFullYear(year,month-1,dayOfMonth);
     if(actual.getUTCFullYear()!==year||actual.getUTCMonth()+1!==month||actual.getUTCDate()!==dayOfMonth)continue;
     if(q&&!title.normalize('NFC').toLowerCase().replace(/\s+/g,'').includes(q))continue;
-    const amount=Number((row[price]||'').replace(/[\s,원]/g,''));
+    const rawPrice=(row[price]||'').trim();
+    // Accept plain digits or properly grouped thousands, optionally followed by 원.
+    if(!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\s*원)?$/.test(rawPrice))continue;
+    const amount=Number(rawPrice.replace(/[,\s원]/g,''));
     if(!Number.isSafeInteger(amount)||amount<=0)continue;
     out.push({name:title.slice(0,200),price:amount,seller:store.slice(0,120),surveyDate:day,manufacturer:manufacturer>=0?(row[manufacturer]||'').trim().slice(0,120):'',saleStatus:sale>=0?(row[sale]||'').trim().slice(0,30):null,onePlusOne:onePlusOne>=0?(row[onePlusOne]||'').trim().slice(0,30):null,source:'한국소비자원 참가격 조사',size:null,measure:null,rating:null,reviews:null,url:''});
   }
