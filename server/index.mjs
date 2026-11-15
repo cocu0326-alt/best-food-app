@@ -15,6 +15,22 @@ if (allowedOrigin) {
   }
 }
 const token = process.env.FOOD_API_TOKEN || '';
+const naverClientId = process.env.NAVER_CLIENT_ID || '';
+const naverClientSecret = process.env.NAVER_CLIENT_SECRET || '';
+if (Boolean(naverClientId) !== Boolean(naverClientSecret)) throw Error('NAVER_CLIENT_ID and NAVER_CLIENT_SECRET must be configured together');
+function cleanNaverTitle(value) {return String(value || '').replace(/<[^>]*>/g,' ').replace(/&(?:amp|lt|gt|quot|apos);/g,' ').replace(/\s+/g,' ').trim().slice(0,200)}
+export function normalizeNaverItems(data) {
+  if (!data || !Array.isArray(data.items)) throw Error('invalid_naver_schema');
+  return data.items.slice(0,100).flatMap(item => {
+    const name=cleanNaverTitle(item.title);
+    const price=Number(item.lprice);
+    let url='';
+    try {const u=new URL(item.link);if(u.protocol==='https:'&&!u.username&&!u.password)url=u.href} catch {}
+    if(!name||!Number.isSafeInteger(price)||price<=0||!url)return [];
+    return [{name,price,url,seller:typeof item.mallName==='string'?item.mallName.slice(0,120):'',source:'네이버쇼핑 검색',size:null,measure:null,rating:null,reviews:null}];
+  });
+}
+
 const maxFeedBytes = 1024 * 1024;
 export async function readBoundedJson(response) {
   const length = Number(response.headers.get('content-length'));
@@ -121,12 +137,24 @@ export const server = http.createServer(async (req, res) => {
   catch { return send(res, 400, {error:'invalid_request_url'}, origin); }
   if (req.method !== 'GET') return send(res, 405, {error:'method_not_allowed'}, origin);
   if (url.pathname === '/api/foods' && limited(req.socket.remoteAddress || 'unknown')) return send(res, 429, {error:'rate_limited',message:'잠시 후 다시 요청하세요.'}, origin);
-  if (url.pathname === '/health') return send(res, 200, {ok: true, providerConfigured: Boolean(upstream)}, origin);
+  if (url.pathname === '/health') return send(res, 200, {ok: true, providerConfigured: Boolean(upstream || (naverClientId && naverClientSecret)), naverConfigured: Boolean(naverClientId && naverClientSecret)}, origin);
   if (url.pathname !== '/api/foods') return send(res, 404, {error: 'not_found'}, origin);
   const queryValues = url.searchParams.getAll('q');
   if (queryValues.length !== 1 || [...url.searchParams.keys()].some(key => key !== 'q')) return send(res, 400, {error: 'invalid_query'}, origin);
   const q = queryValues[0].trim();
   if (!q || q.length > 120 || !q.replace(/[\s\u00a0\u200b\ufeff]+/gu, '') || /[\u0000-\u001f\u007f]/u.test(q)) return send(res, 400, {error: 'invalid_query'}, origin);
+  if (!upstream && naverClientId && naverClientSecret) {
+    try {
+      const target=new URL('https://openapi.naver.com/v1/search/shop.json');
+      target.searchParams.set('query',q);
+      target.searchParams.set('display','30');
+      const response=await fetch(target,{headers:{'X-Naver-Client-Id':naverClientId,'X-Naver-Client-Secret':naverClientSecret,accept:'application/json'},signal:AbortSignal.timeout(8000),redirect:'error'});
+      if(!response.ok)return send(res,502,{error:'naver_upstream_error'},origin);
+      if(!/^application\/json(?:\s*;|\s*$)/i.test(response.headers.get('content-type')||''))return send(res,502,{error:'naver_invalid_content_type'},origin);
+      const data=await readBoundedJson(response);
+      return send(res,200,{products:[],candidates:normalizeNaverItems(data),notice:'네이버쇼핑 검색 결과입니다. 용량·평점·리뷰 정보가 제공되지 않아 종합평가에 자동 등록하지 않습니다.'},origin);
+    } catch {return send(res,502,{error:'naver_provider_unavailable'},origin);}
+  }
   if (!upstream) return send(res, 503, {error: 'provider_not_configured', message: '상품 공급 API 연결이 필요합니다.'}, origin);
   try {
     const target = new URL(upstream);
