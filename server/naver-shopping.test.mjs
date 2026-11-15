@@ -48,3 +48,10 @@ test('survey CSV loader rejects invalid file sizes before reading',async()=>{
  await assert.rejects(loadConsumerSurveyCsv('/test/too-large.csv',async()=>({isFile:()=>true,size:80_000_001,mtimeMs:1}),async()=>{reads++;return Buffer.alloc(0)}),/invalid_consumer_csv/);
  assert.equal(reads,0);
 });
+
+
+test('survey CSV loader decodes EUC-KR when UTF-8 is invalid',async()=>{
+ const bytes=Buffer.concat([Buffer.from('name\\n'),Buffer.from([0xb0,0xa1])]);
+ const decoded=await loadConsumerSurveyCsv('/test/euc-kr.csv',async()=>({isFile:()=>true,size:bytes.length,mtimeMs:1}),async()=>bytes);
+ assert.equal(decoded,'name\\n가');
+});
