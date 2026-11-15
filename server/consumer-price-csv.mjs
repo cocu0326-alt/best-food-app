@@ -2,13 +2,14 @@
 // Preview only: survey prices are not current online checkout prices.
 export function parseCsv(text) {
   if (typeof text !== 'string' || text.length > 80_000_000) throw Error('invalid_csv_size');
-  const rows=[];let row=[],cell='',quoted=false;
+  const rows=[];let row=[],cell='',quoted=false,afterQuote=false;
   for(let i=0;i<text.length;i++){
     const ch=text[i];
-    if(quoted){if(ch==='"'&&text[i+1]==='"'){cell+='"';i++}else if(ch==='"')quoted=false;else cell+=ch}
+    if(quoted){if(ch==='"'&&text[i+1]==='"'){cell+='"';i++}else if(ch==='"'){quoted=false;afterQuote=true}else cell+=ch}
+    else if(afterQuote && ch!==',' && ch!=='\n' && ch!=='\r')throw Error('invalid_csv_quote');
     else if(ch==='"'){if(cell)throw Error('invalid_csv_quote');quoted=true}
-    else if(ch===','){row.push(cell);cell=''}
-    else if(ch==='\n'||ch==='\r'){row.push(cell);rows.push(row);row=[];cell='';if(ch==='\r'&&text[i+1]==='\n')i++;if(rows.length>300000)throw Error('too_many_rows')}
+    else if(ch===','){row.push(cell);cell='';afterQuote=false}
+    else if(ch==='\n'||ch==='\r'){row.push(cell);rows.push(row);row=[];cell='';afterQuote=false;if(ch==='\r'&&text[i+1]==='\n')i++;if(rows.length>300000)throw Error('too_many_rows')}
     else cell+=ch;
   }
   if(quoted)throw Error('unclosed_csv_quote');
