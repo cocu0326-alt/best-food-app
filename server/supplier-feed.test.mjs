@@ -242,3 +242,11 @@ test('supplier feed excludes names made only of invisible whitespace',()=>{
   ]}).products;
   assert.deepEqual(products.map(p=>p.name),['정상 사과']);
 });
+
+test('supplier seller names normalize invisible spaces for consistent display',()=>{
+  const products=normalizeSupplierFeed({products:[
+    {name:'현미',price:5000,size:500,unit:'g',seller:'\u200b 청정\u200b  농장\ufeff'},
+    {name:'보리',price:4000,size:500,unit:'g',manufacturer:'\u00a0산들\u200b 농장'}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.seller),['청정 농장','산들 농장']);
+});
