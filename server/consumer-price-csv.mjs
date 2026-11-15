@@ -13,7 +13,7 @@ export function parseCsv(text) {
     else cell+=ch;
   }
   if(quoted)throw Error('unclosed_csv_quote');
-  if(cell||row.length){row.push(cell);rows.push(row)}
+  if(cell||row.length){if(rows.length>=300000)throw Error('too_many_rows');row.push(cell);rows.push(row)}
   return rows;
 }
 export function parseConsumerPriceCsv(text, query='',limit=100) {
