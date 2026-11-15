@@ -274,3 +274,11 @@ await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyStatus').textContent,/2개 표시/,'Valid CSV must replace previous error status');
 assert.doesNotMatch(element('localSurveyStatus').textContent,/CSV\(\.csv\) 파일만/,'Previous file error must disappear');
 assert.match(element('localSurveyResults').innerHTML,/11,000원/,'Valid CSV search must render results after an error');
+
+
+// The source CSV filename should be visible and searches with no matches should not retain old products.
+assert.match(element('localSurveyStatus').textContent,/prices\.csv/,'Offline search should identify its source filename');
+element('term').value='존재하지않는상품';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/0개 표시/,'No-match searches must clearly show zero results');
+assert.equal(element('localSurveyResults').innerHTML,'','No-match searches must remove previous products');
