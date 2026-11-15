@@ -41,6 +41,9 @@ export async function loadRemoteConsumerSurveyCsv(url, fetchImpl=fetch, now=Date
   catch{text=new TextDecoder('euc-kr',{fatal:true}).decode(bytes)}
   // Never cache a portal page or an unrelated CSV as real price data.
   parseConsumerPriceCsv(text,'',0);
+  // Validate that the source actually contains usable surveyed prices before caching it.
+  // A header-only CSV must not be reported as an operational price feed.
+  if(!parseConsumerPriceCsv(text,'',1).length)throw Error('consumer_csv_no_valid_prices');
   remoteSurveyCache={url,text,fetchedAt:now};
   return text;
 }
