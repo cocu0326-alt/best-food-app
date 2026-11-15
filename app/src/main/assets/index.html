@@ -13,6 +13,9 @@ function searchFoodNow(){
  if(!q)return alert('검색할 식품명을 입력해 주세요.');
  if(q.length>120)return alert('검색어는 120자 이하로 입력해 주세요.');
  ++apiSearchRequest;
+ // Prevent a pending CSV read or debounced search from overwriting a newer search.
+ clearTimeout(surveySearchTimer);
+ ++surveySearchRequest;
  const instant=document.getElementById('instantSearchResults');if(instant)instant.innerHTML='';
  const apiResults=document.getElementById('apiCandidates');if(apiResults)apiResults.innerHTML='';
  const surveyResults=document.getElementById('localSurveyResults');if(surveyResults)surveyResults.innerHTML='';
