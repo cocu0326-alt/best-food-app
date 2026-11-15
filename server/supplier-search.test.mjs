@@ -173,3 +173,11 @@ test('invisible-only queries never return all supplier products',()=>{
  assert.deepEqual(searchSupplierProducts(feed,'\u200b\ufeff'),[]);
  assert.deepEqual(searchSupplierProducts(feed,'\u00a0 \u200b'),[]);
 });
+
+test('multiword token search matches parts of separate product and seller words',()=>{
+ const products=searchSupplierProducts({products:[
+  {name:'국내산 햇사과',price:5000,size:500,unit:'g',seller:'푸른농장'},
+  {name:'국내산 배',price:4000,size:500,unit:'g',seller:'푸른농장'}
+ ]},'사과 푸른');
+ assert.deepEqual(products.map(p=>p.name),['국내산 햇사과']);
+});
