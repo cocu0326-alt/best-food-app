@@ -32,7 +32,7 @@ jobs:
           from pathlib import Path
           import re
           html = Path('app/src/main/assets/index.html').read_text(encoding='utf-8')
-          script = '\\n'.join(re.findall(r'<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>', html, flags=re.I))
+          script = '\n'.join(re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>', html, flags=re.I))
           class Controls(HTMLParser):
               def __init__(self):
                   super().__init__()
@@ -50,12 +50,12 @@ jobs:
           controls = Controls()
           controls.feed(html)
           assert not controls.duplicates, f'Duplicate HTML IDs: {controls.duplicates}'
-          referenced = set(re.findall(r"document\\.getElementById\\(['\\\"]([^'\\\"]+)['\\\"]\\)", script))
+          referenced = set(re.findall(r"document\.getElementById\(['\\"]([^'\\"]+)['\\"]\)", script))
           missing = referenced - controls.ids
           assert not missing, f'Missing DOM controls: {sorted(missing)}'
-          functions = set(re.findall(r'function\\s+([A-Za-z_$][\\w$]*)\\s*\\(', script))
+          functions = set(re.findall(r'function\s+([A-Za-z_$][\w$]*)\s*\(', script))
           for handler in controls.handlers:
-              match = re.match(r'\\s*([A-Za-z_$][\\w$]*)\\s*\\(', handler)
+              match = re.match(r'\s*([A-Za-z_$][\w$]*)\s*\(', handler)
               if match and match.group(1) not in functions:
                   raise AssertionError(f'Unknown event handler: {handler}')
           print(f'Validated {len(controls.ids)} control IDs and {len(controls.handlers)} event handlers')
