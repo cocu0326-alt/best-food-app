@@ -6,6 +6,31 @@ import {normalizeSupplierFeed} from './supplier-feed.mjs';
 const port = Number(process.env.PORT || 8787);
 const upstream = process.env.FOOD_UPSTREAM_URL || '';
 const consumerPriceCsvPath = process.env.CONSUMER_PRICE_CSV_PATH || '';
+const consumerPriceCsvUrl = process.env.CONSUMER_PRICE_CSV_URL || '';
+const consumerCsvRefreshMs = 6 * 60 * 60 * 1000;
+let remoteSurveyCache = null;
+// Direct public CSV download URL only. Metadata and HTML portal pages are not CSV.
+export async function loadRemoteConsumerSurveyCsv(url, fetchImpl=fetch, now=Date.now()) {
+  const target = new URL(url);
+  if(target.protocol!=='https:'||target.username||target.password||target.hash||
+     !['www.data.go.kr','data.go.kr'].includes(target.hostname))throw Error('invalid_consumer_csv_url');
+  if(remoteSurveyCache&&remoteSurveyCache.url===url&&now-remoteSurveyCache.fetchedAt<consumerCsvRefreshMs)return remoteSurveyCache.text;
+  const response=await fetchImpl(target.href,{redirect:'error',signal:AbortSignal.timeout(15000),headers:{Accept:'text/csv,application/octet-stream'}});
+  if(!response.ok)throw Error('consumer_csv_download_failed');
+  const mime=(response.headers.get('content-type')||'').toLowerCase();
+  if(mime.includes('text/html')||mime.includes('application/json'))throw Error('consumer_csv_not_download');
+  const size=Number(response.headers.get('content-length'));
+  if(Number.isFinite(size)&&size>80_000_000)throw Error('invalid_consumer_csv');
+  const bytes=new Uint8Array(await response.arrayBuffer());
+  if(!bytes.length||bytes.length>80_000_000)throw Error('invalid_consumer_csv');
+  let text;
+  try{text=new TextDecoder('utf-8',{fatal:true}).decode(bytes)}
+  catch{text=new TextDecoder('euc-kr',{fatal:true}).decode(bytes)}
+  // Never cache a portal page or an unrelated CSV as real price data.
+  parseConsumerPriceCsv(text,'',0);
+  remoteSurveyCache={url,text,fetchedAt:now};
+  return text;
+}
 // Cache source bytes while the CSV file's size and modification time are unchanged.
 // Avoid reading up to 80 MB from disk on every product search.
 let surveyFileCache = null;
@@ -213,9 +238,9 @@ export const server = http.createServer(async (req, res) => {
   if (queryValues.length !== 1 || [...url.searchParams.keys()].some(key => key !== 'q')) return send(res, 400, {error: 'invalid_query'}, origin);
   const q = queryValues[0].trim();
   if (!q || q.length > 120 || !q.replace(/[\s\u00a0\u200b\ufeff]+/gu, '') || /[\u0000-\u001f\u007f]/u.test(q)) return send(res, 400, {error: 'invalid_query'}, origin);
-  if (!upstream && consumerPriceCsvPath) {
+  if (!upstream && (consumerPriceCsvPath || consumerPriceCsvUrl)) {
     try {
-      const csv=await loadConsumerSurveyCsv(consumerPriceCsvPath);
+      const csv=consumerPriceCsvPath?await loadConsumerSurveyCsv(consumerPriceCsvPath):await loadRemoteConsumerSurveyCsv(consumerPriceCsvUrl);
       return send(res,200,{products:[],candidates:parseConsumerPriceCsv(csv,q),notice:'한국소비자원 조사 가격이며 실시간 판매가격이 아닙니다.'},origin);
     } catch (error) {return send(res,502,{error:error?.message==='missing_required_columns'?'consumer_csv_invalid_columns':'consumer_csv_unavailable'},origin);}
   }
