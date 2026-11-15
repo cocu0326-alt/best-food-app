@@ -16,6 +16,8 @@ export function parseCsv(text) {
   return rows;
 }
 export function parseConsumerPriceCsv(text, query='',limit=100) {
+  if (!Number.isSafeInteger(limit) || limit < 0) throw Error('invalid_result_limit');
+  if (limit === 0) return [];
   const rows=parseCsv(text.replace(/^\uFEFF/,''));
   if(!rows.length)return [];
   const headers=rows.shift().map(v=>v.replace(/^\uFEFF/,'').trim().replace(/\s+/g,''));
