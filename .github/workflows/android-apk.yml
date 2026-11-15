@@ -54,10 +54,17 @@ jobs:
           assert 'Toast.makeText' in native
           print('Export integration checks passed')
           PY
-      - name: Run Android lint
-        run: gradle --no-daemon :app:lintDebug
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: best-food-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Run Android lint
+        run: gradle --no-daemon :app:lintDebug
       - name: Upload Android lint diagnostics
         if: always()
         uses: actions/upload-artifact@v4
