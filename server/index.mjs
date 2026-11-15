@@ -48,7 +48,7 @@ export function cleanNaverTitle(value) {
 export function parseListingPackageSize(title) {
   const value=String(title||'').normalize('NFKC');
   if(/(?:\d+\s*[x×*]\s*\d+\s*(?:ml|l|kg|g)\b|\d+\s*(?:ml|l|kg|g)\s*[x×*]\s*\d+|\d+\s*(?:개입|입|팩|병|캔|봉|개|세트)|\d+\s*\+\s*\d+|\d+\s*인분|묶음|번들|멀티팩|증정|사은품)/i.test(value))return null;
-  const found=[...value.matchAll(/(^|[^\dA-Za-z])([1-9]\d*(?:\.\d+)?)\s*(ml|kg|g|l)(?![A-Za-z])/gi)];
+  const found=[...value.matchAll(/(^|[^\dA-Za-z])((?:[1-9]\d*(?:\.\d+)?|0\.\d*[1-9]\d*))\s*(ml|kg|g|l)(?![A-Za-z])/gi)];
   if(found.length!==1)return null;
   const quantity=Number(found[0][2]),unit=found[0][3].toLowerCase();
   const measure=unit==='ml'||unit==='l'?'ml':'g';
