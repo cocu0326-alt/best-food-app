@@ -425,6 +425,18 @@ assert.match(element('localSurveyStatus').textContent,/35개 표시/,'100-row mo
 assert.match(element('localSurveyResults').innerHTML,/가게34/,'100-row mode should render the last unique store');
 element('surveyDisplayLimit').value='30';
 
+// The lowest-price seller may be outside the first 30 visible rows.
+const hiddenCheapest=['상품명,판매가격,판매업소,조사일'];
+for(let i=0;i<30;i++)hiddenCheapest.push('국산 쌀,20000,가게'+i+',2026-11-02');
+hiddenCheapest.push('국산 쌀,1000,숨은최저가마트,2026-11-01');
+const hiddenCsv=hiddenCheapest.join('\\n');
+element('surveyCsvFile').files=[{name:'hidden.csv',size:hiddenCsv.length,text:async()=>hiddenCsv}];
+element('term').value='쌀';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyResults').innerHTML,/가게0/,'First seller should be visible');
+assert.doesNotMatch(element('localSurveyResults').innerHTML,/숨은최저가마트/,'Older hidden seller should not be shown in the first 30 rows');
+assert.match(element('localSurveyStatus').textContent,/중복 제외 31개/,'Full match count should include the hidden seller');
+
 // UTF-8 BOM at the start of the first CSV header must not break column detection.
 const bomCsv='\uFEFF상품명,판매가격,판매업소,조사일\n국산 사과,3900,동네마트,2026-11-03';
 element('term').value='사과';
