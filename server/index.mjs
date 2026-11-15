@@ -57,6 +57,7 @@ export function searchSupplierProducts(data, q) {
   const query = normalizeSearchText(q);
   const seen = new Set();
   const exactNameMatches = [];
+  const startsWithNameMatches = [];
   const nameMatches = [];
   const sellerMatches = [];
   for (const product of normalized.products) {
@@ -70,9 +71,9 @@ export function searchSupplierProducts(data, q) {
     ]);
     if (seen.has(key)) continue;
     seen.add(key);
-    (normalizeSearchText(product.name) === query ? exactNameMatches : nameMatch ? nameMatches : sellerMatches).push(product);
+    (normalizeSearchText(product.name) === query ? exactNameMatches : normalizeSearchText(product.name).startsWith(query) ? startsWithNameMatches : nameMatch ? nameMatches : sellerMatches).push(product);
   }
-  const results = exactNameMatches.concat(nameMatches, sellerMatches).slice(0,100);
+  const results = exactNameMatches.concat(startsWithNameMatches, nameMatches, sellerMatches).slice(0,100);
   return results;
 }
 const requests = new Map();
