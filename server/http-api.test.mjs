@@ -146,3 +146,12 @@ test('official public report supplies actual historical dumpling prices without 
  assert.ok(results.every(x=>x.surveyDate===reportDate&&x.seller.includes('개별 판매처 미제공')));
  assert.deepEqual(searchPublishedSurveyPrices('존재하지않는상품'),[]);
 });
+
+test('official survey CSV accepts dates with time while rejecting impossible dates',async()=>{
+ const {parseConsumerPriceCsv}=await import('./consumer-price-csv.mjs');
+ const csv=['상품명,조사일,판매가격,판매업소','고기만두,2026-10-23 09:30:00,7980,실제조사점포','고기만두,2026-02-30 12:00:00,7980,오류점포'].join('\\n');
+ const found=parseConsumerPriceCsv(csv,'만두');
+ assert.equal(found.length,1);
+ assert.equal(found[0].surveyDate,'2026-10-23');
+ assert.equal(found[0].seller,'실제조사점포');
+});
