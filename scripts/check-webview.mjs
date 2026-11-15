@@ -132,6 +132,7 @@ assert.ok(groupedHtml.indexOf('<strong>서울 우유 1L</strong>')<groupedHtml.i
 assert.ok(groupedHtml.indexOf('<strong>서울 우유 1L</strong>')<groupedHtml.indexOf('<strong>사과 주스 500ml</strong>'),'Product group with larger percentage spread must appear first');
 assert.ok(groupedHtml.indexOf('<strong>사과 주스 500ml</strong>')<groupedHtml.indexOf('<strong>사과 주스 1L</strong>'),'Cheaper per-100ml juice must appear before higher-unit-price juice');
 assert.match(groupedHtml,/비교 가능한 동일 상품명 그룹 2개/,'Two product groups should be reported');
+assert.equal((groupedHtml.match(/100단위 예상가격 최저 · 상품 규격/g)||[]).length,2,'Each of two different-price groups must mark exactly one cheapest candidate');
 assert.match(groupedHtml,/개별 비교 불가 0개 후보/,'All four candidates in this fixture are comparable');
 assert.doesNotMatch(groupedHtml,/개별 비교 불가 · 동일 상품명·단위의 비교 후보 부족/,'Comparable listings must not be labeled unmatched');
 assert.ok(groupedHtml.indexOf('서울 우유 (2개 후보')<groupedHtml.indexOf('사과 주스 (2개 후보'),'Groups with larger percentage spreads should be listed first');
