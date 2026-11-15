@@ -48,13 +48,14 @@ async function searchLocalSurvey(){
   }else raw=await file.text();
   raw=raw.replace(/^\uFEFF/,'');
   // Parse quoted commas and embedded newlines without breaking survey records.
-  const rows=[];let row=[],cell='',quoted=false;
+  const rows=[];let row=[],cell='',quoted=false,afterQuote=false;
   for(let i=0;i<raw.length;i++){
    const ch=raw[i];
-   if(quoted){if(ch==='"'&&raw[i+1]==='"'){cell+='"';i++}else if(ch==='"')quoted=false;else cell+=ch}
+   if(quoted){if(ch==='"'&&raw[i+1]==='"'){cell+='"';i++}else if(ch==='"'){quoted=false;afterQuote=true}else cell+=ch}
+   else if(afterQuote&&ch!==','&&ch!=='\n'&&ch!=='\r')throw Error('잘못된 CSV 따옴표 뒤 문자');
    else if(ch==='"'){if(cell)throw Error('잘못된 CSV 따옴표');quoted=true}
-   else if(ch===','){row.push(cell);cell=''}
-   else if(ch==='\n'||ch==='\r'){row.push(cell);rows.push(row);row=[];cell='';if(ch==='\r'&&raw[i+1]==='\n')i++;if(rows.length>300000)throw Error('CSV 행 수 초과')}
+   else if(ch===','){row.push(cell);cell='';afterQuote=false}
+   else if(ch==='\n'||ch==='\r'){row.push(cell);rows.push(row);row=[];cell='';afterQuote=false;if(ch==='\r'&&raw[i+1]==='\n')i++;if(rows.length>300000)throw Error('CSV 행 수 초과')}
    else cell+=ch;
   }
   if(quoted)throw Error('닫히지 않은 CSV 따옴표');
