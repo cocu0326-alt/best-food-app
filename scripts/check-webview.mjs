@@ -418,6 +418,13 @@ assert.match(element('localSurveyStatus').textContent,/30개 표시/,'Offline CS
 assert.match(element('localSurveyStatus').textContent,/중복 제외 35개/,'Offline CSV search should report distinct match count');
 
 
+// The result-count control must expose more than the default 30 entries.
+element('surveyDisplayLimit').value='100';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/35개 표시/,'100-row mode should show all 35 unique matches');
+assert.match(element('localSurveyResults').innerHTML,/가게34/,'100-row mode should render the last unique store');
+element('surveyDisplayLimit').value='30';
+
 // UTF-8 BOM at the start of the first CSV header must not break column detection.
 const bomCsv='\uFEFF상품명,판매가격,판매업소,조사일\n국산 사과,3900,동네마트,2026-11-03';
 element('term').value='사과';
