@@ -59,6 +59,21 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 30
+      - name: Show validation failure details in run summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## APK build diagnostics'
+            for file in build-reports/android-sdk.log build-reports/webview-tests.log build-reports/gradle-build.log build-reports/apk-verification.log; do
+              if [ -f "$file" ]; then
+                echo "### ${file##*/}"
+                echo '\`\`\`text'
+                tail -n 35 "$file" | sed 's/\`/\x27/g'
+                echo '\`\`\`'
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload validation and build logs
         if: always()
         uses: actions/upload-artifact@v4
