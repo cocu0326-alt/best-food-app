@@ -23,6 +23,18 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Check embedded JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('app/src/main/assets/index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>', html, flags=re.I)
+          if not scripts:
+              raise SystemExit('No inline JavaScript found')
+          Path('/tmp/best-food-inline.js').write_text('\\n;\\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/best-food-inline.js
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
       - name: Upload debug APK
