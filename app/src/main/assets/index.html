@@ -108,7 +108,7 @@ async function searchLocalSurvey(){
   if(requestId!==surveySearchRequest)return;
   const newestDate=results.length?results[0].date.replace(/[./]/g,'-'):'';
   const newestAgeDays=newestDate?Math.floor((Date.now()-Date.parse(newestDate+'T00:00:00Z'))/86400000):null;
-  const ageWarning=newestAgeDays!==null&&newestAgeDays>90?' · 최신 검색결과도 90일 이상 지난 조사자료입니다.':'';
+  const ageWarning=newestAgeDays!==null&&newestAgeDays>90?' · 최신 검색결과도 90일 이상 지난 조사자료입니다.':newestAgeDays!==null&&newestAgeDays<0?' · 조사일이 현재 날짜보다 미래입니다. 파일의 날짜를 확인하세요.':'';
   status.textContent='무료 조사자료 검색 '+results.length+'개 표시'+(seen.size>30?' (최대 30개 표시, 중복 제외 '+seen.size+'개)':'')+' · 파일 '+(file.name||'이름 없음')+(newestDate?' · 표시된 결과의 최신 조사일 '+newestDate:'')+' · 현재 판매가격이 아닌 조사 가격입니다.'+ageWarning;
   // Only compare the exact same product name on the exact same survey date.
   // Different products or survey dates must never share a cheapest-price label.
