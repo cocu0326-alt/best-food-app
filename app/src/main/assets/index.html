@@ -34,19 +34,29 @@ async function searchLocalSurvey(){
  const file=document.getElementById('surveyCsvFile').files[0],status=document.getElementById('localSurveyStatus'),box=document.getElementById('localSurveyResults');
  box.textContent='';
  if(!file)return status.textContent='먼저 무료 가격조사 CSV 파일을 선택하세요.';
- if(file.size>20_000_000)return status.textContent='20MB 이하 CSV만 열 수 있습니다.';
+ if(file.size>80_000_000)return status.textContent='80MB 이하 CSV만 열 수 있습니다.';
  const q=(document.getElementById('term').value||'').trim().normalize('NFC').toLowerCase().replace(/\s+/g,'');
  if(!q)return status.textContent='상품 검색어를 입력하세요.';
  try{
   const raw=(await file.text()).replace(/^\uFEFF/,'');
-  const lines=raw.split(/\r?\n/);
-  function cells(line){const out=[];let cell='',quoted=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(quoted&&line[i+1]==='"'){cell+='"';i++}else quoted=!quoted}else if(c===','&&!quoted){out.push(cell);cell=''}else cell+=c}out.push(cell);return out}
-  const headers=cells(lines.shift()||'').map(x=>x.trim().replace(/\s+/g,''));
+  // Parse quoted commas and embedded newlines without breaking survey records.
+  const rows=[];let row=[],cell='',quoted=false;
+  for(let i=0;i<raw.length;i++){
+   const ch=raw[i];
+   if(quoted){if(ch==='"'&&raw[i+1]==='"'){cell+='"';i++}else if(ch==='"')quoted=false;else cell+=ch}
+   else if(ch==='"'){if(cell)throw Error('잘못된 CSV 따옴표');quoted=true}
+   else if(ch===','){row.push(cell);cell=''}
+   else if(ch==='\n'||ch==='\r'){row.push(cell);rows.push(row);row=[];cell='';if(ch==='\r'&&raw[i+1]==='\n')i++;if(rows.length>300000)throw Error('CSV 행 수 초과')}
+   else cell+=ch;
+  }
+  if(quoted)throw Error('닫히지 않은 CSV 따옴표');
+  if(cell||row.length){row.push(cell);rows.push(row)}
+  const headers=(rows.shift()||[]).map(x=>x.trim().replace(/\s+/g,''));
   const col=(...names)=>headers.findIndex(x=>names.includes(x));
   const ni=col('상품명','제품명'),pi=col('판매가격','판매가격(원)','가격','가격(원)'),si=col('판매업소','판매업소명','판매점','판매점명','업소명'),di=col('조사일','조사일자','조사일시');
   if([ni,pi,si,di].some(x=>x<0))throw Error('필수 열(상품명·가격·판매업소·조사일)을 확인하세요.');
   const found=[];
-  for(const line of lines){if(!line.trim())continue;const row=cells(line),name=(row[ni]||'').trim(),date=(row[di]||'').trim(),seller=(row[si]||'').trim(),price=Number((row[pi]||'').replace(/[\s,원]/g,''));if(!name.normalize('NFC').toLowerCase().replace(/\s+/g,'').includes(q)||!seller||!/^\d{4}[-./]\d{2}[-./]\d{2}$/.test(date)||!Number.isSafeInteger(price)||price<=0)continue;found.push({name,seller,date,price});}
+  for(const row of rows){const name=(row[ni]||'').trim(),date=(row[di]||'').trim(),seller=(row[si]||'').trim(),price=Number((row[pi]||'').replace(/[\s,원]/g,''));if(!name.normalize('NFC').toLowerCase().replace(/\s+/g,'').includes(q)||!seller||!/^\d{4}[-./]\d{2}[-./]\d{2}$/.test(date)||!Number.isSafeInteger(price)||price<=0)continue;found.push({name,seller,date,price});}
   found.sort((a,b)=>b.date.replace(/[-./]/g,'').localeCompare(a.date.replace(/[-./]/g,''))||a.price-b.price);
   const seen=new Set(),results=[];
   for(const item of found){const key=JSON.stringify([item.name,item.seller,item.date,item.price]);if(seen.has(key))continue;seen.add(key);results.push(item);if(results.length>=30)break}
