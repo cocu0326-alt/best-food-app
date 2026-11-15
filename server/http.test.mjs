@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import net from 'node:net';
+import {mkdtemp,writeFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 
 async function freePort() {
   const server=net.createServer();
@@ -233,4 +236,36 @@ test('rejects invisible-only and overlong HTTP searches before supplier lookup',
     assert.equal((await response.json()).error,'invalid_query');
   }
   assert.equal((await fetch(base+'/api/foods?q='+encodeURIComponent('국산 사과'))).status,503,'valid search reaches provider check');
+});
+
+test('serves genuine CSV survey prices through HTTP with no paid provider',async t=>{
+ const dir=await mkdtemp(join(tmpdir(),'bestfood-csv-'));
+ t.after(()=>rm(dir,{recursive:true,force:true}));
+ const csvPath=join(dir,'survey.csv');
+ const csv=['상품명,조사일,판매가격,판매업소,세일여부,원플러스원','국산 사과,2026-11-10,3200,마트A,Y,N','배,2026-11-10,4900,마트B,N,Y'].join(String.fromCharCode(10));
+ await writeFile(csvPath,csv,'utf8');
+ const port=await freePort();
+ const child=spawn(process.execPath,['server/index.mjs'],{env:{...process.env,PORT:String(port),FOOD_UPSTREAM_URL:'',CONSUMER_PRICE_CSV_PATH:csvPath,RATE_LIMIT_PER_MINUTE:'60'},stdio:'ignore'});
+ t.after(()=>child.kill());
+ const base='http://127.0.0.1:'+port;
+ let ready=false;
+ for(let i=0;i<60;i++){
+   if(child.exitCode!==null)throw Error('CSV server exited before ready');
+   try{if((await fetch(base+'/health')).ok){ready=true;break}}catch{}
+   await new Promise(resolve=>setTimeout(resolve,50));
+ }
+ assert.ok(ready);
+ assert.deepEqual(await (await fetch(base+'/health')).json(),{ok:true,providerConfigured:true,csvReady:true});
+ const response=await fetch(base+'/api/foods?q='+encodeURIComponent('사과'));
+ assert.equal(response.status,200);
+ const data=await response.json();
+ assert.equal(data.products.length,0);
+ assert.equal(data.candidates.length,1);
+ assert.equal(data.candidates[0].name,'국산 사과');
+ assert.equal(data.candidates[0].price,3200);
+ assert.equal(data.candidates[0].seller,'마트A');
+ assert.equal(data.candidates[0].saleStatus,'Y');
+ assert.equal(data.candidates[0].onePlusOne,'N');
+ assert.equal(data.candidates[0].surveyDate,'2026-11-10');
+ assert.equal(data.candidates[0].rating,null);
 });
