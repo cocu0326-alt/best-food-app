@@ -61,3 +61,10 @@ test('deduplicates identical source records but preserves different stores',()=>
  assert.equal(found.length,2);
  assert.deepEqual(found.map(x=>x.seller),['마트A','마트B']);
 });
+
+test('Korean product search ignores spaces in query and survey product name',()=>{
+ const csv=['상품명,조사일,판매가격,판매업소','서울 우유 1L,2026-11-10,3200,마트A'].join(String.fromCharCode(10));
+ assert.equal(parseConsumerPriceCsv(csv,'서울우유').length,1);
+ assert.equal(parseConsumerPriceCsv(csv,'서울  우유').length,1);
+ assert.equal(parseConsumerPriceCsv(csv,'우유').length,1);
+});
