@@ -127,9 +127,10 @@ class MainActivity : Activity() {
         if (requestCode == saveRequestCode) {
             val content = pendingSave
             pendingSave = null
-            if (resultCode == RESULT_OK && content != null && data?.data?.scheme == "content") {
+            val destination = if (resultCode == RESULT_OK) data?.data?.takeIf { it.scheme == "content" } else null
+            if (content != null && destination != null) {
                 try {
-                    val stream = contentResolver.openOutputStream(data.data!!)
+                    val stream = contentResolver.openOutputStream(destination)
                         ?: throw IllegalStateException("Cannot open output stream")
                     stream.use { it.write(content) }
                     Toast.makeText(this, "파일 저장 완료", Toast.LENGTH_SHORT).show()
