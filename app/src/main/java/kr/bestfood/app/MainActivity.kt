@@ -143,6 +143,9 @@ class MainActivity : Activity() {
             val chosen = if (resultCode == RESULT_OK) data?.data?.takeIf { it.scheme == "content" }?.let { arrayOf(it) } else null
             pendingFileChoice?.onReceiveValue(chosen)
             pendingFileChoice = null
+            if (resultCode == RESULT_OK && chosen == null) {
+                Toast.makeText(this, "지원하지 않는 파일 주소입니다.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
