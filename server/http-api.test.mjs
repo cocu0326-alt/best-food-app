@@ -53,3 +53,14 @@ test('unknown route and unsupported method are rejected',async()=>{
   assert.equal((await fetch(base+'/health',{method:'POST'})).status,405);
  });
 });
+
+
+test('demo CSV fixture supports Korean product search and price comparison',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const {parseConsumerPriceCsv}=await import('./consumer-price-csv.mjs');
+ const csv=await readFile(new URL('../samples/demo-consumer-prices.csv',import.meta.url),'utf8');
+ const results=parseConsumerPriceCsv(csv,'저지방 우유');
+ assert.equal(results.length,2);
+ assert.deepEqual(results.map(x=>x.price),[2900,3200]);
+ assert.ok(results.every(x=>x.seller.startsWith('예시마트')));
+});
