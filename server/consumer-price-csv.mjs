@@ -19,13 +19,13 @@ export function parseCsv(text) {
 export function parseConsumerPriceCsv(text, query='',limit=100) {
   if (!Number.isSafeInteger(limit) || limit < 0) throw Error('invalid_result_limit');
   if (typeof text !== 'string' || text.length > 80_000_000) throw Error('invalid_csv_size');
-  if (limit === 0) return [];
   const rows=parseCsv(text.replace(/^\uFEFF/,''));
   if(!rows.length)return [];
   const headers=rows.shift().map(v=>v.replace(/^\uFEFF/,'').trim().replace(/\s+/g,''));
   const col=(...names)=>headers.findIndex(h=>names.includes(h));
   const name=col('상품명','제품명'),price=col('판매가격','판매가격(원)','가격','가격(원)'),seller=col('판매업소','판매업소명','판매점','판매점명','업소명'),date=col('조사일','조사일자','조사일시');
   if([name,price,seller,date].some(i=>i<0))throw Error('missing_required_columns');
+  if(limit===0)return [];
   const manufacturer=col('제조사','제조업체');
   const sale=col('세일여부','세일여부(Y/N)'),onePlusOne=col('원플러스원','원플러스원여부','1+1여부');
   const requiredTerms=String(query).normalize('NFC').trim().toLowerCase().split(/\s+/g).filter(Boolean);
