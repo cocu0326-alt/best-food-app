@@ -142,7 +142,7 @@ sandbox.fetch=async()=>({ok:true,json:async()=>({products:[],candidates:[
 ]})});
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 const tiedHtml=element('apiCandidates').innerHTML;
-assert.match(tiedHtml,/비교 가능한 동일 상품명 그룹 1개 \(단가 동일 1개 그룹\)/,'Tied unit-price groups should remain visible');
+assert.match(tiedHtml,/비교 가능한 동일 상품명 그룹 1개 \(단가 동일 1개 그룹, 개별 비교 불가 0개 후보\)/,'Tied unit-price groups should remain visible');
 assert.match(tiedHtml,/개별 비교 불가 0개 후보/,'Tied-price group is still comparable');
 assert.doesNotMatch(tiedHtml,/100단위 예상가격 최저/,'Equal unit prices must not produce a single cheapest badge');
 const beforeApi=vm.runInContext('state.products.length',sandbox);
