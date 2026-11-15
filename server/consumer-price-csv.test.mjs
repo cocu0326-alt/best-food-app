@@ -120,3 +120,11 @@ test('only valid Korean survey price formats are accepted',()=>{
  assert.deepEqual(found.map(x=>x.seller),['마트A','마트B','마트C']);
  assert.deepEqual(found.map(x=>x.price),[3500,3500,3500]);
 });
+
+
+test('multiple search words match independently and in either order',()=>{
+ const csv=['상품명,조사일,판매가격,판매업소','저지방 서울 우유 1L,2026-11-10,3100,마트A','초코 우유 1L,2026-11-10,2900,마트B'].join('\\n');
+ assert.deepEqual(parseConsumerPriceCsv(csv,'우유 저지방').map(x=>x.seller),['마트A']);
+ assert.deepEqual(parseConsumerPriceCsv(csv,'저지방 우유').map(x=>x.seller),['마트A']);
+ assert.deepEqual(parseConsumerPriceCsv(csv,'우유 초코').map(x=>x.seller),['마트B']);
+});
