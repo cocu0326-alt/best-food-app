@@ -76,3 +76,13 @@ test('accepts UTF-8 BOM at the start of official CSV headers',()=>{
  assert.equal(found.length,1);
  assert.equal(found[0].price,3500);
 });
+
+
+test('result limit zero returns no survey records and invalid limits fail',()=>{
+ const csv='상품명,조사일,판매가격,판매업소\n사과,2026-11-12,3500,마트A';
+ assert.deepEqual(parseConsumerPriceCsv(csv,'사과',0),[]);
+ assert.equal(parseConsumerPriceCsv(csv,'사과',1).length,1);
+ for(const limit of [-1,1.5,NaN,Infinity,'2']){
+  assert.throws(()=>parseConsumerPriceCsv(csv,'사과',limit),/invalid_result_limit/);
+ }
+});
