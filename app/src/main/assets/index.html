@@ -23,8 +23,9 @@ function searchFoodNow(){
  }
  const endpoint=document.getElementById('apiEndpoint');if(endpoint&&validApiUrl(endpoint.value.trim())){if(!input.value.trim())input.value=q;fetchProducts();const results=document.getElementById('apiCandidates');if(results&&results.scrollIntoView)results.scrollIntoView({behavior:'smooth',block:'start'});return;}
  const box=document.getElementById('instantSearchResults');
- const needle=q.normalize('NFKC').toLowerCase();
- const matches=state.products.filter(p=>String(p.name||'').normalize('NFKC').toLowerCase().includes(needle)&&!state.exclude.some(t=>String(p.name||'').toLowerCase().includes(t.toLowerCase()))).sort((a,b)=>Number(a.price)-Number(b.price));
+ const terms=q.normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean);
+ const normalizeSearch=x=>String(x||'').normalize('NFKC').toLowerCase().replace(/\s+/g,'');
+ const matches=state.products.filter(p=>{const name=normalizeSearch(p.name);return terms.every(t=>name.includes(normalizeSearch(t)))&&!state.exclude.some(t=>name.includes(normalizeSearch(t)))}).sort((a,b)=>Number(a.price)-Number(b.price));
  if(box){
   const countByNameUnit=new Map();for(const p of matches){const key=String(p.name||'').normalize('NFKC').trim().toLowerCase()+'|'+String(p.measure||'').toLowerCase();countByNameUnit.set(key,(countByNameUnit.get(key)||0)+1)}
   const bestByNameUnit=new Map();for(const p of matches){const size=Number(p.size),price=Number(p.price),unit=String(p.measure||'').toLowerCase();if(!(size>0&&Number.isFinite(size)&&Number.isFinite(price)&&price>=0&&['g','ml'].includes(unit)))continue;const key=String(p.name||'').normalize('NFKC').trim().toLowerCase()+'|'+unit;const value=price/size;const prior=bestByNameUnit.get(key);if(prior===undefined||value<prior)bestByNameUnit.set(key,value)}
