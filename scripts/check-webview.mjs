@@ -240,7 +240,7 @@ assert.match(element('localSurveyStatus').textContent,/2개 표시/,'Offline CSV
 // Survey results must disclose the newest observation date, not imply live checkout prices.
 assert.match(element('localSurveyStatus').textContent,/최신 조사일 2026-11-02/,'Survey status should show newest displayed date');
 assert.match(element('localSurveyStatus').textContent,/현재 판매가격이 아닌 조사 가격/,'Survey status must distinguish historical prices');
-const oldSurveyDate='상품명,판매가격,판매업소,조사일\\n오래된 쌀,5000,가게A,2024-01-01'.replace('\\n','\\n');
+const oldSurveyDate=['상품명,판매가격,판매업소,조사일','오래된 쌀,5000,가게A,2024-01-01'].join(String.fromCharCode(10));
 element('surveyCsvFile').files=[{name:'old-prices.csv',size:oldSurveyDate.length,text:async()=>oldSurveyDate}];
 element('term').value='오래된 쌀';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
