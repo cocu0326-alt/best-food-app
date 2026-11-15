@@ -66,11 +66,12 @@ console.log('PASS: primary food search, saved-price sorting and empty results');
 
 element('apiEndpoint').value='https://example.test/api/foods';
 element('term').value='만두';
-vm.runInContext('fetchProducts=()=>{window.apiSearchCalls=(window.apiSearchCalls||0)+1}',sandbox,{timeout:3000});
+vm.runInContext('window.originalFetchProducts=fetchProducts;fetchProducts=()=>{window.apiSearchCalls=(window.apiSearchCalls||0)+1}',sandbox,{timeout:3000});
 vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.equal(sandbox.window.apiSearchCalls,1,'Primary search should use configured HTTPS data API');
 assert.match(element('instantSearchResults').textContent,/연동 서버 검색 중/,'Primary search must identify its remote data source');
 element('apiEndpoint').value='';
+vm.runInContext('fetchProducts=window.originalFetchProducts;delete window.originalFetchProducts',sandbox,{timeout:3000});
 console.log('PASS: configured data API takes priority in primary search');
 
 element('term').value='';
