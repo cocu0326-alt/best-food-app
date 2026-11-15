@@ -98,6 +98,21 @@ vm.runInContext('importData(input)',vm.createContext({...sandbox,input}),{timeou
 assert.equal(storage.get('bestfood_v1'),goodData,'Invalid product must not overwrite existing data');
 console.log('PASS: JSON backup export, restore and invalid-file safeguards');
 
+// Normalize legacy mock responses to the real fetch Response interface.
+let mockedFetch;
+Object.defineProperty(sandbox,'fetch',{
+  configurable:true,
+  get(){return mockedFetch},
+  set(fn){mockedFetch=async (...args)=>{
+    const response=await fn(...args);
+    if(typeof response.text!=='function'&&typeof response.json==='function'){
+      const data=await response.json();
+      response.text=async()=>JSON.stringify(data);
+    }
+    if(!response.headers)response.headers={get:()=>null};
+    return response;
+  }}
+});
 const beforeApi=vm.runInContext('state.products.length',sandbox);
 element('apiEndpoint').value='https://example.test/api/foods';
 element('term').value='쌀';
