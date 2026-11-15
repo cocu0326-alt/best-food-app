@@ -35,6 +35,8 @@ jobs:
           Path('/tmp/best-food-inline.js').write_text('\n;\n'.join(scripts), encoding='utf-8')
           PY
           node --check /tmp/best-food-inline.js
+      - name: Run Android lint
+        run: gradle --no-daemon :app:lintDebug
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
       - name: Upload debug APK
