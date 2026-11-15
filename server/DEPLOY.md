@@ -52,3 +52,11 @@ curl -i 'https://example.onrender.com/api/foods?q=%EC%82%AC%EA%B3%BC'
 6. 실제 응답을 이용한 `/api/foods?q=...` 검색 테스트 및 Android 앱에서의 연결 확인
 
 **중요:** 현재 서버는 공급업체별 응답을 자동으로 임의 변환하지 않습니다. 공급업체 응답이 `server/SUPPLIER_API.md`의 계약과 다르면 별도 변환 어댑터를 구현하고 테스트해야 합니다. API 문서·인증정보 없이 임의의 공개 웹사이트를 상품 공급 API로 간주하지 않습니다.
+
+## Android WebView 파일 출처의 CORS 설정
+
+현재 Android 앱은 `file:///android_asset/index.html`에서 실행됩니다. 이 페이지가 HTTPS 상품 API를 `fetch`할 때 브라우저의 Origin이 `null`일 수 있습니다. 서버 기본 설정은 이 출처를 허용하지 않으므로, 실제 앱에서 API 요청이 CORS 오류로 실패할 수 있습니다.
+
+신뢰할 수 있는 공개 읽기 전용 API이고 호출 제한 및 운영 보안 검토를 마친 경우에 한해 서버 환경변수 `ALLOW_ANDROID_FILE_ORIGIN=true`를 설정할 수 있습니다. 그러면 `Origin: null` 요청에 `Access-Control-Allow-Origin: null`을 반환합니다. **이 설정은 Android 앱만 식별하거나 인증하지 않습니다.** 샌드박스 페이지와 다른 로컬 파일 페이지도 `null` 출처를 사용할 수 있으므로 비공개 상품정보, 사용자별 데이터, 인증이 필요한 API에는 적용하지 마세요. 공급업체 인증 토큰은 중계 서버 내부에만 두며 클라이언트로 노출하지 않습니다.
+
+서버 설정 후 Android 실기기에서 `연결 확인` 및 `실제 상품 조회`를 각각 시험해야 합니다. 장기적으로는 앱 화면을 신뢰할 수 있는 HTTPS 앱 자산 출처로 이전하고 그 출처만 허용하는 방식이 더 적절합니다.
