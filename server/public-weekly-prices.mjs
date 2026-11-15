@@ -1,6 +1,6 @@
 // Public, no-key source: Korea Consumer Agency price.go.kr homepage.
 // Extract only visible product names and weekly average prices; never infer seller prices.
-const HOME='https://www.price.go.kr/tprice/index.do';
+const HOME='https://price.go.kr/tprice/portal/main/main.do';
 const MAX_HTML_BYTES=3_000_000;
 const TTL=6*60*60*1000;
 let cache=null;
