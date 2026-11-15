@@ -250,3 +250,11 @@ test('supplier seller names normalize invisible spaces for consistent display',(
   ]}).products;
   assert.deepEqual(products.map(p=>p.seller),['청정 농장','산들 농장']);
 });
+
+test('invisible-only seller falls back to manufacturer or unknown seller',()=>{
+  const products=normalizeSupplierFeed({products:[
+    {name:'쌀',price:5000,size:500,unit:'g',seller:'\u200b\ufeff',manufacturer:'산들 농장'},
+    {name:'보리',price:4000,size:500,unit:'g',seller:'\u200b',manufacturer:'\u00a0\ufeff'}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.seller),['산들 농장','판매처 미확인']);
+});
