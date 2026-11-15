@@ -451,6 +451,9 @@ assert.ok(html.includes('esc(lowestSellers.slice(0,3).join'), 'Seller names in H
 console.log('PASS: Survey summary identifies lowest-price sellers safely');
 
 
+// Restore a two-date rice fixture; the previous test selected an apple-only CSV.
+element('surveyCsvFile').files=[{name:'dates.csv',size:surveyFixture.length,text:async()=>surveyFixture}];
+element('term').value='쌀';
 // Functional regression: latest-date filtering must exclude older observations.
 element('surveyDateFilter').value='latest';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
