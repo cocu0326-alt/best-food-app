@@ -74,6 +74,19 @@ element('apiEndpoint').value='';
 vm.runInContext('fetchProducts=window.originalFetchProducts;delete window.originalFetchProducts',sandbox,{timeout:3000});
 console.log('PASS: configured data API takes priority in primary search');
 
+element('surveyCsvFile').files=[{name:'survey.csv',size:100}];
+element('apiEndpoint').value='https://example.test/api/foods';
+element('term').value='만두';
+vm.runInContext('window.originalSurveySearch=searchLocalSurvey;searchLocalSurvey=()=>{window.csvSearchCalls=(window.csvSearchCalls||0)+1};window.originalFetchProducts=fetchProducts;fetchProducts=()=>{window.apiSearchCalls=(window.apiSearchCalls||0)+1}',sandbox,{timeout:3000});
+vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
+assert.equal(sandbox.window.csvSearchCalls,1,'User-selected survey CSV must take precedence over configured API');
+assert.equal(sandbox.window.apiSearchCalls,1,'CSV search must not trigger another API search');
+element('surveyCsvFile').files=[];
+element('apiEndpoint').value='';
+vm.runInContext('searchLocalSurvey=window.originalSurveySearch;fetchProducts=window.originalFetchProducts',sandbox,{timeout:3000});
+console.log('PASS: explicitly selected CSV takes priority over configured API');
+
+
 element('term').value='';
 
 
