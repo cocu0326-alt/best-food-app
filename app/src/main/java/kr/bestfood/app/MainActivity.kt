@@ -139,7 +139,7 @@ class MainActivity : Activity() {
             }
         }
         if (requestCode == filePickerRequestCode) {
-            val chosen = if (resultCode == RESULT_OK) data?.data?.let { arrayOf(it) } else null
+            val chosen = if (resultCode == RESULT_OK) data?.data?.takeIf { it.scheme == "content" }?.let { arrayOf(it) } else null
             pendingFileChoice?.onReceiveValue(chosen)
             pendingFileChoice = null
         }
