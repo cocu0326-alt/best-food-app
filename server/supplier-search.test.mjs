@@ -122,3 +122,13 @@ test('exact product-name match ranks ahead of partial product and seller matches
   ]},'사과');
   assert.deepEqual(products.map(p=>p.name),['사과','국산 사과','배']);
 });
+
+test('product names starting with query rank ahead of other partial matches',()=>{
+  const products=searchSupplierProducts({products:[
+    {name:'국산 사과',price:5000,size:500,unit:'g',seller:'농장'},
+    {name:'사과즙',price:6000,size:500,unit:'ml',seller:'농장'},
+    {name:'사과',price:7000,size:500,unit:'g',seller:'농장'},
+    {name:'배',price:2000,size:500,unit:'g',seller:'사과 농장'}
+  ]},'사과');
+  assert.deepEqual(products.map(p=>p.name),['사과','사과즙','국산 사과','배']);
+});
