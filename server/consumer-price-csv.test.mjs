@@ -154,3 +154,11 @@ test('rejects stray quotes after a completed quoted CSV field',()=>{
   assert.throws(()=>parseCsv('"milk""oops"extra,price'),/invalid_csv_quote|unclosed_csv_quote/);
   assert.throws(()=>parseCsv('"milk" "oops",price'),/invalid_csv_quote/);
 });
+
+
+test('full-width letters and digits match normal product searches',()=>{
+ const csv=['상품명,조사일,판매가격,판매업소','서울우유 １Ｌ,2026-11-10,3200,마트A','ＡＢＣ 우유,2026-11-10,2800,마트B'].join('\n');
+ assert.equal(parseConsumerPriceCsv(csv,'1L').length,1);
+ assert.equal(parseConsumerPriceCsv(csv,'ABC 우유').length,1);
+ assert.equal(parseConsumerPriceCsv(csv,'ＡＢＣ').length,1);
+});
