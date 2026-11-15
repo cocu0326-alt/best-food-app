@@ -64,13 +64,14 @@ export function searchSupplierProducts(data, q) {
   const nameTokenMatches = [];
   const tokenMatches = [];
   const tokens = [...new Set(query.split(' ').filter(Boolean))];
+  const matchesToken = (text, token) => text.split(' ').some(word => word.includes(token));
   for (const product of normalized.products) {
     const nameText = normalizeSearchText(product.name);
     const sellerText = normalizeSearchText(product.seller);
     const nameMatch = nameText.includes(query);
     const sellerMatch = sellerText.includes(query);
-    const nameTokenMatch = query.includes(' ') && tokens.every(token => nameText.includes(token));
-    const tokenMatch = query.includes(' ') && tokens.every(token => nameText.includes(token) || sellerText.includes(token));
+    const nameTokenMatch = query.includes(' ') && tokens.every(token => matchesToken(nameText, token));
+    const tokenMatch = query.includes(' ') && tokens.every(token => matchesToken(nameText, token) || matchesToken(sellerText, token));
     if (!nameMatch && !sellerMatch && !nameTokenMatch && !tokenMatch) continue;
     const key = JSON.stringify([
       normalizeSearchText(product.name),
