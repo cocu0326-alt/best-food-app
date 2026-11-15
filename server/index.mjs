@@ -54,7 +54,7 @@ export function normalizeNaverItems(data) {
 // Prices are search listings, not verified checkout prices.
 export function filterNaverCandidates(items, query, limit=30) {
   const terms=String(query).normalize('NFC').toLowerCase().split(/\s+/).filter(Boolean);
-  if(!terms.length)return [];
+  if(!terms.length||!Number.isSafeInteger(limit)||limit<0)return [];
   const normalize=value=>String(value||'').normalize('NFC').toLowerCase().replace(/\s+/g,'');
   const seen=new Set(),matches=[];
   for(const item of items){
