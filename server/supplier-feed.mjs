@@ -27,8 +27,14 @@ export function normalizeSupplierFeed(input) {
     const rawUpdatedAt = typeof p.updatedAt === 'string' ? p.updatedAt.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() : '';
     const datePart = rawUpdatedAt.slice(0,10);
     const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
-    const validCalendarDate = dateMatch && new Date(Date.UTC(Number(dateMatch[1]), Number(dateMatch[2])-1, Number(dateMatch[3]))).toISOString().slice(0,10) === datePart;
-    const sourceUpdatedAt = validCalendarDate && (rawUpdatedAt.length === 10 || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(rawUpdatedAt) && !Number.isNaN(Date.parse(rawUpdatedAt))) ? rawUpdatedAt.slice(0,40) : null;
+    const calendar = new Date(0);
+    if (dateMatch) calendar.setUTCFullYear(Number(dateMatch[1]), Number(dateMatch[2])-1, Number(dateMatch[3]));
+    const validCalendarDate = dateMatch && calendar.toISOString().slice(0,10) === datePart;
+    const timeMatch = /^\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(Z|[+-](\d{2}):(\d{2}))$/.exec(rawUpdatedAt);
+    const validTime = timeMatch && Number(timeMatch[1]) <= 23 && Number(timeMatch[2]) <= 59 && Number(timeMatch[3]) <= 59 &&
+      (!timeMatch[5] || (Number(timeMatch[5]) <= 23 && Number(timeMatch[6]) <= 59)) &&
+      !Number.isNaN(Date.parse(rawUpdatedAt));
+    const sourceUpdatedAt = validCalendarDate && (rawUpdatedAt.length === 10 || validTime) ? rawUpdatedAt.slice(0,40) : null;
     return [{
       name:normalizedName, price, size, measure,
       rating:Number.isFinite(rating) && rating >= 0 && rating <= 5 ? rating : 0,
