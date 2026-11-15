@@ -17,3 +17,5 @@ jobs:
           node-version: '22'
       - name: Run consumer price CSV regression tests
         run: node --test server/consumer-price-csv.test.mjs
+      - name: Check Android WebView JavaScript syntax
+        run: node server/check-android-webview-syntax.mjs
