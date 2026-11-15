@@ -227,7 +227,7 @@ assert.match(element('compareResults').innerHTML,/품질 점수는 사용자 입
 
 
 // Exercise offline public CSV import with quoted commas, embedded newlines, and invalid dates.
-const surveyFixture='상품명,판매가격,판매업소,조사일\\n"국산, 쌀\\n특품",12000,가게A,2026-11-01\\n국산 쌀,9900,가게B,2026-02-30\\n국산 쌀,11000,가게C,2026-11-02';
+const surveyFixture='상품명,판매가격,판매업소,조사일\n"국산, 쌀\n특품",12000,가게A,2026-11-01\n국산 쌀,9900,가게B,2026-02-30\n국산 쌀,11000,가게C,2026-11-02';
 element('surveyCsvFile').files=[{size:surveyFixture.length,text:async()=>surveyFixture}];
 element('term').value='쌀';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
