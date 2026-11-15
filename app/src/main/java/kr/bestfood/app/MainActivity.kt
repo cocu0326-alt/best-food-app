@@ -137,6 +137,8 @@ class MainActivity : Activity() {
                 } catch (_: Exception) {
                     Toast.makeText(this, "파일 저장에 실패했습니다.", Toast.LENGTH_LONG).show()
                 }
+            } else if (resultCode == RESULT_OK && content != null) {
+                Toast.makeText(this, "지원하지 않는 저장 위치입니다.", Toast.LENGTH_SHORT).show()
             }
         }
         if (requestCode == filePickerRequestCode) {
