@@ -225,3 +225,11 @@ test('seller display names collapse repeated whitespace and normalize Unicode',(
   ]}).products;
   assert.deepEqual(products.map(p=>p.seller),['우리 농장','생산 농장','카페']);
 });
+
+test('supplier product display names normalize invisible whitespace and Unicode',()=>{
+  const products=normalizeSupplierFeed({products:[
+    {name:'  유기농\u200b  사과  ',price:5000,size:500,unit:'g'},
+    {name:'  카페'.normalize('NFD'),price:4000,size:200,unit:'g'}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.name),['유기농 사과','카페']);
+});
