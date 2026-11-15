@@ -441,3 +441,7 @@ assert.ok(html.includes('for(const p of allUniqueResults){if(p.price<overallMin)
 assert.ok(html.includes('for(const x of group){if(x.price<low)'), 'Group price comparison must use bounded iteration');
 assert.ok(!html.includes('Math.min(...allUniqueResults.map'), 'Do not spread large survey arrays into Math.min');
 console.log('PASS: Large CSV price range calculations avoid argument-count overflow');
+
+assert.ok(html.includes('id="surveyDateFilter"'), 'Survey date filter must exist');
+assert.ok(html.includes("dateFilter==='latest'?allUniqueResults.filter"), 'Latest-date filter must operate on all matched rows');
+console.log('PASS: Latest survey-date filtering is wired');
