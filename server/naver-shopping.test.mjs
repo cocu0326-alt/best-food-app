@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {cleanNaverTitle,normalizeNaverItems,filterNaverCandidates,loadConsumerSurveyCsv} from './index.mjs';
+import {cleanNaverTitle,normalizeNaverItems,filterNaverCandidates,loadConsumerSurveyCsv,parseListingPackageSize} from './index.mjs';
 
 test('Naver shopping results retain source prices without invented quality metadata',()=>{
  const items=normalizeNaverItems({items:[{title:'<b>서울</b> 우유',lprice:'3200',link:'https://example.com/item',mallName:'쇼핑몰A'}]});
@@ -95,4 +95,18 @@ test('Naver candidate filtering tolerates malformed records and rejects invalid 
  const bad=[null,undefined,false,[],{name:'서울 우유',price:NaN},{name:'서울 우유',price:-1},{name:'서울 우유',price:'1000'}];
  assert.deepEqual(filterNaverCandidates([...bad,valid],'우유'),[valid]);
  assert.deepEqual(filterNaverCandidates(null,'우유'),[]);
+});
+
+test('shopping size extraction recognizes only single unambiguous packages',()=>{
+ assert.deepEqual(parseListingPackageSize('서울우유 1L'),{size:1000,measure:'ml'});
+ assert.deepEqual(parseListingPackageSize('사과주스 500ml'),{size:500,measure:'ml'});
+ assert.deepEqual(parseListingPackageSize('쌀 2kg'),{size:2000,measure:'g'});
+ assert.deepEqual(parseListingPackageSize('치즈 250g'),{size:250,measure:'g'});
+ for(const title of ['우유 1L 2팩','우유 1L x 2','우유 2x500ml','우유 500ml 1L','우유 용량 미표기','우유 0ml','우유 1.5L']) {
+  if(title==='우유 1.5L'){assert.equal(parseListingPackageSize(title),null);continue}
+  assert.equal(parseListingPackageSize(title),null,title);
+ }
+ const items=normalizeNaverItems({items:[{title:'우유 1L',lprice:'3000',link:'https://example.com/milk'},{title:'우유 1L 2팩',lprice:'5000',link:'https://example.com/bundle'}]});
+ assert.deepEqual([items[0].size,items[0].measure],[1000,'ml']);
+ assert.equal(items[1].size,null);
 });
