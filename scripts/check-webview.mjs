@@ -237,6 +237,18 @@ assert.doesNotMatch(element('localSurveyResults').innerHTML,/9,900원/,'Impossib
 assert.match(element('localSurveyStatus').textContent,/2개 표시/,'Offline CSV search should report matching rows');
 
 
+// Survey results must disclose the newest observation date, not imply live checkout prices.
+assert.match(element('localSurveyStatus').textContent,/최신 조사일 2026-11-02/,'Survey status should show newest displayed date');
+assert.match(element('localSurveyStatus').textContent,/현재 판매가격이 아닌 조사 가격/,'Survey status must distinguish historical prices');
+const oldSurveyDate='상품명,판매가격,판매업소,조사일\\n오래된 쌀,5000,가게A,2024-01-01'.replace('\\n','\\n');
+element('surveyCsvFile').files=[{name:'old-prices.csv',size:oldSurveyDate.length,text:async()=>oldSurveyDate}];
+element('term').value='오래된 쌀';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/90일 이상 지난 조사자료/,'Old survey results must display age warning');
+element('surveyCsvFile').files=[{name:'prices.csv',size:surveyFixture.length,text:async()=>surveyFixture}];
+element('term').value='쌀';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+
 // Exercise the Android File.arrayBuffer decoding path used by downloaded UTF-8 CSV.
 const utf8Survey=new TextEncoder().encode(surveyFixture);
 element('surveyCsvFile').files=[{size:utf8Survey.byteLength,arrayBuffer:async()=>utf8Survey.buffer}];
