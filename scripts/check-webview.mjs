@@ -266,3 +266,11 @@ element('surveyCsvFile').files=[{name:'backup.json',size:100,text:async()=>surve
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyStatus').textContent,/CSV\(\.csv\) 파일만/,'Non-CSV file selection must be rejected');
 assert.equal(element('localSurveyResults').innerHTML,'','Non-CSV file must clear previous search results');
+
+
+// A successful search after a failed file selection must replace the error status.
+element('surveyCsvFile').files=[{name:'prices.csv',size:surveyFixture.length,text:async()=>surveyFixture}];
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/2개 표시/,'Valid CSV must replace previous error status');
+assert.doesNotMatch(element('localSurveyStatus').textContent,/CSV\(\.csv\) 파일만/,'Previous file error must disappear');
+assert.match(element('localSurveyResults').innerHTML,/11,000원/,'Valid CSV search must render results after an error');
