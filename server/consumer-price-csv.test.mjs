@@ -135,3 +135,8 @@ test('CSV parser enforces row cap even when the final line has no newline',()=>{
  assert.equal(parseCsv(rows).length,300000);
  assert.throws(()=>parseCsv(rows+'extra'),/too_many_rows/);
 });
+
+test('deduplicates equivalent survey dates with different separators',()=>{
+ const csv=['상품명,판매가격,판매업소,조사일','우유,3000,마트,2026-11-01','우유,3000,마트,2026.11.01','우유,3000,마트,2026/11/01'].join(String.fromCharCode(10));
+ assert.equal(parseConsumerPriceCsv(csv,'우유').length,1);
+});
