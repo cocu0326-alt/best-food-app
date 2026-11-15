@@ -2,18 +2,13 @@ name: Consumer price CSV tests
 on:
   push:
     branches: [main]
-    paths:
-      - 'server/consumer-price-csv.mjs'
-      - 'server/consumer-price-csv.test.mjs'
-      - '.github/workflows/consumer-price-csv-tests.yml'
   pull_request:
-    paths:
-      - 'server/consumer-price-csv.mjs'
-      - 'server/consumer-price-csv.test.mjs'
-      - '.github/workflows/consumer-price-csv-tests.yml'
+  workflow_dispatch:
 jobs:
   csv-tests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
