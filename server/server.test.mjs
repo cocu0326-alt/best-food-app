@@ -20,9 +20,9 @@ test('supplier data without genuine ratings is not assigned fabricated zero revi
     {name:'리뷰 없는 상품',price:1000,size:100,unit:'g',rating:4.5,seller:'A'},
     {name:'정상 상품',price:1000,size:100,unit:'g',rating:0,reviews:0,seller:'A'}
   ]}).products;
-  assert.deepEqual(products.map(p=>p.name),['정상 상품']);
-  assert.equal(products[0].rating,0);
-  assert.equal(products[0].reviews,0);
+  assert.deepEqual(products.map(p=>p.name),['평점 없는 상품','리뷰 없는 상품','정상 상품']);
+  assert.deepEqual(products.map(p=>p.rating),[null,4.5,0]);
+  assert.deepEqual(products.map(p=>p.reviews),[null,null,0]);
 });
 test('supplier search matches Korean names and returns only valid products',()=>{
   const results=searchSupplierProducts(sample,'사과');
