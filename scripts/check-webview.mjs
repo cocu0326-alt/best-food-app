@@ -449,3 +449,22 @@ console.log('PASS: Latest survey-date filtering is wired');
 assert.ok(html.includes('최저가 판매처 '), 'Survey group summary should identify the cheapest seller');
 assert.ok(html.includes('esc(lowestSellers.slice(0,3).join'), 'Seller names in HTML must be escaped');
 console.log('PASS: Survey summary identifies lowest-price sellers safely');
+
+
+// Functional regression: latest-date filtering must exclude older observations.
+element('surveyDateFilter').value='latest';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyResults').innerHTML,/11,000원/,'Newest survey record must remain visible');
+assert.doesNotMatch(element('localSurveyResults').innerHTML,/12,000원/,'Older survey records must be filtered out');
+assert.match(element('localSurveyStatus').textContent,/1개 표시/,'Newest-date filter must update result count');
+element('surveyDateFilter').value='all';
+
+// Functional regression: sort order changes the rendered row order.
+element('surveyDisplaySort').value='lowest';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.ok(element('localSurveyResults').innerHTML.indexOf('11,000원')<element('localSurveyResults').innerHTML.indexOf('12,000원'),'Ascending price sort must put cheaper record first');
+element('surveyDisplaySort').value='highest';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.ok(element('localSurveyResults').innerHTML.indexOf('12,000원')<element('localSurveyResults').innerHTML.indexOf('11,000원'),'Descending price sort must put expensive record first');
+element('surveyDisplaySort').value='newest';
+console.log('PASS: Latest-date filter and price sorting work in simulated WebView');
