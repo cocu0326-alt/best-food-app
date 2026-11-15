@@ -281,7 +281,8 @@ assert.match(element('localSurveyStatus').textContent,/prices\.csv/,'Offline sea
 element('term').value='존재하지않는상품';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyStatus').textContent,/0개 표시/,'No-match searches must clearly show zero results');
-assert.equal(element('localSurveyResults').innerHTML,'','No-match searches must remove previous products');
+assert.match(element('localSurveyResults').innerHTML,/검색 결과가 없습니다/,'No-match searches must show an empty-state message');
+assert.doesNotMatch(element('localSurveyResults').innerHTML,/11,000원/,'No-match searches must remove previous product prices');
 
 
 // An empty public CSV file should be rejected without displaying stale results.
