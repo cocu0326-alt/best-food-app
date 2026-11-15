@@ -295,7 +295,7 @@ assert.equal(element('localSurveyResults').innerHTML,'','Empty survey file must 
 const manyRows=['상품명,판매가격,판매업소,조사일'];
 for(let i=0;i<35;i++)manyRows.push('국산 쌀,'+(10000+i)+',가게'+i+',2026-11-02');
 manyRows.push(manyRows[1]);
-const manyCsv=manyRows.join('\\n');
+const manyCsv=manyRows.join('\n');
 element('term').value='쌀';
 element('surveyCsvFile').files=[{name:'many.csv',size:manyCsv.length,text:async()=>manyCsv}];
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
