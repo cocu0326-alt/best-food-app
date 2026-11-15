@@ -137,7 +137,7 @@ export const server = http.createServer(async (req, res) => {
   catch { return send(res, 400, {error:'invalid_request_url'}, origin); }
   if (req.method !== 'GET') return send(res, 405, {error:'method_not_allowed'}, origin);
   if (url.pathname === '/api/foods' && limited(req.socket.remoteAddress || 'unknown')) return send(res, 429, {error:'rate_limited',message:'잠시 후 다시 요청하세요.'}, origin);
-  if (url.pathname === '/health') return send(res, 200, {ok: true, providerConfigured: Boolean(upstream || (naverClientId && naverClientSecret)), naverConfigured: Boolean(naverClientId && naverClientSecret)}, origin);
+  if (url.pathname === '/health') return send(res, 200, {ok: true, providerConfigured: Boolean(upstream || (naverClientId && naverClientSecret))}, origin);
   if (url.pathname !== '/api/foods') return send(res, 404, {error: 'not_found'}, origin);
   const queryValues = url.searchParams.getAll('q');
   if (queryValues.length !== 1 || [...url.searchParams.keys()].some(key => key !== 'q')) return send(res, 400, {error: 'invalid_query'}, origin);
