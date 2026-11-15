@@ -44,6 +44,7 @@ element('term').value='국산 쌀';
 vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.match(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Search should show a saved matching food');
 assert.match(element('instantSearchResults').innerHTML,/국산 쌀 B/,'Search should show all saved matching foods');
+assert.match(element('instantSearchResults').innerHTML,/100g당 1,000원/,'Saved food search must show calculated unit price');
 assert.ok(element('instantSearchResults').innerHTML.indexOf('국산 쌀 A')<element('instantSearchResults').innerHTML.indexOf('국산 쌀 B'),'Saved food search should sort by lowest total price');
 element('term').value='만두';
 vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
