@@ -53,9 +53,9 @@ export function normalizeNaverItems(data) {
 // Keep only matching shopping candidates and remove duplicate listings.
 // Prices are search listings, not verified checkout prices.
 export function filterNaverCandidates(items, query, limit=30) {
-  const terms=String(query).normalize('NFC').toLowerCase().split(/\\s+/).filter(Boolean);
+  const terms=String(query).normalize('NFC').toLowerCase().split(/\s+/).filter(Boolean);
   if(!terms.length)return [];
-  const normalize=value=>String(value||'').normalize('NFC').toLowerCase().replace(/\\s+/g,'');
+  const normalize=value=>String(value||'').normalize('NFC').toLowerCase().replace(/\s+/g,'');
   const seen=new Set(),matches=[];
   for(const item of items){
     const name=normalize(item.name);
