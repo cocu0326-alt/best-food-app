@@ -233,3 +233,12 @@ test('supplier product display names normalize invisible whitespace and Unicode'
   ]}).products;
   assert.deepEqual(products.map(p=>p.name),['유기농 사과','카페']);
 });
+
+test('supplier feed excludes names made only of invisible whitespace',()=>{
+  const products=normalizeSupplierFeed({products:[
+    {name:'\u200b\ufeff',price:5000,size:500,unit:'g'},
+    {name:'\u00a0 \u200b',price:5000,size:500,unit:'g'},
+    {name:'정상 사과',price:5000,size:500,unit:'g'}
+  ]}).products;
+  assert.deepEqual(products.map(p=>p.name),['정상 사과']);
+});
