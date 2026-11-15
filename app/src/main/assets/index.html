@@ -70,7 +70,11 @@ async function searchLocalSurvey(){
   const seen=new Set(),results=[];
   for(const item of found){const key=JSON.stringify([item.name,item.seller,item.date,item.price]);if(seen.has(key))continue;seen.add(key);if(results.length<30)results.push(item)}
   status.textContent='무료 조사자료 검색 '+results.length+'개 표시'+(seen.size>30?' (최대 30개 표시, 중복 제외 '+seen.size+'개)':'')+' · 파일 '+(file.name||'이름 없음')+' · 현재 판매가격이 아닌 조사 가격입니다.';
-  box.innerHTML=results.map(p=>'<div class="result"><div class="details"><strong>'+esc(p.name)+'</strong><p>'+esc(p.seller)+' · '+p.price.toLocaleString('ko-KR')+'원 · 조사일 '+esc(p.date)+'</p><p class="hint">조사가격(현재 판매가 아님)</p></div></div>').join('');
+  // Only compare the exact same product name on the exact same survey date.
+  // Different products or survey dates must never share a cheapest-price label.
+  const groups=new Map();
+  for(const p of results){const key=JSON.stringify([p.name.normalize('NFC').trim(),p.date.replace(/[-./]/g,'')]);const group=groups.get(key)||[];group.push(p);groups.set(key,group)}
+  box.innerHTML=results.map(p=>{const key=JSON.stringify([p.name.normalize('NFC').trim(),p.date.replace(/[-./]/g,'')]);const group=groups.get(key)||[];const cheapest=group.length>1&&p.price===Math.min(...group.map(x=>x.price));return '<div class="result"><div class="details"><strong>'+esc(p.name)+'</strong><p>'+esc(p.seller)+' · '+p.price.toLocaleString('ko-KR')+'원 · 조사일 '+esc(p.date)+'</p>'+(cheapest?'<p class="hint" style="color:#17663d;font-weight:700">동일 상품·동일 조사일 최저 조사가격 (표시된 결과 내)</p>':'')+'<p class="hint">조사가격(현재 판매가 아님)</p></div></div>'}).join('');
  }catch(e){status.textContent='CSV를 읽지 못했습니다: '+e.message}
 }
 </script></body></html>
