@@ -25,6 +25,8 @@ jobs:
           Path('/tmp/best-food-inline.js').write_text('\n;\n'.join(scripts), encoding='utf-8')
           PY
           node --check /tmp/best-food-inline.js
+      - name: Test supplier API server
+        run: node --test server/server.test.mjs
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
       - name: Verify APK contents
