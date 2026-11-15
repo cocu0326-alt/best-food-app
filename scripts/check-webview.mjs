@@ -63,6 +63,16 @@ vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.match(element('instantSearchResults').innerHTML,/등록된 상품에서 일치하는 항목이 없습니다/,'Search must explain when no matching food is saved');
 assert.doesNotMatch(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Search must clear previous matches');
 console.log('PASS: primary food search, saved-price sorting and empty results');
+
+element('apiEndpoint').value='https://example.test/api/foods';
+element('term').value='만두';
+vm.runInContext('fetchProducts=()=>{window.apiSearchCalls=(window.apiSearchCalls||0)+1}',sandbox,{timeout:3000});
+vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
+assert.equal(sandbox.window.apiSearchCalls,1,'Primary search should use configured HTTPS data API');
+assert.match(element('instantSearchResults').textContent,/연동 서버 검색 중/,'Primary search must identify its remote data source');
+element('apiEndpoint').value='';
+console.log('PASS: configured data API takes priority in primary search');
+
 element('term').value='';
 
 
