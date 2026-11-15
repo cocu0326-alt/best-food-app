@@ -181,3 +181,12 @@ test('multiword token search matches parts of separate product and seller words'
  ]},'사과 푸른');
  assert.deepEqual(products.map(p=>p.name),['국내산 햇사과']);
 });
+
+test('preserves separate product listings with different valid URLs',()=>{
+ const products=searchSupplierProducts({products:[
+  {name:'국산 사과',price:5000,size:500,unit:'g',seller:'농장',url:'https://shop.example/item/1'},
+  {name:'국산 사과',price:5000,size:500,unit:'g',seller:'농장',url:'https://shop.example/item/2'},
+  {name:'국산 사과',price:5000,size:500,unit:'g',seller:'농장',url:'https://shop.example/item/1'}
+ ]},'사과');
+ assert.deepEqual(products.map(p=>p.url),['https://shop.example/item/1','https://shop.example/item/2']);
+});
