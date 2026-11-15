@@ -58,3 +58,31 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
   }
   return unique;
 }
+
+
+// Compare only prices recorded for the same product on the same survey date.
+// Different dates cannot be presented as a current lowest-price comparison.
+export function compareSurveyPrices(items) {
+  if (!Array.isArray(items)) throw Error('invalid_survey_items');
+  const groups = new Map();
+  for (const item of items) {
+    if (!item || typeof item.name !== 'string' || typeof item.surveyDate !== 'string' ||
+        typeof item.seller !== 'string' || !Number.isSafeInteger(item.price) || item.price <= 0) continue;
+    const key = JSON.stringify([item.name.normalize('NFKC').trim().toLowerCase(), item.surveyDate]);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  return [...groups.values()].map(group => {
+    const sorted = [...group].sort((a,b) => a.price-b.price || a.seller.localeCompare(b.seller,'ko'));
+    return {
+      name: sorted[0].name,
+      surveyDate: sorted[0].surveyDate,
+      storeCount: new Set(sorted.map(x=>x.seller)).size,
+      lowestPrice: sorted[0].price,
+      highestPrice: sorted[sorted.length-1].price,
+      difference: sorted[sorted.length-1].price-sorted[0].price,
+      lowestSellers: [...new Set(sorted.filter(x=>x.price===sorted[0].price).map(x=>x.seller))],
+      isHistoricalSurvey: true
+    };
+  });
+}
