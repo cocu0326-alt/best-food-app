@@ -148,3 +148,9 @@ test('zero-result limit still validates CSV headers',()=>{
  const valid=['상품명,판매가격,판매업소,조사일','우유,3000,마트,2026-11-01'].join(String.fromCharCode(10));
  assert.deepEqual(parseConsumerPriceCsv(valid,'우유',0),[]);
 });
+
+
+test('rejects stray quotes after a completed quoted CSV field',()=>{
+  assert.throws(()=>parseCsv('"milk""oops",price'),/invalid_csv_quote|unclosed_csv_quote/);
+  assert.throws(()=>parseCsv('"milk" "oops",price'),/invalid_csv_quote/);
+});
