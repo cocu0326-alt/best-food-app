@@ -301,3 +301,12 @@ element('surveyCsvFile').files=[{name:'many.csv',size:manyCsv.length,text:async(
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyStatus').textContent,/30개 표시/,'Offline CSV search should cap visible results at 30');
 assert.match(element('localSurveyStatus').textContent,/중복 제외 35개/,'Offline CSV search should report distinct match count');
+
+
+// UTF-8 BOM at the start of the first CSV header must not break column detection.
+const bomCsv='\uFEFF상품명,판매가격,판매업소,조사일\n국산 사과,3900,동네마트,2026-11-03';
+element('term').value='사과';
+element('surveyCsvFile').files=[{name:'bom.csv',size:bomCsv.length,text:async()=>bomCsv}];
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/1개 표시/,'UTF-8 BOM CSV should produce a search result');
+assert.match(element('localSurveyResults').innerHTML,/국산 사과/,'UTF-8 BOM CSV product should render');
