@@ -28,7 +28,7 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
   if([name,price,seller,date].some(i=>i<0))throw Error('missing_required_columns');
   const manufacturer=col('제조사','제조업체');
   const sale=col('세일여부','세일여부(Y/N)'),onePlusOne=col('원플러스원','원플러스원여부','1+1여부');
-  const q=query.normalize('NFC').trim().toLowerCase().replace(/\s+/g,'');
+  const requiredTerms=String(query).normalize('NFC').trim().toLowerCase().split(/\s+/g).filter(Boolean);
   const out=[];
   for(const row of rows){
     const title=(row[name]||'').trim(),store=(row[seller]||'').trim(),day=(row[date]||'').trim();
@@ -37,7 +37,8 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
     const actual=new Date(0);
     actual.setUTCFullYear(year,month-1,dayOfMonth);
     if(actual.getUTCFullYear()!==year||actual.getUTCMonth()+1!==month||actual.getUTCDate()!==dayOfMonth)continue;
-    if(q&&!title.normalize('NFC').toLowerCase().replace(/\s+/g,'').includes(q))continue;
+    const normalizedTitle=title.normalize('NFC').toLowerCase().replace(/\s+/g,'');
+    if(!requiredTerms.every(term=>normalizedTitle.includes(term)))continue;
     const rawPrice=(row[price]||'').trim();
     // Accept plain digits or properly grouped thousands, optionally followed by 원.
     if(!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\s*원)?$/.test(rawPrice))continue;
