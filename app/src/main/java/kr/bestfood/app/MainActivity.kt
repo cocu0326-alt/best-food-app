@@ -127,7 +127,7 @@ class MainActivity : Activity() {
         if (requestCode == saveRequestCode) {
             val content = pendingSave
             pendingSave = null
-            if (resultCode == RESULT_OK && content != null && data?.data != null) {
+            if (resultCode == RESULT_OK && content != null && data?.data?.scheme == "content") {
                 try {
                     val stream = contentResolver.openOutputStream(data.data!!)
                         ?: throw IllegalStateException("Cannot open output stream")
