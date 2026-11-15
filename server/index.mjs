@@ -50,6 +50,25 @@ export function normalizeNaverItems(data) {
   });
 }
 
+// Keep only matching shopping candidates and remove duplicate listings.
+// Prices are search listings, not verified checkout prices.
+export function filterNaverCandidates(items, query, limit=30) {
+  const terms=String(query).normalize('NFC').toLowerCase().split(/\\s+/).filter(Boolean);
+  if(!terms.length)return [];
+  const normalize=value=>String(value||'').normalize('NFC').toLowerCase().replace(/\\s+/g,'');
+  const seen=new Set(),matches=[];
+  for(const item of items){
+    const name=normalize(item.name);
+    if(!terms.every(term=>name.includes(normalize(term))))continue;
+    const key=JSON.stringify([name,normalize(item.seller),item.price,item.url]);
+    if(seen.has(key))continue;
+    seen.add(key);
+    matches.push(item);
+  }
+  matches.sort((a,b)=>a.price-b.price||a.name.localeCompare(b.name,'ko'));
+  return matches.slice(0,limit);
+}
+
 const maxFeedBytes = 1024 * 1024;
 export async function readBoundedJson(response) {
   const length = Number(response.headers.get('content-length'));
@@ -183,7 +202,7 @@ export const server = http.createServer(async (req, res) => {
       if(!response.ok)return send(res,502,{error:'naver_upstream_error'},origin);
       if(!/^application\/json(?:\s*;|\s*$)/i.test(response.headers.get('content-type')||''))return send(res,502,{error:'naver_invalid_content_type'},origin);
       const data=await readBoundedJson(response);
-      return send(res,200,{products:[],candidates:normalizeNaverItems(data),notice:'네이버쇼핑 검색 결과입니다. 용량·평점·리뷰 정보가 제공되지 않아 종합평가에 자동 등록하지 않습니다.'},origin);
+      return send(res,200,{products:[],candidates:filterNaverCandidates(normalizeNaverItems(data),q),notice:'네이버쇼핑 검색 결과입니다. 용량·평점·리뷰 정보가 제공되지 않아 종합평가에 자동 등록하지 않습니다.'},origin);
     } catch {return send(res,502,{error:'naver_provider_unavailable'},origin);}
   }
   if (!upstream) return send(res, 503, {error: 'provider_not_configured', message: '상품 공급 API 연결이 필요합니다.'}, origin);
