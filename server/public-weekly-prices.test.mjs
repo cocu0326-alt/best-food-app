@@ -15,3 +15,10 @@ test('extracts official weekly prices and rejects arbitrary numbers',()=>{
 test('fails closed if official page has no recognized price data',async()=>{
  await assert.rejects(fetchPublicWeeklyPrices(async()=>new Response('<html>maintenance</html>',{headers:{'content-type':'text/html'}})),/public_price_format_changed/);
 });
+
+test('rejects oversized official price page before reading response body',async()=>{
+ let read=false;
+ const fake={ok:true,headers:new Headers({'content-type':'text/html','content-length':'3000001'}),body:{getReader(){read=true;throw Error('must not read')}}};
+ await assert.rejects(fetchPublicWeeklyPrices(async()=>fake),/public_price_page_too_large/);
+ assert.equal(read,false);
+});
