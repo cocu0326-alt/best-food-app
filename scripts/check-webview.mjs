@@ -52,6 +52,12 @@ assert.match(element('instantSearchResults').innerHTML,/100g당 600원 · 동일
 assert.doesNotMatch(element('instantSearchResults').innerHTML,/100g당 1,000원 · 동일 상품·단위 최저 단위가격/,'Higher unit price must not be marked cheapest');
 vm.runInContext('state.products.pop()',sandbox,{timeout:3000});
 assert.ok(element('instantSearchResults').innerHTML.indexOf('국산 쌀 A')<element('instantSearchResults').innerHTML.indexOf('국산 쌀 B'),'Saved food search should sort by lowest total price');
+element('term').value='국산   쌀';
+vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
+assert.match(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Multiple spaces between query words must still match');
+element('term').value='국산 쌀 없는상품';
+vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
+assert.doesNotMatch(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Every query word must match the product');
 element('term').value='만두';
 vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.match(element('instantSearchResults').innerHTML,/등록된 상품에서 일치하는 항목이 없습니다/,'Search must explain when no matching food is saved');
