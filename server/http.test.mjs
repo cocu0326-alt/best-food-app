@@ -211,3 +211,26 @@ test('supplier fetch cancels unsuccessful HTTP response streams',async()=>{
   assert.deepEqual(result,{ok:false});
   assert.equal(canceled,true);
 });
+
+test('rejects invisible-only and overlong HTTP searches before supplier lookup',async t=>{
+  const port=await freePort();
+  const child=spawn(process.execPath,['server/index.mjs'],{
+    env:{...process.env,PORT:String(port),RATE_LIMIT_PER_MINUTE:'60',FOOD_UPSTREAM_URL:''},
+    stdio:'ignore'
+  });
+  t.after(()=>child.kill());
+  const base='http://127.0.0.1:'+port;
+  let ready=false;
+  for(let i=0;i<60;i++){
+    if(child.exitCode!==null) throw Error('server exited before ready');
+    try {if((await fetch(base+'/health')).ok){ready=true;break}}catch{}
+    await new Promise(resolve=>setTimeout(resolve,50));
+  }
+  assert.ok(ready);
+  for(const q of ['\\u200b\\ufeff','\\u00a0 \\u200b','a'.repeat(121)]){
+    const response=await fetch(base+'/api/foods?q='+encodeURIComponent(q));
+    assert.equal(response.status,400,'invalid search must be rejected: '+JSON.stringify(q));
+    assert.equal((await response.json()).error,'invalid_query');
+  }
+  assert.equal((await fetch(base+'/api/foods?q='+encodeURIComponent('국산 사과'))).status,503,'valid search reaches provider check');
+});
