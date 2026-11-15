@@ -6,6 +6,22 @@ import {normalizeSupplierFeed} from './supplier-feed.mjs';
 const port = Number(process.env.PORT || 8787);
 const upstream = process.env.FOOD_UPSTREAM_URL || '';
 const consumerPriceCsvPath = process.env.CONSUMER_PRICE_CSV_PATH || '';
+// Cache source bytes while the CSV file's size and modification time are unchanged.
+// Avoid reading up to 80 MB from disk on every product search.
+let surveyFileCache = null;
+export async function loadConsumerSurveyCsv(path, statImpl=stat, readImpl=readFile) {
+  const file=await statImpl(path);
+  if(!file.isFile()||file.size<=0||file.size>80_000_000)throw Error('invalid_consumer_csv');
+  const signature=String(file.size)+':'+String(file.mtimeMs);
+  if(surveyFileCache&&surveyFileCache.path===path&&surveyFileCache.signature===signature)return surveyFileCache.text;
+  const bytes=await readImpl(path);
+  if(bytes.length>80_000_000)throw Error('invalid_consumer_csv');
+  let text;
+  try{text=new TextDecoder('utf-8',{fatal:true}).decode(bytes)}
+  catch{text=new TextDecoder('euc-kr',{fatal:true}).decode(bytes)}
+  surveyFileCache={path,signature,text};
+  return text;
+}
 const allowedOrigin = process.env.ALLOWED_ORIGIN || '';
 // Android WebView file:// pages send Origin: null for cross-origin fetches.
 // Explicit opt-in only: null is also used by sandboxed and local-file pages.
@@ -154,9 +170,7 @@ export const server = http.createServer(async (req, res) => {
   if (!q || q.length > 120 || !q.replace(/[\s\u00a0\u200b\ufeff]+/gu, '') || /[\u0000-\u001f\u007f]/u.test(q)) return send(res, 400, {error: 'invalid_query'}, origin);
   if (!upstream && consumerPriceCsvPath) {
     try {
-      const csvFileStat=await stat(consumerPriceCsvPath);
-      if(!csvFileStat.isFile()||csvFileStat.size>80_000_000)return send(res,502,{error:'invalid_consumer_csv'},origin);
-      const csv=await readFile(consumerPriceCsvPath,'utf8');
+      const csv=await loadConsumerSurveyCsv(consumerPriceCsvPath);
       return send(res,200,{products:[],candidates:parseConsumerPriceCsv(csv,q),notice:'한국소비자원 조사 가격이며 실시간 판매가격이 아닙니다.'},origin);
     } catch (error) {return send(res,502,{error:error?.message==='missing_required_columns'?'consumer_csv_invalid_columns':'consumer_csv_unavailable'},origin);}
   }
