@@ -86,6 +86,15 @@ element('apiEndpoint').value='';
 vm.runInContext('searchLocalSurvey=window.originalSurveySearch;fetchProducts=window.originalFetchProducts',sandbox,{timeout:3000});
 console.log('PASS: explicitly selected CSV takes priority over configured API');
 
+element('apiCandidates').innerHTML='<p>이전 서버 상품</p>';
+element('localSurveyResults').innerHTML='<p>이전 조사 가격</p>';
+element('term').value='국산 쌀';
+vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
+assert.equal(element('apiCandidates').innerHTML,'','New search must clear stale API results');
+assert.equal(element('localSurveyResults').innerHTML,'','New search must clear stale survey results');
+console.log('PASS: new food search clears previous remote and CSV results');
+
+
 
 element('term').value='';
 
