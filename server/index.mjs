@@ -43,6 +43,19 @@ export function cleanNaverTitle(value) {
     .replace(/&(?:amp|lt|gt|quot|apos|nbsp);/gi,entity=>entities[entity.slice(1,-1).toLowerCase()]||' ')
     .replace(/\s+/g,' ').trim().slice(0,200);
 }
+// Extract only an unambiguous single-package mass/volume from a listing title.
+// Bundles, counts, and multiple size claims are deliberately left unverified.
+export function parseListingPackageSize(title) {
+  const value=String(title||'').normalize('NFKC');
+  if(/(?:\d+\s*[x×*]\s*\d+\s*(?:ml|l|kg|g)\b|\d+\s*(?:ml|l|kg|g)\s*[x×*]\s*\d+|\d+\s*(?:개입|입|팩|병|캔|봉|개|세트)|묶음|번들|멀티팩)/i.test(value))return null;
+  const found=[...value.matchAll(/(^|[^\dA-Za-z])([1-9]\d*(?:\.\d+)?)\s*(ml|kg|g|l)(?![A-Za-z])/gi)];
+  if(found.length!==1)return null;
+  const quantity=Number(found[0][2]),unit=found[0][3].toLowerCase();
+  const measure=unit==='ml'||unit==='l'?'ml':'g';
+  const size=quantity*(unit==='l'||unit==='kg'?1000:1);
+  if(!Number.isSafeInteger(size)||size<=0||size>100000)return null;
+  return {size,measure};
+}
 export function normalizeNaverItems(data) {
   if (!data || !Array.isArray(data.items)) throw Error('invalid_naver_schema');
   return data.items.slice(0,100).flatMap(item => {
@@ -53,7 +66,8 @@ export function normalizeNaverItems(data) {
     let url='';
     try {const u=new URL(item.link);if(u.protocol==='https:'&&!u.username&&!u.password)url=u.href} catch {}
     if(!name||!Number.isSafeInteger(price)||price<=0||!url)return [];
-    return [{name,price,url,seller:typeof item.mallName==='string'?item.mallName.slice(0,120):'',source:'네이버쇼핑 검색',size:null,measure:null,rating:null,reviews:null}];
+    const packageSize=parseListingPackageSize(name);
+    return [{name,price,url,seller:typeof item.mallName==='string'?item.mallName.slice(0,120):'',source:'네이버쇼핑 검색',size:packageSize?.size??null,measure:packageSize?.measure??null,rating:null,reviews:null}];
   });
 }
 
