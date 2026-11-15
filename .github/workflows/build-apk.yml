@@ -27,8 +27,23 @@ jobs:
           node --check /tmp/best-food-inline.js
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
-      - name: Verify APK
-        run: test -s app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify APK contents
+        run: |
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          python3 - <<'PY'
+          import zipfile
+          apk='app/build/outputs/apk/debug/app-debug.apk'
+          with zipfile.ZipFile(apk) as z:
+              names=set(z.namelist())
+              required={'AndroidManifest.xml','classes.dex','assets/index.html'}
+              missing=required-names
+              if missing:
+                  raise SystemExit('APK missing: '+', '.join(sorted(missing)))
+              html=z.read('assets/index.html').decode('utf-8')
+              if 'fetchProducts' not in html or 'renderCompare' not in html:
+                  raise SystemExit('APK contains incomplete application assets')
+          print('APK package and embedded application verified')
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: best-food-debug-apk
