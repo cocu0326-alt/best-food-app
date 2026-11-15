@@ -17,7 +17,7 @@ class MainActivity : Activity() {
     private var pendingFileChoice: ValueCallback<Array<Uri>>? = null
     private val filePickerRequestCode = 4102
     private val saveRequestCode = 4103
-    private var pendingSave: String? = null
+    private var pendingSave: ByteArray? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,13 +31,15 @@ class MainActivity : Activity() {
             fun saveText(name: String, mime: String, content: String) {
                 val allowedNames = setOf("best-food-backup.json", "best-food-products.csv", "best-food-price-changes.csv")
                 val expectedMime = if (name == "best-food-backup.json") "application/json" else "text/csv;charset=utf-8"
-                if (name !in allowedNames || mime != expectedMime || content.toByteArray(Charsets.UTF_8).size > 2_000_000) return
+                if (name !in allowedNames || mime != expectedMime) return
+                val bytes = content.toByteArray(Charsets.UTF_8)
+                if (bytes.size > 2_000_000) return
                 runOnUiThread {
                     if (pendingSave != null) {
                         Toast.makeText(this@MainActivity, "이전 파일 저장을 먼저 완료해 주세요.", Toast.LENGTH_SHORT).show()
                         return@runOnUiThread
                     }
-                    pendingSave = content
+                    pendingSave = bytes
                     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                         addCategory(Intent.CATEGORY_OPENABLE)
                         type = if (mime == "application/json") "application/json" else "text/csv"
@@ -122,7 +124,7 @@ class MainActivity : Activity() {
                 try {
                     val stream = contentResolver.openOutputStream(data.data!!)
                         ?: throw IllegalStateException("Cannot open output stream")
-                    stream.use { it.write(content.toByteArray(Charsets.UTF_8)) }
+                    stream.use { it.write(content) }
                     Toast.makeText(this, "파일 저장 완료", Toast.LENGTH_SHORT).show()
                 } catch (_: Exception) {
                     Toast.makeText(this, "파일 저장에 실패했습니다.", Toast.LENGTH_LONG).show()
