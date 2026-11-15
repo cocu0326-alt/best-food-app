@@ -17,6 +17,7 @@ node server/index.mjs
 - `FOOD_UPSTREAM_URL`: 합법적으로 접근 가능한 상품 공급 API URL. 검색어는 `q` 쿼리로 전달합니다.
 - `FOOD_API_TOKEN`: 공급 API에 필요한 경우 서버 환경변수로만 설정. 앱에는 입력하지 않습니다.
 - `CONSUMER_PRICE_CSV_PATH`: 한국소비자원 참가격 CSV 파일의 서버 내 경로. 조사 시점의 가격이며 실시간 판매가가 아닙니다.
+- `CONSUMER_PRICE_CSV_URL`: 한국 공공데이터포털(`data.go.kr`)에서 직접 내려받을 수 있는 HTTPS CSV 파일 URL. 서버가 6시간 동안 캐시하며 재조회합니다. 다운로드 페이지나 메타데이터 JSON 주소는 사용할 수 없습니다. `CONSUMER_PRICE_CSV_PATH`가 있으면 로컬 파일을 우선합니다. 실제 다운로드 주소는 데이터 제공 조건을 확인한 후 설정해야 하며, 기본값은 비어 있습니다.
 - `NAVER_CLIENT_ID`와 `NAVER_CLIENT_SECRET`: 네이버 쇼핑 검색 API 자격증명. 둘 다 필요하며 서버 환경변수로만 설정합니다. 사용량 제한과 이용조건은 네이버 정책을 확인하세요.
 - 공급원 우선순위: `CONSUMER_PRICE_CSV_PATH`가 설정되어 있으면 CSV를 먼저 사용하고, 그 외에 네이버 자격증명이 있으면 네이버 검색을 사용합니다. 별도 `FOOD_UPSTREAM_URL`이 설정되어 있으면 해당 공급 API를 사용합니다. 운영 전 코드의 우선순위와 설정을 확인하세요.
 - `ALLOWED_ORIGIN`: 허용할 브라우저 Origin (선택). Android WebView의 로컬 파일 출처는 배포 환경에서 별도 검토가 필요합니다.
