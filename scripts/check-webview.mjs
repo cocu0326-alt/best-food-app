@@ -154,7 +154,7 @@ sandbox.fetch=async()=>({ok:false,status:503});
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.match(element('apiStatus').textContent,/조회 실패/,'API failure should show a helpful error');
 assert.equal(vm.runInContext('state.products.length',sandbox),beforeApi+3,'Failed API must not alter products');
-for(const [code,expected] of [[400,'검색어가 올바르지 않습니다'],[429,'요청이 너무 많습니다'],[502,'상품 공급업체 응답에 문제가 있습니다'],[503,'상품 공급 API가 아직 연결되지 않았습니다']]){
+for(const [code,expected] of [[400,'검색어가 올바르지 않습니다'],[429,'요청이 너무 많습니다'],[502,'공공데이터 CSV 파일 또는 공급업체 응답을 확인하세요.'],[503,'상품 공급 API가 아직 연결되지 않았습니다']]){
   sandbox.fetch=async()=>({ok:false,status:code});
   await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
   assert.match(element('apiStatus').textContent,new RegExp(expected),'HTTP '+code+' should display a specific error');
