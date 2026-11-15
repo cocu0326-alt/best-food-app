@@ -2,6 +2,7 @@ import http from 'node:http';
 import {readFile,stat} from 'node:fs/promises';
 import {parseConsumerPriceCsv} from './consumer-price-csv.mjs';
 import {normalizeSupplierFeed} from './supplier-feed.mjs';
+import {searchPublishedSurveyPrices,reportDate} from './published-survey.mjs';
 
 const port = Number(process.env.PORT || 8787);
 const upstream = process.env.FOOD_UPSTREAM_URL || '';
@@ -272,7 +273,7 @@ export const server = http.createServer(async (req, res) => {
       return send(res,200,{products:[],candidates:filterNaverCandidates(normalizeNaverItems(data),q),notice:'네이버쇼핑 검색 결과입니다. 용량·평점·리뷰 정보가 제공되지 않아 종합평가에 자동 등록하지 않습니다.'},origin);
     } catch {return send(res,502,{error:'naver_provider_unavailable'},origin);}
   }
-  if (!upstream) return send(res, 503, {error: 'provider_not_configured', message: '상품 공급 API 연결이 필요합니다.'}, origin);
+  if (!upstream) return send(res,200,{products:[],candidates:searchPublishedSurveyPrices(q),notice:'한국소비자원 공식 공개자료 '+reportDate+' 조사 집계 평균가격입니다. 개별 판매점 가격 또는 현재 판매가격이 아닙니다. 최신 데이터 공급원은 연결되지 않았습니다.'},origin);
   try {
     const target = new URL(upstream);
     if (target.protocol !== 'https:' || target.username || target.password || target.hash || !target.hostname) throw new Error('Valid HTTPS upstream required');
