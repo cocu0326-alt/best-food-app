@@ -81,3 +81,10 @@ test('Naver adapter skips malformed individual records and retains valid listing
  assert.equal(found[0].name,'정상 우유');
  assert.equal(found[0].price,2500);
 });
+
+
+test('Naver prices reject booleans, arrays, and scientific notation',()=>{
+ const candidates=[true,[],['2500'],'2.5e3',' 2500 ',2500,'2500'].map((lprice,i)=>({title:'우유',lprice,link:'https://example.com/item'+i}));
+ const found=normalizeNaverItems({items:candidates});
+ assert.deepEqual(found.map(x=>x.price),[2500,2500]);
+});
