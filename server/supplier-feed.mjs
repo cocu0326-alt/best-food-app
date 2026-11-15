@@ -19,10 +19,12 @@ export function normalizeSupplierFeed(input) {
     let url = '';
     try { const parsed = new URL(rawUrl); if (parsed.protocol === 'https:' && !parsed.username && !parsed.password && !parsed.hash) url = parsed.href; } catch {}
     const validNumeric = value => (typeof value === 'number' || typeof value === 'string') && String(value).trim() !== '';
-    const rating = validNumeric(p.rating) ? Number(p.rating) : NaN;
-    const reviews = validNumeric(p.reviews) ? Number(p.reviews) : NaN;
-    // Do not invent ratings or review counts when the supplier omitted them.
-    if (!Number.isFinite(rating) || rating < 0 || rating > 5 || !Number.isSafeInteger(reviews) || reviews < 0 || reviews > 100000000) return [];
+    // Missing or invalid optional review metadata must not hide genuine price listings.
+    // Null means unavailable, never an invented zero-star review.
+    const rawRating = validNumeric(p.rating) ? Number(p.rating) : NaN;
+    const rawReviews = validNumeric(p.reviews) ? Number(p.reviews) : NaN;
+    const rating = Number.isFinite(rawRating) && rawRating >= 0 && rawRating <= 5 ? rawRating : null;
+    const reviews = Number.isSafeInteger(rawReviews) && rawReviews >= 0 ? rawReviews : null;
     const normalizedSeller = (typeof p.seller === 'string' && p.seller.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() ? p.seller : typeof p.manufacturer === 'string' && p.manufacturer.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim() ? p.manufacturer : '판매처 미확인').replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC').slice(0,120);
     const cleanSource = typeof p.source === 'string' ? p.source.replace(/[\s\u00a0\u200b\ufeff]+/gu, ' ').trim().normalize('NFC') : '';
     const source = cleanSource ? cleanSource.slice(0,120) : '공급업체 제공 (원출처 미확인)';
