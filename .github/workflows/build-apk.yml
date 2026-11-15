@@ -68,6 +68,21 @@ jobs:
           assert 'resetProductPage()' in script, 'Missing filter-triggered pagination reset'
           print(f'Validated {len(controls.ids)} control IDs and {len(controls.handlers)} event handlers; all product filters reset')
           PY
+      - name: Verify Android export contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path('app/src/main/assets/index.html').read_text(encoding='utf-8')
+          native = Path('app/src/main/java/kr/bestfood/app/MainActivity.kt').read_text(encoding='utf-8')
+          filenames = ('best-food-backup.json', 'best-food-products.csv', 'best-food-price-changes.csv')
+          for filename in filenames:
+              assert filename in html, f'Web export missing: {filename}'
+              assert filename in native, f'Android export whitelist missing: {filename}'
+          assert 'new TextEncoder().encode(content).length>2000000' in html, 'Web export must enforce UTF-8 byte limit'
+          assert 'content.toByteArray(Charsets.UTF_8).size > 2_000_000' in native, 'Android export must enforce UTF-8 byte limit'
+          assert 'Intent.ACTION_CREATE_DOCUMENT' in native, 'Android save dialog missing'
+          print('Web and Android export filenames, byte limits, and save dialog verified')
+          PY
       - name: Test supplier API server
         run: node --test server/server.test.mjs
       - name: Build debug APK
