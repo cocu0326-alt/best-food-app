@@ -1,0 +1,55 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {once} from 'node:events';
+import {server} from './index.mjs';
+
+// Exercise the real HTTP handler without external services or paid API keys.
+async function withServer(run){
+ server.listen(0,'127.0.0.1');
+ try{
+  await once(server,'listening');
+  const address=server.address();
+  await run('http://127.0.0.1:'+address.port);
+ }finally{
+  await new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));
+ }
+}
+
+test('health endpoint exposes provider readiness without pretending data is available',async()=>{
+ await withServer(async base=>{
+  const response=await fetch(base+'/health');
+  assert.equal(response.status,200);
+  const data=await response.json();
+  assert.equal(data.ok,true);
+  assert.equal(typeof data.providerConfigured,'boolean');
+  assert.equal(typeof data.csvReady,'boolean');
+  assert.equal(response.headers.get('cache-control'),'no-store');
+ });
+});
+
+test('API rejects missing, duplicated, and extra search parameters',async()=>{
+ await withServer(async base=>{
+  for(const query of ['', '?q=', '?q=우유&q=사과', '?q=우유&debug=1']){
+   const response=await fetch(base+'/api/foods'+query);
+   assert.equal(response.status,400,query);
+   assert.equal((await response.json()).error,'invalid_query');
+  }
+ });
+});
+
+test('API does not invent product prices when no supplier is configured',async()=>{
+ await withServer(async base=>{
+  const response=await fetch(base+'/api/foods?q='+encodeURIComponent('우유'));
+  const body=await response.json();
+  assert.ok([200,503].includes(response.status));
+  if(response.status===503)assert.equal(body.error,'provider_not_configured');
+  else assert.ok(Array.isArray(body.products));
+ });
+});
+
+test('unknown route and unsupported method are rejected',async()=>{
+ await withServer(async base=>{
+  assert.equal((await fetch(base+'/missing')).status,404);
+  assert.equal((await fetch(base+'/health',{method:'POST'})).status,405);
+ });
+});
