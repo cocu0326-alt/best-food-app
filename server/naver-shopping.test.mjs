@@ -101,9 +101,9 @@ test('shopping size extraction recognizes only single unambiguous packages',()=>
  assert.deepEqual(parseListingPackageSize('서울우유 1L'),{size:1000,measure:'ml'});
  assert.deepEqual(parseListingPackageSize('사과주스 500ml'),{size:500,measure:'ml'});
  assert.deepEqual(parseListingPackageSize('쌀 2kg'),{size:2000,measure:'g'});
+ assert.deepEqual(parseListingPackageSize('우유 1.5L'),{size:1500,measure:'ml'});
  assert.deepEqual(parseListingPackageSize('치즈 250g'),{size:250,measure:'g'});
- for(const title of ['우유 1L 2팩','우유 1L x 2','우유 2x500ml','우유 500ml 1L','우유 용량 미표기','우유 0ml','우유 1.5L']) {
-  if(title==='우유 1.5L'){assert.equal(parseListingPackageSize(title),null);continue}
+ for(const title of ['우유 1L 2팩','우유 1L x 2','우유 2x500ml','우유 500ml 1L','우유 용량 미표기','우유 0ml']) {
   assert.equal(parseListingPackageSize(title),null,title);
  }
  const items=normalizeNaverItems({items:[{title:'우유 1L',lprice:'3000',link:'https://example.com/milk'},{title:'우유 1L 2팩',lprice:'5000',link:'https://example.com/bundle'}]});
