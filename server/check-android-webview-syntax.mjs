@@ -13,3 +13,15 @@ for(const [index,match] of scripts.entries()){
 }
 if(!checked)throw new Error('No nonempty inline scripts found');
 console.log('Validated '+checked+' inline Android WebView script(s)');
+
+// Regression guards for critical Android search paths.
+const required=[
+ ['typed search precedence',"const q=document.getElementById('term').value.trim()||state.include.join(' ').trim();"],
+ ['saved CSV keyword matching','requiredTerms.every(x=>normalizedName.includes(x))'],
+ ['survey prices clearly identified','조사가격(현재 판매가 아님)'],
+ ['API candidate preview','apiCandidates']
+];
+for(const [label,fragment] of required){
+ if(!html.includes(fragment))throw Error('Missing Android search behavior: '+label);
+}
+console.log('Validated critical Android search and price-label behavior');
