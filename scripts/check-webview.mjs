@@ -245,6 +245,13 @@ element('surveyCsvFile').files=[{name:'old-prices.csv',size:oldSurveyDate.length
 element('term').value='오래된 쌀';
 await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
 assert.match(element('localSurveyStatus').textContent,/90일 이상 지난 조사자료/,'Old survey results must display age warning');
+// Equivalent date separators must render a single canonical survey record.
+const mixedDateSurvey=['상품명,판매가격,판매업소,조사일','날짜 쌀,5000,가게A,2026.11.01','날짜 쌀,5000,가게A,2026/11/01'].join(String.fromCharCode(10));
+element('surveyCsvFile').files=[{name:'mixed-dates.csv',size:mixedDateSurvey.length,text:async()=>mixedDateSurvey}];
+element('term').value='날짜 쌀';
+await vm.runInContext('searchLocalSurvey()',sandbox,{timeout:3000});
+assert.match(element('localSurveyStatus').textContent,/1개 표시/,'Equivalent date separators should be deduplicated');
+assert.match(element('localSurveyStatus').textContent,/2026-11-01/,'Survey date should display in canonical ISO form');
 // Future-dated survey observations must not silently appear to be fresh.
 const futureSurvey=['상품명,판매가격,판매업소,조사일','미래 쌀,5000,가게A,2099-01-01'].join(String.fromCharCode(10));
 element('surveyCsvFile').files=[{name:'future-prices.csv',size:futureSurvey.length,text:async()=>futureSurvey}];
