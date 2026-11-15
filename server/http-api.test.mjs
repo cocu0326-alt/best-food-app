@@ -108,3 +108,23 @@ test('real HTTP API serves the sample CSV without paid API credentials',async()=
   await rm(folder,{recursive:true,force:true});
  }
 });
+
+test('public CSV downloader accepts valid survey CSV, caches it and rejects HTML portals',async()=>{
+ const {loadRemoteConsumerSurveyCsv}=await import('./index.mjs');
+ const {readFile}=await import('node:fs/promises');
+ const csv=await readFile(new URL('../samples/demo-consumer-prices.csv',import.meta.url),'utf8');
+ const url='https://www.data.go.kr/download/consumer-test.csv';
+ let calls=0;
+ const fakeFetch=async()=>{calls++;return new Response(csv,{headers:{'content-type':'text/csv'}})};
+ assert.equal(await loadRemoteConsumerSurveyCsv(url,fakeFetch,1000),csv);
+ assert.equal(await loadRemoteConsumerSurveyCsv(url,fakeFetch,2000),csv);
+ assert.equal(calls,1,'repeated requests must use the six-hour cache');
+ await assert.rejects(loadRemoteConsumerSurveyCsv('https://untrusted.example/download.csv',fakeFetch),/invalid_consumer_csv_url/);
+ await assert.rejects(loadRemoteConsumerSurveyCsv('https://www.data.go.kr/download/portal.html',async()=>new Response('<html>not CSV</html>',{headers:{'content-type':'text/html'}}),30000000),/consumer_csv_not_download/);
+});
+
+test('public CSV downloader rejects oversized streaming responses without a Content-Length header',async()=>{
+ const {loadRemoteConsumerSurveyCsv}=await import('./index.mjs');
+ const stream=new ReadableStream({start(controller){controller.enqueue(new Uint8Array(80_000_001));controller.close()}});
+ await assert.rejects(loadRemoteConsumerSurveyCsv('https://www.data.go.kr/download/oversized.csv',async()=>new Response(stream,{headers:{'content-type':'text/csv'}}),30000001),/invalid_consumer_csv/);
+});
