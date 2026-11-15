@@ -128,6 +128,8 @@ assert.equal((groupedHtml.match(/100단위 예상가격 최저/g)||[]).length,2,
 assert.match(groupedHtml,/서울 우유 1L/,'Milk candidate should be visible');
 assert.match(groupedHtml,/사과 주스 500ml/,'Juice candidate should be visible');
 assert.match(groupedHtml,/용량 확인 4개/,'Unit-price-ready candidate count should be displayed');
+assert.match(groupedHtml,/비교 가능한 동일 상품명 그룹 2개/,'Two product groups should be reported');
+assert.match(groupedHtml,/그룹별 최고·최저 예상 단가 차이 80원\/100단위, 60원\/100단위/,'Each product group should show its own unit-price spread');
 const beforeApi=vm.runInContext('state.products.length',sandbox);
 element('apiEndpoint').value='https://example.test/api/foods';
 element('term').value='쌀';
