@@ -445,3 +445,7 @@ console.log('PASS: Large CSV price range calculations avoid argument-count overf
 assert.ok(html.includes('id="surveyDateFilter"'), 'Survey date filter must exist');
 assert.ok(html.includes("dateFilter==='latest'?allUniqueResults.filter"), 'Latest-date filter must operate on all matched rows');
 console.log('PASS: Latest survey-date filtering is wired');
+
+assert.ok(html.includes('최저가 판매처 '), 'Survey group summary should identify the cheapest seller');
+assert.ok(html.includes('esc(lowestSellers.slice(0,3).join'), 'Seller names in HTML must be escaped');
+console.log('PASS: Survey summary identifies lowest-price sellers safely');
