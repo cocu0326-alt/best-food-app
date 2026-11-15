@@ -4,6 +4,9 @@ import {normalizeSupplierFeed} from './supplier-feed.mjs';
 const port = Number(process.env.PORT || 8787);
 const upstream = process.env.FOOD_UPSTREAM_URL || '';
 const allowedOrigin = process.env.ALLOWED_ORIGIN || '';
+// Android WebView file:// pages send Origin: null for cross-origin fetches.
+// Explicit opt-in only: null is also used by sandboxed and local-file pages.
+const allowAndroidFileOrigin = process.env.ALLOW_ANDROID_FILE_ORIGIN === 'true';
 if (allowedOrigin) {
   let parsedOrigin;
   try { parsedOrigin = new URL(allowedOrigin); } catch { throw Error('ALLOWED_ORIGIN must be an HTTPS origin'); }
@@ -105,6 +108,8 @@ setInterval(() => {const now=Date.now();for(const [ip,entry] of requests) if(now
 function send(res, status, body, origin = '') {
   const headers = {'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer'};
   if (allowedOrigin && origin === allowedOrigin) headers['access-control-allow-origin'] = allowedOrigin;
+  else if (allowAndroidFileOrigin && origin === 'null') headers['access-control-allow-origin'] = 'null';
+  if (headers['access-control-allow-origin']) headers['vary'] = 'Origin';
   res.writeHead(status, headers);
   res.end(JSON.stringify(body));
 }
