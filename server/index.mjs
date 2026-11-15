@@ -60,6 +60,7 @@ export function searchSupplierProducts(data, q) {
   const startsWithNameMatches = [];
   const nameMatches = [];
   const sellerMatches = [];
+  const nameTokenMatches = [];
   const tokenMatches = [];
   const tokens = query.split(' ').filter(Boolean);
   for (const product of normalized.products) {
@@ -67,6 +68,7 @@ export function searchSupplierProducts(data, q) {
     const sellerText = normalizeSearchText(product.seller);
     const nameMatch = nameText.includes(query);
     const sellerMatch = sellerText.includes(query);
+    const nameTokenMatch = tokens.length > 1 && tokens.every(token => nameText.includes(token));
     const tokenMatch = tokens.length > 1 && tokens.every(token => nameText.includes(token) || sellerText.includes(token));
     if (!nameMatch && !sellerMatch && !tokenMatch) continue;
     const key = JSON.stringify([
@@ -76,9 +78,9 @@ export function searchSupplierProducts(data, q) {
     ]);
     if (seen.has(key)) continue;
     seen.add(key);
-    (nameText === query ? exactNameMatches : nameText.startsWith(query) ? startsWithNameMatches : nameMatch ? nameMatches : sellerMatch ? sellerMatches : tokenMatches).push(product);
+    (nameText === query ? exactNameMatches : nameText.startsWith(query) ? startsWithNameMatches : nameMatch ? nameMatches : nameTokenMatch ? nameTokenMatches : sellerMatch ? sellerMatches : tokenMatches).push(product);
   }
-  const results = exactNameMatches.concat(startsWithNameMatches, nameMatches, sellerMatches, tokenMatches).slice(0,100);
+  const results = exactNameMatches.concat(startsWithNameMatches, nameMatches, nameTokenMatches, sellerMatches, tokenMatches).slice(0,100);
   return results;
 }
 const requests = new Map();
