@@ -88,11 +88,11 @@ async function searchLocalSurvey(){
    else if(afterQuote&&ch!==','&&ch!=='\n'&&ch!=='\r')throw Error('잘못된 CSV 따옴표 뒤 문자');
    else if(ch==='"'){if(cell)throw Error('잘못된 CSV 따옴표');quoted=true}
    else if(ch===','){row.push(cell);cell='';afterQuote=false}
-   else if(ch==='\n'||ch==='\r'){row.push(cell);rows.push(row);row=[];cell='';afterQuote=false;if(ch==='\r'&&raw[i+1]==='\n')i++;if(rows.length>300000)throw Error('CSV 행 수 초과')}
+   else if(ch==='\n'||ch==='\r'){if(rows.length>=300000)throw Error('CSV 행 수 초과');row.push(cell);rows.push(row);row=[];cell='';afterQuote=false;if(ch==='\r'&&raw[i+1]==='\n')i++;}
    else cell+=ch;
   }
   if(quoted)throw Error('닫히지 않은 CSV 따옴표');
-  if(cell||row.length){row.push(cell);rows.push(row)}
+  if(cell||row.length){if(rows.length>=300000)throw Error('CSV 행 수 초과');row.push(cell);rows.push(row)}
   surveyCsvCache.set(file,rows);
   }
   if(requestId!==surveySearchRequest)return;
