@@ -32,8 +32,8 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
   const out=[];
   for(const row of rows){
     const title=(row[name]||'').trim(),store=(row[seller]||'').trim(),day=(row[date]||'').trim();
-    if(!title||!store||!/^\d{4}[-./]\d{2}[-./]\d{2}$/.test(day))continue;
-    const [year,month,dayOfMonth]=day.split(/[-./]/).map(Number);
+    if(!title||!store||!/^\d{4}[-./]\d{1,2}[-./]\d{1,2}(?:\s+\d{2}:\d{2}(?::\d{2})?)?$/.test(day))continue;
+    const [year,month,dayOfMonth]=day.split(/\s+/)[0].split(/[-./]/).map(Number);
     const actual=new Date(0);
     actual.setUTCFullYear(year,month-1,dayOfMonth);
     if(actual.getUTCFullYear()!==year||actual.getUTCMonth()+1!==month||actual.getUTCDate()!==dayOfMonth)continue;
@@ -44,7 +44,7 @@ export function parseConsumerPriceCsv(text, query='',limit=100) {
     if(!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\s*원)?$/.test(rawPrice))continue;
     const amount=Number(rawPrice.replace(/[,\s원]/g,''));
     if(!Number.isSafeInteger(amount)||amount<=0)continue;
-    out.push({name:title.slice(0,200),price:amount,seller:store.slice(0,120),surveyDate:day.replace(/[./]/g,'-'),manufacturer:manufacturer>=0?(row[manufacturer]||'').trim().slice(0,120):'',saleStatus:sale>=0?(row[sale]||'').trim().slice(0,30):null,onePlusOne:onePlusOne>=0?(row[onePlusOne]||'').trim().slice(0,30):null,source:'한국소비자원 참가격 조사',size:null,measure:null,rating:null,reviews:null,url:''});
+    out.push({name:title.slice(0,200),price:amount,seller:store.slice(0,120),surveyDate:[year,String(month).padStart(2,'0'),String(dayOfMonth).padStart(2,'0')].join('-'),manufacturer:manufacturer>=0?(row[manufacturer]||'').trim().slice(0,120):'',saleStatus:sale>=0?(row[sale]||'').trim().slice(0,30):null,onePlusOne:onePlusOne>=0?(row[onePlusOne]||'').trim().slice(0,30):null,source:'한국소비자원 참가격 조사',size:null,measure:null,rating:null,reviews:null,url:''});
   }
   // The source file can be ordered oldest-first; show the newest surveyed prices first.
   out.sort((a,b)=>b.surveyDate.replace(/[-./]/g,'').localeCompare(a.surveyDate.replace(/[-./]/g,''))||a.price-b.price);
