@@ -48,7 +48,8 @@ export function normalizeNaverItems(data) {
   return data.items.slice(0,100).flatMap(item => {
     if(!item||typeof item!=='object'||Array.isArray(item))return [];
     const name=cleanNaverTitle(item.title);
-    const price=Number(item.lprice);
+    const rawPrice=item.lprice;
+    const price=(typeof rawPrice==='string'&&/^\d+$/.test(rawPrice))||(typeof rawPrice==='number'&&Number.isSafeInteger(rawPrice))?Number(rawPrice):NaN;
     let url='';
     try {const u=new URL(item.link);if(u.protocol==='https:'&&!u.username&&!u.password)url=u.href} catch {}
     if(!name||!Number.isSafeInteger(price)||price<=0||!url)return [];
