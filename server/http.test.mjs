@@ -36,8 +36,8 @@ test('health, method rejection, rate limiting and missing supplier',async t=>{
   assert.equal((await fetch(base+'/api/foods?q=rice',{method:'POST'})).status,405);
   assert.equal((await fetch(base+'/api/foods?q=rice&q=apple')).status,400,'duplicate search parameters must be rejected');
   assert.equal((await fetch(base+'/api/foods?q=rice&token=secret')).status,400,'unsupported query parameters must be rejected');
-  assert.equal((await fetch(base+'/api/foods?q=rice')).status,503);
-  assert.equal((await fetch(base+'/api/foods?q=rice')).status,503);
+  assert.equal((await fetch(base+'/api/foods?q=rice')).status,200);
+  assert.equal((await fetch(base+'/api/foods?q=rice')).status,200);
   const limited=await fetch(base+'/api/foods?q=rice');
   assert.equal(limited.status,429);
   assert.equal((await limited.json()).error,'rate_limited');
@@ -172,7 +172,7 @@ test('rejects blank and oversized search queries before contacting supplier',asy
     assert.equal((await response.json()).error,'invalid_query');
   }
   const boundary=await fetch(base+'/api/foods?q='+encodeURIComponent('x'.repeat(120)));
-  assert.equal(boundary.status,503,'valid boundary-length query reaches supplier configuration check');
+  assert.equal(boundary.status,200,'valid boundary-length query reaches public survey fallback');
 });
 
 test('handles upstream HTTP failure without parsing its response body',async()=>{
@@ -235,7 +235,7 @@ test('rejects invisible-only and overlong HTTP searches before supplier lookup',
     assert.equal(response.status,400,'invalid search must be rejected: '+JSON.stringify(q));
     assert.equal((await response.json()).error,'invalid_query');
   }
-  assert.equal((await fetch(base+'/api/foods?q='+encodeURIComponent('국산 사과'))).status,503,'valid search reaches provider check');
+  assert.equal((await fetch(base+'/api/foods?q='+encodeURIComponent('국산 사과'))).status,200,'valid search reaches public survey fallback');
 });
 
 test('serves genuine CSV survey prices through HTTP with no paid provider',async t=>{
