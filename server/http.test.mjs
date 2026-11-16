@@ -274,7 +274,7 @@ test('serves genuine CSV survey prices through HTTP with no paid provider',async
 test('authorized shopping mall listings show real-name price and seller without unit sizes',async()=>{
  const {normalizeMallListings}=await import('./index.mjs');
  const data={candidates:[
-  {name:'만두 1kg',price:7900,seller:'쿠팡',url:'https://www.coupang.com/vp/products/123'},
+  {name:'만두 1kg',price:7900,seller:'쿠팡',url:'https://www.coupang.com/vp/products/123',image:'https://images.example.com/dumpling.jpg'},
   {name:'만두 800g',price:6900,seller:'컬리',url:'https://www.kurly.com/goods/456'},
   {name:'만두 잘못된 링크',price:1000,seller:'미확인',url:'javascript:alert(1)'},
   {name:'만두 잘못된 가격',price:0,seller:'미확인',url:'https://example.com/x'},
@@ -288,4 +288,5 @@ test('authorized shopping mall listings show real-name price and seller without 
  assert.equal(result[0].unitPrice,null);
  assert.equal(result[0].rating,undefined);
  assert.equal(result[0].url,'https://www.kurly.com/goods/456');
+ assert.equal(result[1].image,'https://images.example.com/dumpling.jpg');
 });
