@@ -172,7 +172,7 @@ test('rejects blank and oversized search queries before contacting supplier',asy
     assert.equal((await response.json()).error,'invalid_query');
   }
   const boundary=await fetch(base+'/api/foods?q='+encodeURIComponent('x'.repeat(120)));
-  assert.equal(boundary.status,200,'valid boundary-length query reaches public survey fallback');
+  assert.equal(boundary.status,503,'valid query requires a shopping supplier');
 });
 
 test('handles upstream HTTP failure without parsing its response body',async()=>{
@@ -235,7 +235,7 @@ test('rejects invisible-only and overlong HTTP searches before supplier lookup',
     assert.equal(response.status,400,'invalid search must be rejected: '+JSON.stringify(q));
     assert.equal((await response.json()).error,'invalid_query');
   }
-  assert.equal((await fetch(base+'/api/foods?q='+encodeURIComponent('국산 사과'))).status,200,'valid search reaches public survey fallback');
+  assert.equal((await fetch(base+'/api/foods?q='+encodeURIComponent('국산 사과'))).status,503,'valid query requires a shopping supplier');
 });
 
 test('serves genuine CSV survey prices through HTTP with no paid provider',async t=>{
