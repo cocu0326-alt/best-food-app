@@ -276,7 +276,8 @@ export const server = http.createServer(async (req, res) => {
     try {
       const target=new URL('https://openapi.naver.com/v1/search/shop.json');
       target.searchParams.set('query',q);
-      target.searchParams.set('display','30');
+      target.searchParams.set('display','100');
+      target.searchParams.set('sort','sim');
       const response=await fetch(target,{headers:{'X-Naver-Client-Id':naverClientId,'X-Naver-Client-Secret':naverClientSecret,accept:'application/json'},signal:AbortSignal.timeout(8000),redirect:'error'});
       if(!response.ok)return send(res,502,{error:'naver_upstream_error'},origin);
       if(!/^application\/json(?:\s*;|\s*$)/i.test(response.headers.get('content-type')||''))return send(res,502,{error:'naver_invalid_content_type'},origin);
