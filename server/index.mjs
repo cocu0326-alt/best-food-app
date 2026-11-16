@@ -295,8 +295,16 @@ export const server = http.createServer(async (req, res) => {
     const result = await fetchSupplierJson(target, token);
     if (!result.ok) return send(res, 502, {error: 'upstream_error'}, origin);
     const data = result.data;
-    if (!data || !Array.isArray(data.products)) return send(res, 502, {error: 'invalid_upstream_schema'}, origin);
-    return send(res, 200, {products: searchSupplierProducts(data, q)}, origin);
+    if (!data || (!Array.isArray(data.products) && !Array.isArray(data.candidates))) return send(res, 502, {error: 'invalid_upstream_schema'}, origin);
+    // Authorized mall adapters may return lightweight listings without ratings or package sizes.
+    const listings=Array.isArray(data.candidates)?data.candidates.slice(0,100).flatMap(item=>{
+      if(!item||typeof item!=='object'||Array.isArray(item)||typeof item.name!=='string'||typeof item.url!=='string')return [];
+      const name=item.name.trim().slice(0,200),price=item.price;
+      if(!name||!Number.isSafeInteger(price)||price<=0)return [];
+      let url;try{const parsed=new URL(item.url);if(parsed.protocol!=='https:'||parsed.username||parsed.password)return [];url=parsed.href}catch{return []}
+      return [{name,price,url,seller:typeof item.seller==='string'?item.seller.slice(0,120):'',source:typeof item.source==='string'?item.source.slice(0,80):'연결된 쇼핑몰',size:null,measure:null}];
+    }):[];
+    return send(res, 200, {products:Array.isArray(data.products)?searchSupplierProducts(data,q):[],candidates:rankShoppingCandidates(filterNaverCandidates(listings,q,100),30)});
   } catch {
     return send(res, 502, {error: 'provider_unavailable'}, origin);
   }
