@@ -32,22 +32,12 @@ function searchFoodNow(){
  const box=document.getElementById('instantSearchResults');
  const terms=q.normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean);
  const normalizeSearch=x=>String(x||'').normalize('NFKC').toLowerCase().replace(/\s+/g,'');
- const historicalPrices=[
-  {name:'고향만두(900g)',price:7980,seller:'전국 유통업체 조사 평균'},
-  {name:'비비고 왕교자(1.12kg)',price:10730,seller:'전국 유통업체 조사 평균'},
-  {name:'풀무원 얄피꽉찬 고기만두(800g)',price:9753,seller:'전국 유통업체 조사 평균'},
-  {name:'풀무원 얄피꽉찬 쌀물만두(1kg)',price:10640,seller:'전국 유통업체 조사 평균'}
- ];
- const historicalDate='2026-08-28';
- const historicalSource='https://www.price.go.kr/tprice/portal/pricenews/pricereport/priceReportList.do?inspectDay=28&inspectMonth=08&inspectYear=2026';
  const matches=state.products.filter(p=>{const name=normalizeSearch(p.name);return terms.every(t=>name.includes(normalizeSearch(t)))&&!state.exclude.some(t=>name.includes(normalizeSearch(t)))}).sort((a,b)=>Number(a.price)-Number(b.price));
  if(box){
   const countByNameUnit=new Map();for(const p of matches){const key=String(p.name||'').normalize('NFKC').trim().toLowerCase()+'|'+String(p.measure||'').toLowerCase();countByNameUnit.set(key,(countByNameUnit.get(key)||0)+1)}
   const bestByNameUnit=new Map();for(const p of matches){const size=Number(p.size),price=Number(p.price),unit=String(p.measure||'').toLowerCase();if(!(size>0&&Number.isFinite(size)&&Number.isFinite(price)&&price>=0&&['g','ml'].includes(unit)))continue;const key=String(p.name||'').normalize('NFKC').trim().toLowerCase()+'|'+unit;const value=price/size;const prior=bestByNameUnit.get(key);if(prior===undefined||value<prior)bestByNameUnit.set(key,value)}
   const rows=matches.slice(0,20).map(p=>{const size=Number(p.size),price=Number(p.price),unit=String(p.measure||'').toLowerCase();const valid=Number.isFinite(size)&&size>0&&Number.isFinite(price)&&price>=0&&['g','ml'].includes(unit);const unitText=valid?' · 100'+(unit==='ml'?'mL':'g')+'당 '+Math.round(price/size*100).toLocaleString()+'원':'';const key=String(p.name||'').normalize('NFKC').trim().toLowerCase()+'|'+unit;const best=valid&&countByNameUnit.get(key)>1&&Math.abs(price/size-bestByNameUnit.get(key))<1e-9?' · 동일 상품·단위 최저 단위가격':'';return '<div class="hint" style="padding:8px 0;border-bottom:1px solid #e5ebe6"><strong>'+esc(p.name)+'</strong> · '+price.toLocaleString()+'원'+unitText+best+' · '+esc(p.seller||'판매처 미확인')+'</div>'}).join('');
-  const publicMatches=matches.length?[]:historicalPrices.filter(p=>terms.every(t=>normalizeSearch(p.name).includes(normalizeSearch(t)))&&!state.exclude.some(t=>normalizeSearch(p.name).includes(normalizeSearch(t))));
-  const publicRows=publicMatches.map(p=>'<div class="hint" style="padding:10px 0;border-bottom:1px solid #e5ebe6"><strong>'+esc(p.name)+'</strong><div>'+p.price.toLocaleString()+'원 · '+esc(p.seller)+'</div></div>').join('');
-  box.innerHTML='<p class="hint">「'+esc(q)+'」 검색 결과 '+(matches.length||publicMatches.length)+'건</p>'+(rows||(publicRows?'<p class="hint"><strong>한국소비자원 참가격 공개 조사자료 · '+historicalDate+'</strong><br>아래는 실제 조사 평균가격입니다. 현재 판매가격·개별 매장 가격은 아닙니다. <a href="'+historicalSource+'" target="_blank" rel="noopener noreferrer">출처 확인</a></p>'+publicRows:'<p class="hint">확인된 공개 조사 가격이 없습니다. 다른 검색어를 입력하거나 최신 가격 공급원을 연결하세요.</p>'));
+  box.innerHTML='<p class="hint">「'+esc(q)+'」 저장된 상품 '+matches.length+'건</p>'+(rows||'<p class="hint"><strong>온라인 쇼핑몰 상품 검색이 아직 연결되지 않았습니다.</strong> 소비자원 평균가격이나 가상 상품을 쇼핑몰 추천 결과처럼 표시하지 않습니다. 실제 쇼핑몰 상품 검색은 검색 공급 서버 연결 후 사용할 수 있습니다.</p>');
  }
  const guide=document.getElementById('searchGuide');
  if(guide)guide.textContent='현재 검색 범위: 이 기기에 저장된 상품 '+state.products.length+'개. 무료 공공데이터 CSV 또는 HTTPS 상품 서버를 연결하면 외부 가격자료도 검색할 수 있습니다. 외부 쇼핑몰 검색은 아래 네이버쇼핑 검색 버튼을 이용하세요.';
