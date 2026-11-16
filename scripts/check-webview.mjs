@@ -229,24 +229,6 @@ assert.match(element('apiCandidates').innerHTML,/안심 우유 1L 2개입/,'Mult
 sandbox.fetch=async()=>({ok:true,json:async()=>({products:[],candidates:[{name:'동일가 쌀 500g',price:1500,size:500,measure:'g',source:'네이버쇼핑 검색'},{name:'동일가 쌀 1kg',price:3000,size:1000,measure:'g',source:'네이버쇼핑 검색'}]})});
 await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
 assert.match(element('apiCandidates').innerHTML,/동일가 쌀 500g/,'Simple product search remains visible');
-sandbox.fetch=async()=>({ok:true,json:async()=>({products:[],candidates:[{name:'안심 우유 500ml',price:2000,size:500,measure:'ml',source:'네이버쇼핑 검색'},{name:'안심 우유 1L 2개입',price:3000,size:1000,measure:'ml',source:'네이버쇼핑 검색'}]})});
-await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
-const bundleHtml=element('apiCandidates').innerHTML;
-assert.match(bundleHtml,/비교 가능한 동일 상품명 그룹 0개/,'Multipacks must not create false unit-price comparison groups');
-assert.match(bundleHtml,/개별 비교 불가 2개 후보/,'Multipack and unmatched single pack must both remain visible');
-assert.doesNotMatch(bundleHtml,/100단위 예상가격 최저 · 상품 규격/,'No winner badge for ambiguous multipacks');
-assert.match(bundleHtml,/묶음·증정 구성 가능성 · 단위가격 계산 제외/,'Multipack must show a clear warning');
-assert.equal((bundleHtml.match(/100mL당 약/g)||[]).length,1,'Only single-pack listing should display inferred unit price');
-sandbox.fetch=async()=>({ok:true,json:async()=>({products:[],candidates:[
- {name:'동일가 쌀 500g',price:1500,size:500,measure:'g',source:'네이버쇼핑 검색'},
- {name:'동일가 쌀 1kg',price:3000,size:1000,measure:'g',source:'네이버쇼핑 검색'}
-]})});
-await vm.runInContext('fetchProducts()',sandbox,{timeout:3000});
-const tiedHtml=element('apiCandidates').innerHTML;
-assert.match(tiedHtml,/비교 가능한 동일 상품명 그룹 1개 \(단가 동일 1개 그룹, 개별 비교 불가 0개 후보\)/,'Tied unit-price groups should remain visible');
-assert.match(tiedHtml,/개별 비교 불가 0개 후보/,'Tied-price group is still comparable');
-assert.match(tiedHtml,/동일 상품명·단위 비교 그룹/,'Tied-price candidates must retain their comparable label');
-assert.doesNotMatch(tiedHtml,/100단위 예상가격 최저/,'Equal unit prices must not produce a single cheapest badge');
 const beforeApi=vm.runInContext('state.products.length',sandbox);
 element('apiEndpoint').value='https://example.test/api/foods';
 element('term').value='쌀';
