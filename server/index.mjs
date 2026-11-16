@@ -138,6 +138,21 @@ export function filterNaverCandidates(items, query, limit=30) {
   return matches.slice(0,limit);
 }
 
+// Provisional shopping rank: use only verifiable price/size fields, never invent quality metrics.
+export function rankShoppingCandidates(items,limit=30){
+ if(!Array.isArray(items))return [];
+ const ranked=items.filter(x=>x&&Number.isSafeInteger(x.price)&&x.price>0).map(x=>{
+  const validSize=Number.isFinite(x.size)&&x.size>0&&['g','ml'].includes(x.measure);
+  const unitPrice=validSize?Math.round(x.price/x.size*100):null;
+  return {...x,unitPrice,unitLabel:validSize?'100'+(x.measure==='ml'?'mL':'g'):null,rankBasis:validSize?'동일 단위 내 가격 참고':'표시 판매가격 참고'};
+ });
+ // Unit prices of different package units must never be compared against each other.
+ ranked.sort((a,b)=>{
+  if(a.unitLabel&&b.unitLabel&&a.unitLabel===b.unitLabel)return a.unitPrice-b.unitPrice||a.price-b.price;
+  return a.price-b.price;
+ });
+ return ranked.slice(0,limit).map((x,i)=>({...x,rank:i+1}));
+}
 const maxFeedBytes = 1024 * 1024;
 export async function readBoundedJson(response) {
   const length = Number(response.headers.get('content-length'));
@@ -271,7 +286,7 @@ export const server = http.createServer(async (req, res) => {
       if(!response.ok)return send(res,502,{error:'naver_upstream_error'},origin);
       if(!/^application\/json(?:\s*;|\s*$)/i.test(response.headers.get('content-type')||''))return send(res,502,{error:'naver_invalid_content_type'},origin);
       const data=await readBoundedJson(response);
-      return send(res,200,{products:[],candidates:filterNaverCandidates(normalizeNaverItems(data),q),notice:'네이버쇼핑 검색 결과입니다. 용량·평점·리뷰 정보가 제공되지 않아 종합평가에 자동 등록하지 않습니다.'},origin);
+      return send(res,200,{products:[],candidates:rankShoppingCandidates(filterNaverCandidates(normalizeNaverItems(data),q,100)),notice:'쇼핑몰 판매상품을 가격 및 확인 가능한 단위가격 기준으로 정렬한 임시 추천 순위입니다. 평점·리뷰·원재료 품질은 확인되지 않았으므로 종합 품질 순위가 아닙니다.'},origin);
     } catch {return send(res,502,{error:'naver_provider_unavailable'},origin);}
   }
   if (!upstream) {
