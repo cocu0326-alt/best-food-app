@@ -2,8 +2,6 @@ import http from 'node:http';
 import {readFile,stat} from 'node:fs/promises';
 import {parseConsumerPriceCsv} from './consumer-price-csv.mjs';
 import {normalizeSupplierFeed} from './supplier-feed.mjs';
-import {searchPublishedSurveyPrices,reportDate} from './published-survey.mjs';
-import {fetchPublicWeeklyPrices,searchPublicWeeklyPrices} from './public-weekly-prices.mjs';
 
 const port = Number(process.env.PORT || 8787);
 const upstream = process.env.FOOD_UPSTREAM_URL || '';
@@ -287,11 +285,7 @@ export const server = http.createServer(async (req, res) => {
     } catch {return send(res,502,{error:'naver_provider_unavailable'},origin);}
   }
   if (!upstream) {
-    try {
-      const live=searchPublicWeeklyPrices(await fetchPublicWeeklyPrices(),q);
-      if(live.length)return send(res,200,{products:[],candidates:live,notice:'한국소비자원 참가격 홈페이지의 최근 주간 평균 조사 가격입니다. 실시간 판매가 또는 개별 판매점 가격이 아닙니다.'},origin);
-    } catch { /* Official site unavailable: use explicitly dated, historical records only. */ }
-    return send(res,200,{products:[],candidates:searchPublishedSurveyPrices(q),notice:'최근 공개가격 조회 불가 또는 검색 결과 없음. '+reportDate+' 과거 조사 집계가격만 표시합니다. 실시간 판매가가 아닙니다.'},origin);
+    return send(res,503,{error:'shopping_provider_not_configured',products:[],candidates:[],message:'쇼핑몰 상품 검색 공급원이 아직 연결되지 않았습니다. 조사 평균가격을 쇼핑몰 검색 결과로 대체하지 않습니다.'},origin);
   }
   try {
     const target = new URL(upstream);
