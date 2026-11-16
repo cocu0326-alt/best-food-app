@@ -111,7 +111,8 @@ export function normalizeNaverItems(data) {
     try {const u=new URL(item.link);if(u.protocol==='https:'&&!u.username&&!u.password)url=u.href} catch {}
     if(!name||!Number.isSafeInteger(price)||price<=0||!url)return [];
     const packageSize=parseListingPackageSize(name);
-    return [{name,price,url,seller:typeof item.mallName==='string'?item.mallName.slice(0,120):'',source:'네이버쇼핑 검색',size:packageSize?.size??null,measure:packageSize?.measure??null,rating:null,reviews:null}];
+    let image='';if(typeof item.image==='string'){try{const img=new URL(item.image);if(img.protocol==='https:'&&!img.username&&!img.password)image=img.href}catch{}}
+    return [{name,price,url,image,seller:typeof item.mallName==='string'?item.mallName.slice(0,120):'',source:'네이버쇼핑 검색',size:packageSize?.size??null,measure:packageSize?.measure??null,rating:null,reviews:null}];
   });
 }
 
@@ -154,7 +155,8 @@ export function normalizeMallListings(data,q){
       const name=item.name.trim().slice(0,200),price=item.price;
       if(!name||!Number.isSafeInteger(price)||price<=0)return [];
       let url;try{const parsed=new URL(item.url);if(parsed.protocol!=='https:'||parsed.username||parsed.password)return [];url=parsed.href}catch{return []}
-      return [{name,price,url,seller:typeof item.seller==='string'?item.seller.slice(0,120):'',source:typeof item.source==='string'?item.source.slice(0,80):'연결된 쇼핑몰',size:null,measure:null}];
+      let image='';if(typeof item.image==='string'){try{const img=new URL(item.image);if(img.protocol==='https:'&&!img.username&&!img.password)image=img.href}catch{}}
+      return [{name,price,url,image,seller:typeof item.seller==='string'?item.seller.slice(0,120):'',source:typeof item.source==='string'?item.source.slice(0,80):'연결된 쇼핑몰',size:null,measure:null}];
     }):[];
  return rankShoppingCandidates(filterNaverCandidates(listings,q,100),30);
 }
