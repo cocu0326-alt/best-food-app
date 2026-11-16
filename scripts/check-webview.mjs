@@ -60,8 +60,8 @@ vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.doesNotMatch(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Every query word must match the product');
 element('term').value='만두';
 vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
-assert.match(element('instantSearchResults').innerHTML,/고향만두/,'Dumpling search must show a demo result when no saved food matches');
-assert.match(element('instantSearchResults').innerHTML,/한국소비자원 참가격|실제 가격 서버 검색 중|가상 상품·가상 가격/,'Demo food prices must be clearly marked as fictional');
+assert.match(element('instantSearchResults').innerHTML,/온라인 쇼핑몰 상품 검색이 아직 연결되지 않았습니다/,'Dumpling search must show a demo result when no saved food matches');
+assert.match(element('instantSearchResults').innerHTML,/온라인 쇼핑몰 상품 검색이 아직 연결되지 않았습니다|실제 가격 서버 검색 중|가상 상품·가상 가격/,'Demo food prices must be clearly marked as fictional');
 assert.doesNotMatch(element('instantSearchResults').innerHTML,/국산 쌀 A/,'Search must clear previous matches');
 console.log('PASS: primary food search, saved-price sorting and empty results');
 
@@ -71,7 +71,7 @@ vm.runInContext('window.originalFetchProducts=fetchProducts;fetchProducts=()=>{w
 vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
 assert.equal(sandbox.window.apiSearchCalls,1,'Primary search should use configured HTTPS data API');
 assert.match(element('instantSearchResults').innerHTML,/실제 가격 서버 검색 중/,'Primary search must identify its remote data source');
-assert.match(element('instantSearchResults').innerHTML,/한국소비자원 참가격|실제 가격 서버 검색 중|가상 상품·가상 가격/,'Loading preview must be clearly fictional');
+assert.match(element('instantSearchResults').innerHTML,/온라인 쇼핑몰 상품 검색이 아직 연결되지 않았습니다|실제 가격 서버 검색 중|가상 상품·가상 가격/,'Loading preview must be clearly fictional');
 element('apiEndpoint').value='';
 vm.runInContext('fetchProducts=window.originalFetchProducts;delete window.originalFetchProducts',sandbox,{timeout:3000});
 console.log('PASS: configured data API takes priority in primary search');
@@ -118,12 +118,12 @@ console.log('PASS: saved food prices automatically search on typing without API 
 
 element('term').value='만두';
 vm.runInContext('searchFoodNow()',sandbox,{timeout:3000});
-assert.match(element('instantSearchResults').innerHTML,/고향만두/,'Offline food search should show a sample result');
-assert.match(element('instantSearchResults').innerHTML,/한국소비자원 참가격|실제 가격 서버 검색 중|가상 상품·가상 가격/,'Sample prices must never be presented as real prices');
+assert.match(element('instantSearchResults').innerHTML,/온라인 쇼핑몰 상품 검색이 아직 연결되지 않았습니다/,'Offline food search should show a sample result');
+assert.match(element('instantSearchResults').innerHTML,/온라인 쇼핑몰 상품 검색이 아직 연결되지 않았습니다|실제 가격 서버 검색 중|가상 상품·가상 가격/,'Sample prices must never be presented as real prices');
 console.log('PASS: searching 만두 shows visibly labeled offline demo results');
 assert.match(html,/연결된 데이터 공급원에서 일치하는 상품을 찾지 못했습니다/,'Empty real API responses must show an honest no-results message');
 assert.match(html,/실제 가격 서버 연결 실패/,'Failed remote searches must explain that fallback data is fictional');
-assert.match(html,/한국소비자원 참가격|실제 가격 서버 검색 중|가상 상품·가상 가격/,'Fallback must label demo prices as fictional');
+assert.match(html,/온라인 쇼핑몰 상품 검색이 아직 연결되지 않았습니다|실제 가격 서버 검색 중|가상 상품·가상 가격/,'Fallback must label demo prices as fictional');
 
 
 
