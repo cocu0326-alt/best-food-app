@@ -41,9 +41,9 @@ test('API does not invent product prices when no supplier is configured',async()
  await withServer(async base=>{
   const response=await fetch(base+'/api/foods?q='+encodeURIComponent('우유'));
   const body=await response.json();
-  assert.ok([200,503].includes(response.status));
-  if(response.status===503)assert.equal(body.error,'provider_not_configured');
-  else assert.ok(Array.isArray(body.products));
+  assert.equal(response.status,503);
+  assert.equal(body.error,'shopping_provider_not_configured');
+  assert.deepEqual(body.candidates,[]);
  });
 });
 
