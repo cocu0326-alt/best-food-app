@@ -8,6 +8,11 @@
 </main><footer>최고의 식품 · 초기 개발 버전 · 입력 데이터는 기기에만 저장됩니다.</footer><script>
 const KEY='bestfood_v1';const compareIds=new Set();let showAllProducts=false;let productPage=0;const PRODUCT_PAGE_SIZE=50;function resetProductPage(){productPage=0;render()}function clearProductFilters(){document.getElementById('quickSearch').value='';document.getElementById('measureFilter').value='all';document.getElementById('priceDropsOnly').checked=false;document.getElementById('sort').value='score';document.getElementById('maxUnitPrice').value='';document.getElementById('minRating').value='0';document.getElementById('minReviews').value='0';productPage=0;showAllProducts=false;render()}function toggleAllProducts(){showAllProducts=!showAllProducts;productPage=0;render()}function changeProductPage(delta){productPage=Math.max(0,productPage+delta);render();document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'})}let state;try{state=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!state||typeof state!=='object'||!Array.isArray(state.include)||!Array.isArray(state.exclude)||!Array.isArray(state.products)){state={include:[],exclude:[],products:[]}}else{state.include=state.include.filter(t=>typeof t==='string'&&t.length<=120).slice(0,100);state.exclude=state.exclude.filter(t=>typeof t==='string'&&t.length<=120).slice(0,100);state.products=state.products.filter(p=>p&&typeof p.name==='string'&&p.name.trim()&&p.name.length<=300&&Number.isSafeInteger(p.price)&&p.price>0&&Number.isFinite(p.size)&&p.size>0&&p.size<=1e9&&Number.isFinite(p.rating)&&p.rating>=0&&p.rating<=5&&Number.isSafeInteger(p.reviews)&&p.reviews>=0&&['g','mL'].includes(p.measure)&&Number.isFinite(p.id)&&p.id>0).slice(0,10000).filter((p,i,all)=>all.findIndex(x=>x.id===p.id)===i).map(p=>({...p,seller:typeof p.seller==='string'?p.seller:'',url:safeProductUrl(p.url),quality:[1,2,3,4,5].includes(p.quality)?p.quality:null,transparency:p.transparency===1?1:null}));}let lastIssuedProductId=0;function nextProductId(){const used=new Set(state.products.map(p=>p.id));let id=Math.max(Math.floor(Date.now()*1000),lastIssuedProductId+1);while(used.has(id))id++;if(!Number.isSafeInteger(id))throw Error('상품 ID 생성 범위를 초과했습니다.');lastIssuedProductId=id;return id}function save(){try{localStorage.setItem(KEY,JSON.stringify(state));return true}catch(e){alert('기기 저장 공간이 부족하거나 저장이 차단되었습니다. JSON 백업을 저장하고 저장 공간을 확인해 주세요.');return false}}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderMallSearchLinks(q){
+ const box=document.getElementById('instantSearchResults');if(!box)return;
+ const mallUrls=[['쿠팡','https://www.coupang.com/np/search?q='],['컬리','https://www.kurly.com/search?sword='],['SSG','https://www.ssg.com/search.ssg?query='],['11번가','https://search.11st.co.kr/Search.tmall?kwd='],['G마켓','https://browse.gmarket.co.kr/search?keyword=']];
+ box.innerHTML='<h3>「'+esc(q)+'」 쇼핑몰에서 검색</h3><p class="hint">쇼핑몰의 실제 검색 페이지로 이동합니다. 상품·가격을 앱 안에 자동 수집한 결과는 아닙니다.</p><div class="shops">'+mallUrls.map(([name,base])=>'<a class="mall-search-link" href="'+base+encodeURIComponent(q)+'" target="_blank" rel="noopener noreferrer">'+name+' 상품 검색 ↗</a>').join('')+'</div>';
+}
 function searchFoodNow(){
  const input=document.getElementById('term'),q=input.value.trim()||state.include.join(' ').trim();
  if(!q)return alert('검색할 식품명을 입력해 주세요.');
@@ -16,7 +21,7 @@ function searchFoodNow(){
  // Prevent a pending CSV read or debounced search from overwriting a newer search.
  clearTimeout(surveySearchTimer);
  ++surveySearchRequest;
- const instant=document.getElementById('instantSearchResults');if(instant)instant.innerHTML='';
+ const instant=document.getElementById('instantSearchResults');renderMallSearchLinks(q);
  const apiResults=document.getElementById('apiCandidates');if(apiResults)apiResults.innerHTML='';
  const surveyResults=document.getElementById('localSurveyResults');if(surveyResults)surveyResults.innerHTML='';
  const file=document.getElementById('surveyCsvFile');
@@ -27,10 +32,9 @@ function searchFoodNow(){
   if(results&&results.scrollIntoView)results.scrollIntoView({behavior:'smooth',block:'start'});
   return;
  }
- const endpoint=document.getElementById('apiEndpoint');if(endpoint&&validApiUrl(endpoint.value.trim())){if(!input.value.trim())input.value=q;if(instant){
- instant.innerHTML='<p class="hint">「'+esc(q)+'」 실제 가격 서버 검색 중…</p>';}fetchProducts();const results=document.getElementById('apiCandidates');if(results&&results.scrollIntoView)results.scrollIntoView({behavior:'smooth',block:'start'});return;}
+ const endpoint=document.getElementById('apiEndpoint');if(endpoint&&validApiUrl(endpoint.value.trim())){if(!input.value.trim())input.value=q;fetchProducts();const results=document.getElementById('apiCandidates');if(results&&results.scrollIntoView)results.scrollIntoView({behavior:'smooth',block:'start'});return;}
  const box=document.getElementById('instantSearchResults');
- if(box){const mallUrls=[['쿠팡','https://www.coupang.com/np/search?q='],['컬리','https://www.kurly.com/search?sword='],['SSG','https://www.ssg.com/search.ssg?query='],['11번가','https://search.11st.co.kr/Search.tmall?kwd='],['G마켓','https://browse.gmarket.co.kr/search?keyword=']];box.innerHTML='<h3>「'+esc(q)+'」 쇼핑몰에서 검색</h3><p class="hint">아래 쇼핑몰의 실제 검색 페이지를 바로 열 수 있습니다. 쇼핑몰 상품·가격을 앱 내부로 자동 수집한 결과는 아직 아닙니다.</p><div class="shops">'+mallUrls.map(([name,base])=>'<a class="mall-search-link" href="'+base+encodeURIComponent(q)+'" target="_blank" rel="noopener noreferrer">'+name+' 상품 검색 ↗</a>').join('')+'</div>';}
+ 
  const terms=q.normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean);
  const normalizeSearch=x=>String(x||'').normalize('NFKC').toLowerCase().replace(/\s+/g,'');
  const matches=state.products.filter(p=>{const name=normalizeSearch(p.name);return terms.every(t=>name.includes(normalizeSearch(t)))&&!state.exclude.some(t=>name.includes(normalizeSearch(t)))}).sort((a,b)=>Number(a.price)-Number(b.price));
